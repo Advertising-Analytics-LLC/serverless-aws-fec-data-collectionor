@@ -1,0 +1,22 @@
+{
+  "name": "serverless-aws-python3-openfec-starter",
+  "version": "0.0.2",
+  "description": "Serverless app for AWS python runtime",
+  "main": "index.js",
+  "scripts": {
+    "test": "pytest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rhythmictech/serverless-aws-python3-openfec-starter.git"
+  },
+  "author": "rhythmictech",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rhythmictech/serverless-aws-python3-openfec-starter/issues"
+  },
+  "homepage": "https://github.com/rhythmictech/serverless-aws-python3-openfec-starter#readme",
+  "dependencies": {
+    "serverless-python-requirements": "^5.1.0"
+  }
+}

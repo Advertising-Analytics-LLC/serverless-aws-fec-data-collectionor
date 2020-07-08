@@ -1,0 +1,85 @@
+# serverless.yml
+# see serverless.com/framework/docs/providers/aws/guide/serverless.yml/
+service: serverless-aws-python3-openfec-starter
+app: my-first-app
+frameworkVersion: ">=1.73.0 <2.0.0"
+org: sblack4
+
+# Custom variables
+custom:
+  dev:
+    deploymentBucketName: sls-deploymentbucket-app-dev-us-east-1-784384215106
+
+# The lambda function(s) defined in this serverless config
+functions:
+  hello:
+    handler: src/handler.hello
+    events:
+      - schedule: cron(0 0,8,16 * * ? *)
+
+# When packaging lambda do this
+package:
+  exclude:
+    - README.md
+    - requirements.txt
+    - .git/**
+
+# plugin to package dependencies
+plugins:
+  - serverless-python-requirements
+
+# Cloud Provider config
+provider:
+  name: aws
+  runtime: python3.7
+  deploymentPrefix: ${self:service}
+  stage: ${opt:stage,'dev'}
+  deploymentBucket:
+    blockPublicAccess: true
+    maxPreviousDeploymentArtifacts: 10
+    name: ${self:custom.${self:provider.stage}.deploymentBucketName}
+    serverSideEncryption: AES256
+  tags:
+    serverless_managed: true
+    serverless_name: ${self:service}
+
+# TODO: function-specific IAM roles
+#  iamRoleStatements:
+#    - Effect: "Allow"
+#      Action:
+#        - "kms:Decrypt"
+#      Resource: { "Fn::Join" : ["", ["arn:aws:kms:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
+#    - Effect: "Allow"
+#      Action:
+#        - "ssm:GetParameters"
+
+# TODO: add deploymentbucket permissions?
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:ListBucket
+#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:PutObject"
+#      Resource:
+#        Fn::Join:
+#          - ""
+#          - - "arn:aws:s3:::"
+#            - "Ref" : "ServerlessDeploymentBucket"
+#            - "/*"
+
+# TODO: add cfn role
+# see https://www.albertgao.xyz/2020/02/26/how-to-resolve-require-the-cfnrole-option-warning-for-serverless-framework/
+#  cfnRole: arn:aws:iam::XXXXXX:role/role
+
+# you can add CloudFormation resource templates here
+#resources:
+#  Resources:
+#    NewResource:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: my-new-bucket
+#  Outputs:
+#     NewOutput:
+#       Description: "Description for the output"
+#       Value: "Some output value"

@@ -1,19 +1,19 @@
 # serverless.yml
 # see serverless.com/framework/docs/providers/aws/guide/serverless.yml/
-service: serverless-aws-python3-openfec-starter
-app: my-first-app
+service: serverless-aws-python3-fec-datasync
+app: fec-datasync
 frameworkVersion: ">=1.73.0 <2.0.0"
-org: sblack4
+# org: advertisinganalytics
 
 # Custom variables
 custom:
   dev:
-    deploymentBucketName: sls-deploymentbucket-app-dev-us-east-1-784384215106
+    deploymentBucketName: serverless-deploymentbucket-us-east-648881544937
 
 # The lambda function(s) defined in this serverless config
 functions:
-  hello:
-    handler: src/handler.hello
+  CommitteeSync:
+    handler: src/CommitteSync.committeSync
     events:
       - schedule: cron(0 0,8,16 * * ? *)
 
@@ -73,13 +73,5 @@ provider:
 #  cfnRole: arn:aws:iam::XXXXXX:role/role
 
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+# resources:
+#  - ${file(cfn_resources/deploymentBucket.yml)}

@@ -4,12 +4,12 @@ import openfec_sdk
 from openfec_sdk import Configuration
 import os
 from src.secrets import get_param_value_by_name
-from src.cerealization import serialize_dates
+from src.serialization import serialize_dates
 
 
-API_KEY = get_param_value_by_name('/dev/openfec-api/api_key')
+API_KEY = get_param_value_by_name('/global/openfec-api/api_key')
 
-def hello(event, context):
+def committeSync(event, context):
     """ Call the Dates (/election-dates) API and pull the most recent general election as a test.
 
     Args:
@@ -19,19 +19,14 @@ def hello(event, context):
     Returns:
         json: most recent general election
     """
-    per_page = 1
-    sort = '-election_date'
-
     configuration = openfec_sdk.Configuration()
-    api_instance = openfec_sdk.DatesApi(openfec_sdk.ApiClient(configuration))
+    api_instance = openfec_sdk.CommitteeApi(openfec_sdk.ApiClient(configuration))
 
-    api_response = api_instance.election_dates_get(
-        API_KEY,
-        per_page=per_page,
-        sort=sort)
+    api_response = api_instance.committees_get(
+        API_KEY)
 
     response_dict = api_response.to_dict()
-    latest_election = response_dict['results'][0]
+    latest_election = response_dict['results']
     body = latest_election
 
     response = {

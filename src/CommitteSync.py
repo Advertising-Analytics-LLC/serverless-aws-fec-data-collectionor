@@ -7,28 +7,34 @@ It should:
 - query for only committees updated in the 24 hours prior (just to make sure we don't miss anything)
 """
 
+import boto3
 import datetime
 import json
 import logging
 import os
+from typing import List
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.serialization import serialize_dates
 
 
-API_KEY = get_param_value_by_name('/global/openfec-api/api_key')
+# SSM VARS
+API_KEY = get_param_value_by_name(os.environ['API_KEY'])
+SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
 
+# LOGGING
 logger = logging.getLogger(__name__)
 logger.setLevel(os.environ.get('LOG_LEVEL', logging.DEBUG))
 
 for handler in logger.handlers:
     handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s](%(name)s) %(message)s'))
 
+# BUSYNESS LOGIC
 def get_todays_committees() -> json:
     """gets list of committees that have filed today
 
     Returns:
-        [type]: [description]
+        json: json list containing results
     """
     # only get those filed today
     todays_date = datetime.date.today().isoformat()
@@ -39,6 +45,16 @@ def get_todays_committees() -> json:
     for response in response_generator:
         results_json += response['results']
     return results_json
+
+def push_them_to_sqs(message_list: List[str]) -> object:
+    sqs = boto3.resource('sqs')
+    queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
+    response = queue.send_response(Entries=message_list)
+    print('type(response)')
+    print(type(response))
+    print('response')
+    print(response)
+    return response
 
 def committeSync(event, context):
     """
@@ -51,10 +67,5 @@ def committeSync(event, context):
         json:
     """
     results_json = get_todays_committees()
-
-    response = {
-        'statusCode': 200,
-        'body': results_json
-    }
-
+    response = push_them_to_sqs(results_json)
     return response

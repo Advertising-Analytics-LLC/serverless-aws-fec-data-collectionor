@@ -1,5 +1,8 @@
 #!/bin/env python3
-"""
+""" lightweight SDK for OpenFec API
+influences:
+- https://github.com/rhythmictech/pagerduty-to-jira-lambda/blob/master/pd2jira_function/pd2jira/app.py
+- https://github.com/sblack4/lolcrawler2/blob/master/lolcrawler/riot.py
 """
 
 import json

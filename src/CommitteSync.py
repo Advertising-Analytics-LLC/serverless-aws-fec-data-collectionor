@@ -24,6 +24,22 @@ logger.setLevel(os.environ.get('LOG_LEVEL', logging.DEBUG))
 for handler in logger.handlers:
     handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s](%(name)s) %(message)s'))
 
+def get_todays_committees() -> json:
+    """gets list of committees that have filed today
+
+    Returns:
+        [type]: [description]
+    """
+    # only get those filed today
+    todays_date = datetime.date.today().isoformat()
+    get_committees_payload = {'min_last_f1_date': todays_date}
+    results_json = []
+    openFec = OpenFec(API_KEY)
+    response_generator = openFec.get_committees_paginator(get_committees_payload)
+    for response in response_generator:
+        results_json += response['results']
+    return results_json
+
 def committeSync(event, context):
     """
 
@@ -34,21 +50,11 @@ def committeSync(event, context):
     Returns:
         json:
     """
-    # only get those filed today
-    # todays_date = datetime.date.today().isoformat()
-    todays_date = '2019-01-01'
-    get_committees_payload = {'min_last_f1_date': todays_date}
-    response_json = []
-
-    openFec = OpenFec(API_KEY)
-    # response_json = openFec.get_committees(get_committees_payload)
-    response_generator = openFec.get_committees_paginator(get_committees_payload)
-    for response in response_generator:
-        response_json.append(response)
+    results_json = get_todays_committees()
 
     response = {
         'statusCode': 200,
-        'body': response_json
+        'body': results_json
     }
 
     return response

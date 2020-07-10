@@ -1,5 +1,10 @@
 SHELL := /bin/bash
 
+.phony: setup
+setup:
+	@echo make sure you've installed python3 and npm as explained in the README
+	bin/dev-setup.sh
+
 .phony: login
 login:
 	aws_okta_login advertisinganalytics-admin-okta
@@ -10,7 +15,7 @@ test:
 
 .phony: deploy
 deploy:
-	sls deploy
+	bin/deploy.sh
 
 .phony: run
 run:

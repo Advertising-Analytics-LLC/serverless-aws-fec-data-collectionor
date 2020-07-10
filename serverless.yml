@@ -9,7 +9,7 @@ frameworkVersion: ">=1.73.0 <2.0.0"
 # Custom variables
 custom:
   dev:
-    deploymentBucketName: serverless-deploymentbucket-us-east-648881544937
+    deploymentBucketName: serverless-deploymentbucket-us-east-1-648881544937
     API_KEY: /global/openfec-api/api_key
     SQS_QUEUE_NAME: committee-sync-queue
     LOG_LEVEL: DEBUG
@@ -37,6 +37,7 @@ package:
     - node_modules/**
     - package.json
     - package-lock.json
+    - prerequisite-cloudformation-resources.yml
     - README.md
     - requirements.txt
 

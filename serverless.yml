@@ -25,6 +25,13 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
     events:
       - schedule: cron(0 0,8,16 * * ? *)
+  CommitteLoader:
+    handler: src/CommitteLoader.committeLoader
+    environment:
+      API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
+    # events:
+    #   - schedule: cron(0 0,8,16 * * ? *)
 
 # packaging instructuions, and ignore list
 package:

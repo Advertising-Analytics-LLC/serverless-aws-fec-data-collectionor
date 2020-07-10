@@ -1,13 +1,13 @@
 # serverless.yml
-# see serverless.com/framework/docs/providers/aws/guide/serverless.yml/
+# see https://serverless.com/framework/docs/providers/aws/guide/serverless.yml/
+# attributes are alphabetized, except for identifiers/names which come first
+
 service: serverless-aws-python3-fec-datasync
 app: fec-datasync
 frameworkVersion: ">=1.73.0 <2.0.0"
-# org: advertisinganalytics
 
 # Custom variables
 custom:
-  # stage_vars: ${self:custom.${self:provider.stage}
   dev:
     deploymentBucketName: serverless-deploymentbucket-us-east-648881544937
     API_KEY: /global/openfec-api/api_key
@@ -16,14 +16,15 @@ custom:
 
 
 # The lambda function(s) defined in this serverless config
+# nested interpolation allows for stage-specific references
 functions:
   CommitteeSync:
     handler: src/CommitteSync.committeSync
-    events:
-      - schedule: cron(0 0,8,16 * * ? *)
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
+    events:
+      - schedule: cron(0 0,8,16 * * ? *)
 
 # packaging instructuions, and ignore list
 package:
@@ -46,17 +47,16 @@ plugins:
 # Cloud Provider config
 provider:
   name: aws
-  runtime: python3.7
   deploymentPrefix: ${self:service}
+  logRetentionInDays: 14
+  region: ${opt:region, 'us-east-1'}
+  runtime: python3.7
   stage: ${opt:stage,'dev'}
   deploymentBucket:
     blockPublicAccess: true
     maxPreviousDeploymentArtifacts: 10
     name: ${self:custom.${self:provider.stage}.deploymentBucketName}
     serverSideEncryption: AES256
-  tags:
-    serverless_managed: true
-    serverless_name: ${self:service}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -85,26 +85,15 @@ provider:
             - ":"
             - Ref: AWS::AccountId
             - ":${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}"
-
-# TODO: add deploymentbucket permissions?
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
+  tags:
+    serverless_managed: true
+    serverless_name: ${self:service}
 
 # TODO: add cfn role
 # see https://www.albertgao.xyz/2020/02/26/how-to-resolve-require-the-cfnrole-option-warning-for-serverless-framework/
 #  cfnRole: arn:aws:iam::XXXXXX:role/role
 
+# TODO: integrate serverless and cfn rsc deploys?
 # you can add CloudFormation resource templates here
 # resources:
 #  - ${file(cfn_resources/deploymentBucket.yml)}

@@ -69,9 +69,9 @@ provider:
     - Effect: Allow
       Action:
         - kms:Decrypt
+        - ssm:DescribeParameters
         - ssm:GetParameter
         - ssm:GetParameters
-        - ssm:DescribeParameters
       Resource:
         Fn::Join:
           - ""
@@ -82,9 +82,11 @@ provider:
             - ":parameter${self:custom.${self:provider.stage}.API_KEY}"
     - Effect: "Allow"
       Action:
-        - sqs:SendMessage
+        - sqs:DeleteMessage
         - sqs:GetQueueAttributes
         - sqs:GetQueueUrl
+        - sqs:ReceiveMessage
+        - sqs:SendMessage
       Resource:
         Fn::Join:
           - ""

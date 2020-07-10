@@ -29,18 +29,21 @@ logger.debug('hello world')
 
 # BUSYNESS LOGIC
 
-def pull_committee_ids_from_sqs() -> object:
-    """
+def pull_committee_id_from_sqs() -> str:
+    """pulls a committee id from SQS
 
     Returns:
-        object: [description]
+        str: committee_id
     """
     sqs = boto3.resource('sqs')
     queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
-    for message in queue.receive_messages():
-        # process msg
-        pass
-    pass
+    message = queue.receive_message()
+    if not message:
+        logger.warning('No messages recieved, exiting')
+        exit(0)
+    committee_id = message.body
+    logger.debug(f'Pulled committee ID {committee_id}')
+    return committee_id
 
 def committeLoader(event: dict, context: object) -> List[any]:
     """Gets committee IDs from SQS, pulls data from OpenFEC API, and pushes to RedShift
@@ -53,5 +56,5 @@ def committeLoader(event: dict, context: object) -> List[any]:
         json:
     """
     logger.debug(f'Running committeeLoader')
-    pull_committee_ids_from_sqs()
-    pass
+    committee_id = pull_committee_id_from_sqs()
+    return committee_ids

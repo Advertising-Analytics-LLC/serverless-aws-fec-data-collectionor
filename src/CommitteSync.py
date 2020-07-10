@@ -8,12 +8,10 @@ It should:
 """
 
 import boto3
-import datetime
 import json
 import logging
 import os
-import uuid
-import sys
+from datetime import datetime, timedelta
 from typing import List, Dict
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -40,7 +38,7 @@ def get_committees_since(isodate: str) -> json:
         isodate: date in isoformat YYYY-MM-DD
 
     Returns:
-        json: json list containing results
+        json: json list containing IDs
     """
     # only get those filed today
     get_committees_payload = {'min_last_f1_date': isodate}
@@ -51,7 +49,7 @@ def get_committees_since(isodate: str) -> json:
         results_json += response['results']
     return results_json
 
-def push_them_to_sqs(message_list: List[any]) -> object:
+def push_committee_id_to_sqs(message_list: List[any]) -> object:
     """Pushes a list of SendMessageBatchRequestEntry (messages) to
         see https://github.com/boto/botocore/blob/f1f0c6d2e445d7c3a3f8f355eaf6d692bbf3cd6a/botocore/data/sqs/2012-11-05/service-2.json#L1238
     Args:
@@ -62,14 +60,16 @@ def push_them_to_sqs(message_list: List[any]) -> object:
     """
     sqs = boto3.resource('sqs')
     queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
+    responses = []
     for msg in message_list:
         response = queue.send_message(
-            MessageBody=json.dumps(msg))
+            MessageBody=json.dumps(msg['committee_id']))
         logger.debug(response)
-    return response
+        responses.append(response)
+    return responses
 
-def committeSync(event, context):
-    """
+def committeSync(event: dict, context: object) -> List[any]:
+    """Gets committees who've filed in the last day and push their IDs to SQS
 
     Args:
         event (dict): json object containing headers and body of request
@@ -78,13 +78,12 @@ def committeSync(event, context):
     Returns:
         json:
     """
-    # todays_date = datetime.date.today().isoformat()
-    todays_date = '2020-07-01'
+    todays_date = datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d')
+    logger.debug(f'Running committeeSync with date: {todays_date}')
     results_json = get_committees_since(todays_date)
     if not results_json:
         logger.warning('no results')
         return {}
-    logger.debug(f'results_json\n{results_json}')
-    response = push_them_to_sqs(results_json)
+    response = push_committee_id_to_sqs(results_json)
     logging.debug(response)
     return response

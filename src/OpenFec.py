@@ -19,6 +19,12 @@ class OpenFec:
     """Lightweight wrapper over the openFEC api - https://api.open.fec.gov/developers/
     """
     def __init__(self, api_key: str, base_url='https://api.open.fec.gov/v1'):
+        """Create OpenFec api objects
+
+        Args:
+            api_key (str): get a key at https://api.data.gov/signup/
+            base_url (str, optional): OpenFEC base url. Defaults to 'https://api.open.fec.gov/v1'.
+        """
         self.api_key = api_key
         self.api_arg = '?api_key=' + api_key
         self.base_url = base_url
@@ -69,6 +75,7 @@ class OpenFec:
 
     def get_committees(self, payload: dict) -> json:
         """get response from committee API
+            https://api.open.fec.gov/developers/#/committee/get_committees_
 
         Args:
             payload (dict): request params object

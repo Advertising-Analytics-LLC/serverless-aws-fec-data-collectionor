@@ -46,6 +46,7 @@ class OpenFec:
             bool: is request OVER_RATE_LIMIT
         """
         if response.status_code == 429:
+            logger.info(response.to_json())
             return True
         return False
 
@@ -60,9 +61,10 @@ class OpenFec:
             Response: Reponse object
         """
         response = requests.get(url, params=payload)
+        logger.debug(response.json())
         if self._over_rate_limit(response):
             sleep(self.throttle)
-            response =self._get_request(url, payload)
+            response = self._get_request(url, payload)
         return response
 
     def get_committees(self, payload: dict) -> json:

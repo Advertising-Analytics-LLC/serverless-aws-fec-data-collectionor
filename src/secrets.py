@@ -4,12 +4,13 @@ Functions for getting secrets
 """
 
 import boto3
+import logging
 from typing import List, Dict, Union, Any
 
 
 JSONType = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 
-
+logger = logging.getLogger(__name__)
 session = boto3.Session()
 client = session.client('ssm')
 

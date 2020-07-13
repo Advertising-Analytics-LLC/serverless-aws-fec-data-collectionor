@@ -60,8 +60,6 @@ def get_committee_data(committee_id: str) -> json:
     response_generator = openFec.get_committee_by_id_paginator(committee_id)
     for response in response_generator:
         results_json += response['results']
-    logger.debug('results_json')
-    logger.debug(results_json)
     return results_json
 
 def transform_committee_data(committee_data: json):

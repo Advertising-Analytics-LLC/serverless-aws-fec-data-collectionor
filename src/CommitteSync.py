@@ -21,8 +21,6 @@ from src.serialization import serialize_dates
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
-if not API_KEY or not SQS_QUEUE_NAME:
-    logging.error('missing variable API_KEY or SQS QUEUE NAME')
 
 # LOGGING
 logger = logging.getLogger(__name__)

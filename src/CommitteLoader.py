@@ -1,7 +1,10 @@
 #!/bin/env python3
 """
 CommitteeLoader lambda:
-CommitteeLoader lambda that subscribes to topic, read committee IDs from queue, and loads data from the /committees/COMMITTEE_ID API
+- subscribes to topic,
+- read committee IDs from queue,
+- gets data from the /committees/COMMITTEE_ID API
+- writes data to redshift
 """
 
 import boto3
@@ -23,9 +26,6 @@ if not API_KEY or not SQS_QUEUE_NAME:
 
 # LOGGING
 logger = logging.getLogger(__name__)
-logger.setLevel(os.environ.get('LOG_LEVEL', logging.DEBUG))
-logger.debug('hello world')
-
 
 # BUSYNESS LOGIC
 
@@ -37,13 +37,38 @@ def pull_committee_id_from_sqs() -> str:
     """
     sqs = boto3.resource('sqs')
     queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
-    message = queue.receive_message()
+    message = queue.receive_messages(MaxNumberOfMessages=1)
     if not message:
         logger.warning('No messages recieved, exiting')
         exit(0)
-    committee_id = message.body
+    committee_id = message[0].body
     logger.debug(f'Pulled committee ID {committee_id}')
     return committee_id
+
+def get_committee_data(committee_id: str) -> json:
+    """Pulls the committee data from the openFEC API
+        https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
+
+    Args:
+        committee_id (str): ID of committee
+
+    Returns:
+        json: committee data
+    """
+    results_json = []
+    openFec = OpenFec(API_KEY)
+    response_generator = openFec.get_committee_by_id_paginator(committee_id)
+    for response in response_generator:
+        results_json += response['results']
+    logger.debug('results_json')
+    logger.debug(results_json)
+    return results_json
+
+def transform_committee_data(committee_data: json):
+    pass
+
+def write_committee_data(committee_data: json):
+    pass
 
 def committeLoader(event: dict, context: object) -> List[any]:
     """Gets committee IDs from SQS, pulls data from OpenFEC API, and pushes to RedShift
@@ -57,4 +82,5 @@ def committeLoader(event: dict, context: object) -> List[any]:
     """
     logger.debug(f'Running committeeLoader')
     committee_id = pull_committee_id_from_sqs()
-    return committee_ids
+    committee_data = get_committee_data(committee_id)
+    return committee_data

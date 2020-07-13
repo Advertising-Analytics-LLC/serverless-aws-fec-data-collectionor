@@ -67,6 +67,7 @@ class OpenFec:
             Response: Reponse object
         """
         response = requests.get(url, params=payload)
+        logger.debug(f'GET {url}')
         logger.debug(response.json())
         if self._over_rate_limit(response):
             sleep(self.throttle)
@@ -115,7 +116,7 @@ class OpenFec:
             next_page = self.get_committees(payload)
             yield next_page
 
-    def get_committee_by_id(self, committee_id: str, payload: dict):
+    def get_committee_by_id(self, committee_id: str, payload: dict) -> json:
         """gets committee info by committee_id
             see https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
 
@@ -123,13 +124,17 @@ class OpenFec:
             committee_id (str): A unique identifier assigned to each committee or filer registered with the FEC.
                                 In general committee id's begin with the letter C which is followed by eight digits.
             payload (dict): request params object
+
+        Returns:
+            json: response as json object, of type CommitteeDetailPage
         """
-        route = f'/committee/{committee_id}/'
+        committee_id_without_quotes = committee_id.replace('"', '')
+        route = f'/committee/{committee_id_without_quotes}/'
         url = self._get_route(route)
         response = self._get_request(url, payload)
         return response.json()
 
-    def get_committee_by_paginator(self, committee_id: str, payload: dict) -> Generator:
+    def get_committee_by_id_paginator(self, committee_id: str, payload={}) -> Generator:
         """paginator to get committee info by committee_id
             see https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
 

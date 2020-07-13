@@ -27,6 +27,7 @@ node_modules
 
 # local secrets
 .env
+tmp
 
 # editors
 .vscode

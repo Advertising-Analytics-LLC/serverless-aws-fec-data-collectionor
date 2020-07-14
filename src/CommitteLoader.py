@@ -11,6 +11,7 @@ import boto3
 import json
 import logging
 import os
+from src import JSONType
 from src.database import Database
 from datetime import datetime, timedelta
 from typing import List, Dict
@@ -44,7 +45,7 @@ def pull_committee_id_from_sqs() -> str:
     logger.debug(f'Pulled committee ID {committee_id}')
     return committee_id
 
-def get_committee_data(committee_id: str) -> json:
+def get_committee_data(committee_id: str) -> JSONType:
     """Pulls the committee data from the openFEC API
         https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
 
@@ -61,11 +62,11 @@ def get_committee_data(committee_id: str) -> json:
         results_json += response['results']
     return results_json
 
-def write_committee_data(committee_data: json):
+def write_committee_data(committee_data: JSONType):
     with Database() as db_obj:
         db_obj.write_committee_detail(committee_data)
 
-def committeLoader(event: dict, context: object) -> List[any]:
+def committeLoader(event: dict, context: object):
     """Gets committee IDs from SQS, pulls data from OpenFEC API, and pushes to RedShift
 
     Args:
@@ -75,8 +76,6 @@ def committeLoader(event: dict, context: object) -> List[any]:
     Returns:
         json:
     """
-    logger.debug(f'Running committeeLoader')
     committee_id = pull_committee_id_from_sqs()
     committee_data = get_committee_data(committee_id)
     write_committee_data(committee_data[0])
-    return committee_data

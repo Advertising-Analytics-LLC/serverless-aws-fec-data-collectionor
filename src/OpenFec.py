@@ -9,10 +9,12 @@ import json
 import requests
 import logging
 from requests import Response
+from src import JSONType
 from time import sleep
 from typing import Generator
 
 
+# logging
 logger = logging.getLogger(__name__)
 
 class OpenFec:
@@ -74,7 +76,7 @@ class OpenFec:
             response = self._get_request(url, payload)
         return response
 
-    def get_committees(self, payload: dict) -> json:
+    def get_committees(self, payload: dict) -> JSONType:
         """get response from committee API
             https://api.open.fec.gov/developers/#/committee/get_committees_
 
@@ -116,7 +118,7 @@ class OpenFec:
             next_page = self.get_committees(payload)
             yield next_page
 
-    def get_committee_by_id(self, committee_id: str, payload: dict) -> json:
+    def get_committee_by_id(self, committee_id: str, payload: dict) -> JSONType:
         """gets committee info by committee_id
             see https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
 

@@ -5,11 +5,10 @@ Database:
 """
 
 import logging
-from src.database_schema import CommitteeDetail, CommitteeCandidate
+import psycopg2
+from psycopg2 import sql
+from src import schema
 from src.secrets import get_param_value_by_name
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from typing import List, Tuple
 
 
 # logging
@@ -29,42 +28,29 @@ class Database:
         """creates connection to redshift database and performs operations
             Gets connection variables from SSM
         """
-        self._connection_string = f'postgresql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}'
-        self._engine = create_engine(self._connection_string)
-        Session = sessionmaker(bind=self._engine)
-        self._session = Session()
-
+        self.conn = psycopg2.connect(dbname=DATABASE, user=USERNAME, password=PASSWORD, host=HOSTNAME, port=PORT)
     def __enter__(self):
+        self.curr = self.conn.cursor()
         return self
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.curr.close()
+        self.conn.close()
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        self._session.close()
-
-    def _transform_committee_detail(self, committee_detail: any) -> CommitteeDetail:
-        """[summary]
-
-        Args:
-            committee_detail (any): [description]
-        """
+    def _transform_committee_detail(self, committee_detail: any):
         committee_id = committee_detail['committee_id']
-        # get canidate ids
         candidate_ids = committee_detail.pop('candidate_ids')
         for candidate_id in candidate_ids:
-            new_element = CommitteeCandidate(committee_id=committee_id, candidate_id=candidate_id)
-            ret = self._session.add(new_element)
+            query = schema.get_committeecandidates_insert_statement(committee_id, candidate_id)
+            self.curr.execute(query)
+            ret = self.curr.fetchone()
             logger.debug(ret)
 
-        ret = self._session.commit()
-        logger.debug(ret)
-        # date this update
+        # date this update - the database converts this to a timestamp
         committee_detail['last_updated'] = "'now'"
         # rename key
         committee_detail['committee_name'] = committee_detail.pop('name')
         # convert cycles list seperated by ~
         committee_detail['cycles'] = '~'.join(str(cycle) for cycle in committee_detail['cycles'])
-        # construct row object
-        committeeDetail = CommitteeDetail(**committee_detail)
-        return committeeDetail
 
     def write_committee_detail(self, committee_detail: any):
         """[summary]
@@ -74,11 +60,3 @@ class Database:
         """
         # try:
         committeeDetail = self._transform_committee_detail(committee_detail)
-
-        ret = self._session.add(committeeDetail)
-        logger.debug(ret)
-        ret = self._session.commit()
-        logger.debug(ret)
-        # except:
-            # logger.error(f'rolling back committee_id {committee_id}')
-            # self._session.rollback()

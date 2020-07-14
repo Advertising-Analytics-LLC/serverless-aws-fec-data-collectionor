@@ -1,5 +1,5 @@
 
-CREATE TABLE IF NOT EXISTS CommitteeCandidates (
+CREATE TABLE IF NOT EXISTS committeecandidates (
   committee_candidate_id INTEGER,
   committee_id VARCHAR(8),
   candidate_id VARCHAR(10),
@@ -12,7 +12,7 @@ COMMENT ON TABLE CommitteeCandidates is 'Linking table to connect CommitteeDetai
 -- Table structure for table CommitteeDetail generated from model 'CommitteeDetail'
 -- See https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
 --
-CREATE TABLE IF NOT EXISTS CommitteeDetail (
+CREATE TABLE IF NOT EXISTS committeedetail (
   committee_id VARCHAR(10) NOT NULL ,
   affiliated_committee_name VARCHAR(100) DEFAULT NULL ,
   -- LIST, in linked table

@@ -13,7 +13,7 @@ COMMENT ON TABLE CommitteeCandidates is 'Linking table to connect CommitteeDetai
 -- See https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
 --
 CREATE TABLE IF NOT EXISTS CommitteeDetail (
-  committee_id VARCHAR(8) NOT NULL ,
+  committee_id VARCHAR(10) NOT NULL ,
   affiliated_committee_name VARCHAR(100) DEFAULT NULL ,
   -- LIST, in linked table
   committee_candidate_id INTEGER DEFAULT NULL,

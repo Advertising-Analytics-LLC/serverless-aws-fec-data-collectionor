@@ -5,9 +5,11 @@ Database:
 """
 
 import logging
+from src.database_schema import CommitteeDetail, CommitteeCandidate
 from src.secrets import get_param_value_by_name
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from typing import List, Tuple
 
 
 # logging
@@ -47,6 +49,13 @@ class Database:
         committee_id = committee_detail['committee_id']
         # get canidate ids
         candidate_ids = committee_detail.pop('candidate_ids')
+        for candidate_id in candidate_ids:
+            new_element = CommitteeCandidate(committee_id=committee_id, candidate_id=candidate_id)
+            ret = self._session.add(new_element)
+            logger.debug(ret)
+
+        ret = self._session.commit()
+        logger.debug(ret)
         # date this update
         committee_detail['last_updated'] = "'now'"
         # rename key
@@ -65,6 +74,7 @@ class Database:
         """
         # try:
         committeeDetail = self._transform_committee_detail(committee_detail)
+
         ret = self._session.add(committeeDetail)
         logger.debug(ret)
         ret = self._session.commit()

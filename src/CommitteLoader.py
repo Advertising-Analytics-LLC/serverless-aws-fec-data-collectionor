@@ -77,6 +77,7 @@ def committeLoader(event: dict, context: object):
     Returns:
         json:
     """
+    logging.debug('committeeLoader called with event, context', event, context)
     time_to_end = time() + 60 * 10
     while time() < time_to_end:
         committee_id = pull_committee_id_from_sqs()

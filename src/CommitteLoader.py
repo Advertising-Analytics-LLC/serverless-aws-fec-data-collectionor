@@ -14,6 +14,7 @@ import os
 from src import JSONType
 from src.database import Database
 from datetime import datetime, timedelta
+from time import time
 from typing import List, Dict
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -38,6 +39,7 @@ def pull_committee_id_from_sqs() -> str:
     sqs = boto3.resource('sqs')
     queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
     message = queue.receive_messages(MaxNumberOfMessages=1)
+    logging.debug(message)
     if not message:
         logger.warning('No messages recieved, exiting')
         exit(0)
@@ -68,7 +70,7 @@ def write_committee_data(committee_data: JSONType):
 
 def committeLoader(event: dict, context: object):
     """Gets committee IDs from SQS, pulls data from OpenFEC API, and pushes to RedShift
-
+        and loops like that for ten minutes
     Args:
         event (dict): json object containing headers and body of request
         context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
@@ -76,6 +78,8 @@ def committeLoader(event: dict, context: object):
     Returns:
         json:
     """
-    committee_id = pull_committee_id_from_sqs()
-    committee_data = get_committee_data(committee_id)
-    write_committee_data(committee_data[0])
+    time_to_end = time() + 60 * 10
+    while time() < time_to_end:
+        committee_id = pull_committee_id_from_sqs()
+        committee_data = get_committee_data(committee_id)
+        write_committee_data(committee_data[0])

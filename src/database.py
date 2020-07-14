@@ -83,6 +83,5 @@ class Database:
         committeeDetail = self._transform_committee_detail(committee_detail)
         query = schema.get_committeedetail_insert_statement(**committeeDetail)
         logger.debug(query.as_string(self.curr))
-        ret = self.curr.execute(query)
-        logger.debug(ret)
+        self.curr.execute(query)
         self.conn.commit()

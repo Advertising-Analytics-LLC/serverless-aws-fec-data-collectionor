@@ -39,7 +39,6 @@ def pull_committee_id_from_sqs() -> str:
     sqs = boto3.resource('sqs')
     queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
     message = queue.receive_messages(MaxNumberOfMessages=1)
-    logger.debug(message)
     if not message:
         logger.warning('No messages recieved, exiting')
         exit(0)

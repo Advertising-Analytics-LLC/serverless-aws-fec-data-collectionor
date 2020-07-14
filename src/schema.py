@@ -170,5 +170,4 @@ VALUES ({affiliated_committee_name}, {city}, {committee_id}, {committee_name}, {
         website=Literal(parse_value(website)),
         zip=Literal(parse_value(zip)),
     )
-    logger.debug(query)
     return query

@@ -9,9 +9,10 @@ frameworkVersion: ">=1.73.0 <2.0.0"
 # Custom variables
 custom:
   dev:
-    deploymentBucketName: serverless-deploymentbucket-us-east-1-648881544937
+    deploymentBucketName: ${cf:fec-datasync-resources.DeploymentBucketName} #serverless-deploymentbucket-us-east-1-648881544937
     API_KEY: /global/openfec-api/api_key
-    SQS_QUEUE_NAME: committee-sync-queue
+    SQS_QUEUE_NAME: ${cf:fec-datasync-resources.QueueName}
+    SQS_QUEUE_ARN: ${cf:fec-datasync-resources.QueueARN}
     LOG_LEVEL: DEBUG
 
 
@@ -30,8 +31,8 @@ functions:
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
-    # events:
-    #   - schedule: cron(0 0,8,16 * * ? *)
+    events:
+      - sqs: "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
 
 # packaging instructuions, and ignore list
 package:

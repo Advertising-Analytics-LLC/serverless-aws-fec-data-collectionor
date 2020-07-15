@@ -57,11 +57,13 @@ def get_committee_data(committee_id: str) -> JSONType:
     Returns:
         json: committee data
     """
+
     results_json = []
     openFec = OpenFec(API_KEY)
     response_generator = openFec.get_committee_by_id_paginator(committee_id)
     for response in response_generator:
         results_json += response['results']
+
     return results_json
 
 def write_committee_data(committee_data: JSONType):
@@ -70,6 +72,7 @@ def write_committee_data(committee_data: JSONType):
     Args:
         committee_data (JSONType): CommitteeDetail object from OpenFEC API
     """
+
     with Database() as db_obj:
         db_obj.upsert_committeedetail(committee_data)
 

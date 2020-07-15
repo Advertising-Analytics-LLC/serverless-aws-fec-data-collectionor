@@ -148,6 +148,7 @@ class OpenFec:
         Yields:
             Generator: python Generator object to iteratate over get_committee_by_id
         """
+
         first_response = self.get_committee_by_id(committee_id, payload)
         yield first_response
         num_pages = first_response['pagination']['pages']

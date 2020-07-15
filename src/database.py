@@ -25,6 +25,7 @@ USERNAME = get_param_value_by_name('/global/fec-schema/username')
 class Database:
     """redshift wrapper to handle data serialization
     """
+
     def __init__(self):
         """creates connection to redshift database and performs operations
             Gets connection variables from SSM
@@ -38,6 +39,7 @@ class Database:
             self: returns itself
         """
         self.curr = self.conn.cursor()
+
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
@@ -48,6 +50,7 @@ class Database:
             exc_value ([type]): [description]
             exc_traceback ([type]): [description]
         """
+
         self.curr.close()
         self.conn.close()
 
@@ -80,6 +83,7 @@ class Database:
         Args:
             committee_detail (JSONType): CommitteeDetail object
         """
+
         committee_detail['last_updated'] = "'now'"
         committee_detail['committee_name'] = committee_detail.pop('name')
         committee_detail['cycles'] = '~'.join(str(cycle) for cycle in committee_detail['cycles'])
@@ -91,6 +95,7 @@ class Database:
         if value:
             logger.debug(f'existing committeecandidate record {value}')
             return True
+
         return False
 
     def upsert_committeecandidates(self, committee_id: str, candidate_ids: List[str]):
@@ -106,6 +111,7 @@ class Database:
         if value:
             logger.debug(f'existing committeedetail record {value}')
             return True
+
         return False
 
     def upsert_committeedetail(self, committee_detail: JSONType):

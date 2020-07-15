@@ -79,12 +79,11 @@ provider:
   iamRoleStatements:
     - Effect: Allow
       Action:
-        - kms:Decrypt
-        - ssm:DescribeParameters
         - ssm:GetParameter
         - ssm:GetParameters
+        - ssm:DescribeParameters
       Resource:
-        - Fn::Join:
+        Fn::Join:
           - ""
           - - "arn:aws:ssm:"
             - Ref: AWS::Region
@@ -116,6 +115,9 @@ provider:
   tags:
     serverless_managed: true
     serverless_name: ${self:service}
+    Owner: Rhythmic Engineering
+    Namespace: aws-AdvertisingAnalytics
+    Env: ${self:provider.stage}
 
 # TODO: add cfn role
 # see https://www.albertgao.xyz/2020/02/26/how-to-resolve-require-the-cfnrole-option-warning-for-serverless-framework/

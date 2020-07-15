@@ -4,7 +4,7 @@ import logging
 import os
 from typing import Dict, List, Union, Any
 
-log_level = os.environ.get('LOG_LEVEL', logging.DEBUG)
+log_level = os.environ.get('LOG_LEVEL', logging.INFO)
 logger = logging.getLogger(__name__)
 logger.setLevel(log_level)
 

@@ -66,8 +66,9 @@ class Database:
         try:
             value = self.curr.fetchone()
         except ProgrammingError as err:
-            logger.warning(f'Query had no results, message: {err}')
+            logger.info(f'Query had no results, message: {err}')
             return None
+
         return value
 
     def _transform_committee_detail(self, committee_detail: JSONType):

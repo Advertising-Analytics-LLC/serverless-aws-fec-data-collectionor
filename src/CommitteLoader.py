@@ -39,10 +39,12 @@ def pull_message_from_sqs() -> Dict[str, Any]:
     Returns:
         Any: SQS Message object
     """
+
     message = queue.receive_messages(MaxNumberOfMessages=1)
     if not message:
-        logger.warning('No messages recieved, exiting')
+        logger.info('No messages received, exiting')
         exit(0)
+
     return message[0]
 
 def get_committee_data(committee_id: str) -> JSONType:
@@ -81,10 +83,23 @@ def committeLoader(event: dict, context: object):
     Returns:
         json:
     """
-    time_to_end = time() + 60 * 10
+
+    start_time = time()
+    time_to_end = start_time + 60 * 10
+    logger.info(f'Running committeeLoader from now until {time_to_end}')
+
     while time() < time_to_end:
         message = pull_message_from_sqs()
         committee_id = message.body
         committee_data = get_committee_data(committee_id)
+
+        if not committee_data:
+            logger.error(f'Committee {committee_id} not found! exiting.')
+            exit(1)
+
         write_committee_data(committee_data[0])
         message.delete()
+
+    if time() > time_to_end:
+        minutes_ran = (time() - start_time) / 60
+        logger.warn(f'committeeLoader ended late at {minutes_ran} ')

@@ -21,11 +21,11 @@ from src.serialization import serialize_dates
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
+MIN_LAST_F1_DATE = os.getenv('MIN_LAST_F1_DATE', datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d'))
 
 # LOGGING
 logger = logging.getLogger(__name__)
-logger.setLevel(os.environ.get('LOG_LEVEL', logging.DEBUG))
-logger.debug('hello world')
+logger.setLevel(os.environ.get('LOG_LEVEL', logging.INFO))
 
 
 # BUSYNESS LOGIC
@@ -76,9 +76,9 @@ def committeSync(event: dict, context: object) -> List[any]:
     Returns:
         json:
     """
-    todays_date = datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d')
-    logger.debug(f'Running committeeSync with date: {todays_date}')
-    results_json = get_committees_since(todays_date)
+
+    logger.info(f'Running committeeSync with date: {MIN_LAST_F1_DATE}')
+    results_json = get_committees_since(MIN_LAST_F1_DATE)
     if not results_json:
         logger.warning('no results')
         return {}

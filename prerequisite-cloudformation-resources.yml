@@ -49,6 +49,9 @@ Outputs:
   QueueName:
     Description: The name of the Queue
     Value: !GetAtt CommitteeSyncQueue.QueueName
+  QueueARN:
+    Description: The name of the Queue
+    Value: !GetAtt CommitteeSyncQueue.Arn
   DeploymentBucketName:
     Description: Name of Bucket
     Value: !Ref DeploymentBucket

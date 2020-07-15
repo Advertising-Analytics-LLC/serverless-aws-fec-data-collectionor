@@ -9,10 +9,12 @@ import json
 import requests
 import logging
 from requests import Response
+from src import JSONType
 from time import sleep
 from typing import Generator
 
 
+# logging
 logger = logging.getLogger(__name__)
 
 class OpenFec:
@@ -67,13 +69,14 @@ class OpenFec:
             Response: Reponse object
         """
         response = requests.get(url, params=payload)
+        logger.debug(f'GET {url}')
         logger.debug(response.json())
         if self._over_rate_limit(response):
             sleep(self.throttle)
             response = self._get_request(url, payload)
         return response
 
-    def get_committees(self, payload: dict) -> json:
+    def get_committees(self, payload: dict) -> JSONType:
         """get response from committee API
             https://api.open.fec.gov/developers/#/committee/get_committees_
 
@@ -113,4 +116,43 @@ class OpenFec:
         for page in range(2, num_pages + 1):
             payload['page'] = page
             next_page = self.get_committees(payload)
+            yield next_page
+
+    def get_committee_by_id(self, committee_id: str, payload: dict) -> JSONType:
+        """gets committee info by committee_id
+            see https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
+
+        Args:
+            committee_id (str): A unique identifier assigned to each committee or filer registered with the FEC.
+                                In general committee id's begin with the letter C which is followed by eight digits.
+            payload (dict): request params object
+
+        Returns:
+            json: response as json object, of type CommitteeDetailPage
+        """
+        committee_id_without_quotes = committee_id.replace('"', '')
+        route = f'/committee/{committee_id_without_quotes}/'
+        url = self._get_route(route)
+        response = self._get_request(url, payload)
+        return response.json()
+
+    def get_committee_by_id_paginator(self, committee_id: str, payload={}) -> Generator:
+        """paginator to get committee info by committee_id
+            see https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
+
+        Args:
+            committee_id (str): A unique identifier assigned to each committee or filer registered with the FEC.
+                                In general committee id's begin with the letter C which is followed by eight digits.
+            payload (dict): request params object
+
+        Yields:
+            Generator: python Generator object to iteratate over get_committee_by_id
+        """
+
+        first_response = self.get_committee_by_id(committee_id, payload)
+        yield first_response
+        num_pages = first_response['pagination']['pages']
+        for page in range(2, num_pages + 1):
+            payload['page'] = page
+            next_page = self.get_committees(committee_id, payload)
             yield next_page

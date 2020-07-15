@@ -38,7 +38,6 @@ def get_committees_since(isodate: str) -> json:
     Returns:
         json: json list containing IDs
     """
-
     # only get those filed today
     get_committees_payload = {'min_last_f1_date': isodate}
     results_json = []
@@ -57,7 +56,6 @@ def push_committee_id_to_sqs(message_list: List[any]) -> object:
     Returns:
         object: [description]
     """
-
     sqs = boto3.resource('sqs')
     queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
     responses = []

@@ -11,11 +11,12 @@ custom:
   pythonRequirements:
     dockerizePip: false
   dev:
-    deploymentBucketName: ${cf:fec-datasync-resources.DeploymentBucketName} #serverless-deploymentbucket-us-east-1-648881544937
     API_KEY: /global/openfec-api/api_key
-    SQS_QUEUE_NAME: ${cf:fec-datasync-resources.QueueName}
-    SQS_QUEUE_ARN: ${cf:fec-datasync-resources.QueueARN}
+    deploymentBucketName: ${cf:fec-datasync-resources.DeploymentBucketName} #serverless-deploymentbucket-us-east-1-648881544937
     LOG_LEVEL: DEBUG
+    rss_sns_topic_arn: ${cf:fec-datasync-resources.RSSFeedTopicArn}
+    SQS_QUEUE_NAME: ${cf:fec-datasync-resources.CommitteeSyncQueueName}
+    SQS_QUEUE_ARN: ${cf:fec-datasync-resources.CommitteeSyncQueueArn}
 
 
 # The lambda function(s) defined in this serverless config
@@ -35,6 +36,12 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
     events:
       - sqs: "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
+  RSSSubscriber:
+    environment:
+      RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
+    events:
+      - schedule: cron(0 0,8,16 * * ? *)
+    handler: src/RSSSubscriber.lambdaHandler
 
 # packaging instructuions, and ignore list
 package:

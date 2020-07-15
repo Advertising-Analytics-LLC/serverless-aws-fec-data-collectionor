@@ -1,3 +1,3 @@
 boto3>=1.14.18
 botocore>=1.17.18
-openfec-sdk>=0.0.2
+requests>=2.24.0

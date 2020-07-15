@@ -2,12 +2,16 @@
 Reference serverless project
 
 ## About
-This is a reference serverless project that does a few simple things:
-- Gets an API key from SSM
-- Uses key to call OpenFEC API `/dates/election-dates`
-- Pulls the most recent general election
+All the serverless functions in this module do a few things:
+- Gets values from SSM
+- Use them to call the openFEC API
+- Push that data to a queue or database
+- Do so on a schedule powered by CloudWatch Events
 
-it does this on a schedule powered by CloudWatch Events
+### Committee Sync
+Iterates on /committees API and publishes committee IDs to a queue thing.
+It should read the last filing date scanned parameter
+and query for only committees updated in the 24 hours prior (just to make sure we don't miss anything)
 
 ## Getting started
 

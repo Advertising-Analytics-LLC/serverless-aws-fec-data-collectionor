@@ -1,28 +1,45 @@
 # serverless.yml
-# see serverless.com/framework/docs/providers/aws/guide/serverless.yml/
-service: serverless-aws-python3-openfec-starter
-app: my-first-app
+# see https://serverless.com/framework/docs/providers/aws/guide/serverless.yml/
+# attributes are alphabetized, except for identifiers/names which come first
+
+service: serverless-aws-python3-fec-datasync
+app: fec-datasync
 frameworkVersion: ">=1.73.0 <2.0.0"
-org: sblack4
 
 # Custom variables
 custom:
   dev:
-    deploymentBucketName: sls-deploymentbucket-app-dev-us-east-1-784384215106
+    deploymentBucketName: serverless-deploymentbucket-us-east-1-648881544937
+    API_KEY: /global/openfec-api/api_key
+    SQS_QUEUE_NAME: committee-sync-queue
+    LOG_LEVEL: DEBUG
+
 
 # The lambda function(s) defined in this serverless config
+# nested interpolation allows for stage-specific references
 functions:
-  hello:
-    handler: src/handler.hello
+  CommitteeSync:
+    handler: src/CommitteSync.committeSync
+    environment:
+      API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
     events:
       - schedule: cron(0 0,8,16 * * ? *)
 
-# When packaging lambda do this
+# packaging instructuions, and ignore list
 package:
   exclude:
+    - .env
+    - .venv
+    - .vscode
+    - .git/**
+    - .gitignore
+    - node_modules/**
+    - package.json
+    - package-lock.json
+    - prerequisite-cloudformation-resources.yml
     - README.md
     - requirements.txt
-    - .git/**
 
 # plugin to package dependencies
 plugins:
@@ -31,55 +48,56 @@ plugins:
 # Cloud Provider config
 provider:
   name: aws
-  runtime: python3.7
   deploymentPrefix: ${self:service}
+  logRetentionInDays: 14
+  region: ${opt:region, 'us-east-1'}
+  runtime: python3.7
   stage: ${opt:stage,'dev'}
   deploymentBucket:
     blockPublicAccess: true
     maxPreviousDeploymentArtifacts: 10
     name: ${self:custom.${self:provider.stage}.deploymentBucketName}
     serverSideEncryption: AES256
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - ssm:GetParameter
+        - ssm:GetParameters
+        - ssm:DescribeParameters
+      Resource:
+        Fn::Join:
+          - ""
+          - - "arn:aws:ssm:"
+            - Ref: AWS::Region
+            - ":"
+            - Ref: AWS::AccountId
+            - ":parameter${self:custom.${self:provider.stage}.API_KEY}"
+    - Effect: "Allow"
+      Action:
+        - sqs:SendMessage
+        - sqs:GetQueueAttributes
+        - sqs:GetQueueUrl
+      Resource:
+        Fn::Join:
+          - ""
+          - - "arn:aws:sqs:"
+            - Ref: AWS::Region
+            - ":"
+            - Ref: AWS::AccountId
+            - ":${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}"
   tags:
     serverless_managed: true
     serverless_name: ${self:service}
-
-# TODO: function-specific IAM roles
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "kms:Decrypt"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:kms:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "ssm:GetParameters"
-
-# TODO: add deploymentbucket permissions?
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
+    Owner: Rhythmic Engineering
+    Namespace: aws-AdvertisingAnalytics
+    Env: ${self:provider.stage}
 
 # TODO: add cfn role
 # see https://www.albertgao.xyz/2020/02/26/how-to-resolve-require-the-cfnrole-option-warning-for-serverless-framework/
 #  cfnRole: arn:aws:iam::XXXXXX:role/role
 
+# TODO: integrate serverless and cfn rsc deploys?
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+# resources:
+#  - ${file(cfn_resources/deploymentBucket.yml)}
+#  - ${file(cfn_resources/sqsQueue.yml)}

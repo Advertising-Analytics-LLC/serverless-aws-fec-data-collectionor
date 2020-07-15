@@ -66,7 +66,7 @@ class Database:
         try:
             value = self.curr.fetchone()
         except ProgrammingError as err:
-            logger.warning(err)
+            logger.warning(f'Query had no results, message: {err}')
             return None
         return value
 

@@ -15,7 +15,7 @@ from src import JSONType
 from src.database import Database
 from datetime import datetime, timedelta
 from time import time
-from typing import List, Dict
+from typing import List, Dict, Any
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.serialization import serialize_dates
@@ -29,22 +29,21 @@ SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
 logger = logging.getLogger(__name__)
 
 # BUSYNESS LOGIC
+sqs = boto3.resource('sqs')
+queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
 
-def pull_committee_id_from_sqs() -> str:
+def pull_message_from_sqs() -> Dict[str, Any]:
     """pulls a committee id from SQS
+    see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs.html#SQS.Client.receive_message
 
     Returns:
-        str: committee_id
+        Any: SQS Message object
     """
-    sqs = boto3.resource('sqs')
-    queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
     message = queue.receive_messages(MaxNumberOfMessages=1)
     if not message:
         logger.warning('No messages recieved, exiting')
         exit(0)
-    committee_id = message[0].body
-    logger.debug(f'Pulled committee ID {committee_id}')
-    return committee_id
+    return message[0]
 
 def get_committee_data(committee_id: str) -> JSONType:
     """Pulls the committee data from the openFEC API
@@ -64,6 +63,11 @@ def get_committee_data(committee_id: str) -> JSONType:
     return results_json
 
 def write_committee_data(committee_data: JSONType):
+    """opens DB contextmanager and upserts committee data
+
+    Args:
+        committee_data (JSONType): CommitteeDetail object from OpenFEC API
+    """
     with Database() as db_obj:
         db_obj.upsert_committeedetail(committee_data)
 
@@ -79,6 +83,8 @@ def committeLoader(event: dict, context: object):
     """
     time_to_end = time() + 60 * 10
     while time() < time_to_end:
-        committee_id = pull_committee_id_from_sqs()
+        message = pull_message_from_sqs()
+        committee_id = message.body
         committee_data = get_committee_data(committee_id)
         write_committee_data(committee_data[0])
+        message.delete()

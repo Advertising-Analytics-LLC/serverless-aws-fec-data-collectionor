@@ -65,7 +65,7 @@ def get_committee_data(committee_id: str) -> JSONType:
 
 def write_committee_data(committee_data: JSONType):
     with Database() as db_obj:
-        db_obj.write_committee_detail(committee_data)
+        db_obj.upsert_committeedetail(committee_data)
 
 def committeLoader(event: dict, context: object):
     """Gets committee IDs from SQS, pulls data from OpenFEC API, and pushes to RedShift

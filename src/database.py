@@ -63,13 +63,13 @@ class Database:
         Returns:
             Any: result or None
         """
-        logger.debug(f'Executing query {query}')
+        logger.debug(f'Executing query {query.as_string(self.curr)}')
         self.curr.execute(query)
         try:
             value = self.curr.fetchall()
         except ProgrammingError as err:
             logger.info(f'Query had no results, message: {err}')
-            return Value
+            return None
 
         return value
 

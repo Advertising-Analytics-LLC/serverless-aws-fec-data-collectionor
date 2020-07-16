@@ -40,12 +40,15 @@ def pull_message_from_sqs() -> Dict[str, Any]:
         Any: SQS Message object
     """
 
-    message = queue.receive_messages(MaxNumberOfMessages=1)
-    if not message:
-        logger.info('No messages received, exiting')
-        return {}
+    start_time = time()
+    time_to_end = start_time + 10
+    while time() < time_to_end:
+        message = queue.receive_messages(MaxNumberOfMessages=1)
+        if message:
+            return message[0]
+    logger.info('No messages received, exiting')
+    return {}
 
-    return message[0]
 
 def get_committee_data(committee_id: str) -> JSONType:
     """Pulls the committee data from the openFEC API

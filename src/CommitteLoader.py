@@ -76,7 +76,7 @@ def write_committee_data(committee_data: JSONType):
     with Database() as db_obj:
         db_obj.upsert_committeedetail(committee_data)
 
-def committeLoader(event: dict, context: object):
+def committeLoader(event: dict, context: object) -> bool:
     """Gets committee IDs from SQS, pulls data from OpenFEC API, and pushes to RedShift
         and loops like that for ten minutes
     Args:
@@ -98,7 +98,7 @@ def committeLoader(event: dict, context: object):
 
         if not committee_data:
             logger.error(f'Committee {committee_id} not found! exiting.')
-            exit(1)
+            return False
 
         write_committee_data(committee_data[0])
         message.delete()
@@ -106,3 +106,5 @@ def committeLoader(event: dict, context: object):
     if time() > time_to_end:
         minutes_ran = (time() - start_time) / 60
         logger.warn(f'committeeLoader ended late at {minutes_ran} ')
+
+    return True

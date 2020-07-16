@@ -11,10 +11,6 @@ help:
 	@echo 'pick a target to run. see Makefile:'
 	cat Makefile
 
-.phony: login
-login:
-	aws_okta_login advertisinganalytics-admin-okta
-
 .phony: run-sync
 run-sync:
 	sls invoke -f CommitteeSync

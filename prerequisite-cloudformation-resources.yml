@@ -1,12 +1,32 @@
 Description: Prerequisite AWS Resources for FEC Data-sync serverless functions
+
+Parameters:
+Version:
+    Description: Code verison, see bin/deploy.sh
+    Type: String
+  DeploymentBucketName:
+    Default: serverless-deploymentbucket
+    Type: String
+  CommitteeSyncQueueName:
+    Default: committee-sync-queue
+    Type: String
+  NewFilingQueueName:
+    Default: fec-new-filing-queue
+    Type: String
+  RSSFeedTopicName:
+    Default: fec-new-filing
+    Type: String
+
 Resources:
+
   DeploymentBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName:
        "Fn::Join":
          - ""
-         - - "serverless-deploymentbucket-"
+         - - Ref: DeploymentBucketName
+           - "-"
            - Ref: "AWS::Region"
            - "-"
            - Ref: "AWS::AccountId"
@@ -18,7 +38,8 @@ Resources:
       - Key: created_by
         Value: sblack@rhythmictech.com
       - Key: Name
-        Value: serverless-deployment-bucket
+        Value:
+          Ref: DeploymentBucketName
       BucketEncryption:
          ServerSideEncryptionConfiguration:
          - ServerSideEncryptionByDefault:
@@ -34,7 +55,7 @@ Resources:
   CommitteeSyncQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: committee-sync-queue
+      QueueName: !Ref CommitteeSyncQueueName
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -43,15 +64,68 @@ Resources:
       - Key: created_by
         Value: sblack@rhythmictech.com
       - Key: Name
-        Value: committee-sync-queue
+        Value: !Ref CommitteeSyncQueueName
+
+  NewFilingQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref NewFilingQueueName
+      Tags:
+      - Key: managed_by
+        Value: CloudFormation
+      - Key: Project
+        Value: FEC Data-sync
+      - Key: created_by
+        Value: sblack@rhythmictech.com
+      - Key: Name
+        Value: !Ref NewFilingQueueName
+      - Key: Version
+        Value: !Ref Versoin
+
+  RSSFeedTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: !Ref RSSFeedTopicName
+      Subscription:
+        - Endpoint: !GetAtt NewFilingQueue.Arn
+          Protocol: "sqs"
+      Tags:
+      - Key: managed_by
+        Value: CloudFormation
+      - Key: Project
+        Value: FEC Data-sync
+      - Key: created_by
+        Value: sblack@rhythmictech.com
+      - Key: Name
+        Value: !Ref RSSFeedTopicName
+
 
 Outputs:
-  QueueName:
-    Description: The name of the Queue
-    Value: !GetAtt CommitteeSyncQueue.QueueName
-  QueueARN:
-    Description: The name of the Queue
+
+  CommitteeSyncQueueArn:
+    Description: The Arn of the Queue for committees that just filed
     Value: !GetAtt CommitteeSyncQueue.Arn
+
+  CommitteeSyncQueueName:
+    Description: The name of the Queue for committees that just filed
+    Value: !GetAtt CommitteeSyncQueue.QueueName
+
   DeploymentBucketName:
-    Description: Name of Bucket
+    Description: Name of Bucket which Serverless CloudFormation is deployed to
     Value: !Ref DeploymentBucket
+
+  NewFilingQueueArn:
+    Description: Arn of Queue for new new RSS filings
+    Value: !GetAtt NewFilingQueue.Arn
+
+  NewFilingQueueName:
+    Description: Name of Queue for new new RSS filings
+    Value: !GetAtt NewFilingQueue.QueueName
+
+  RSSFeedTopicArn:
+    Description: Arn of SNS Topic for new new RSS filings
+    Value: !Ref RSSFeedTopic
+
+  Version:
+    Description: see bin/deploy.sh
+    Value: !Ref Version

@@ -89,6 +89,18 @@ class Database:
         return committee_detail
 
     def committeecandidates_exists(self, committee_id: str, candidate_id: str) -> bool:
+        """checks database for existing row
+            in redshift the application must keep track of uniqueness.
+            redshift does not honor uniqueness constraint
+            see https://docs.aws.amazon.com/redshift/latest/dg/t_Defining_constraints.html
+
+        Args:
+            committee_id (str): [description]
+            candidate_id (str): [description]
+
+        Returns:
+            bool: [description]
+        """
         query = schema.get_candidatecommittee_by_id(committee_id, candidate_id)
         value = self._query(query)
         if value:

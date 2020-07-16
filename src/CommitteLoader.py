@@ -43,7 +43,7 @@ def pull_message_from_sqs() -> Dict[str, Any]:
     message = queue.receive_messages(MaxNumberOfMessages=1)
     if not message:
         logger.info('No messages received, exiting')
-        exit(0)
+        return {}
 
     return message[0]
 
@@ -93,6 +93,8 @@ def committeLoader(event: dict, context: object) -> bool:
 
     while time() < time_to_end:
         message = pull_message_from_sqs()
+        if not message:
+            return
         committee_id = message.body
         committee_data = get_committee_data(committee_id)
 

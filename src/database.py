@@ -66,14 +66,14 @@ class Database:
         logger.debug(f'Executing query {query}')
         self.curr.execute(query)
         try:
-            value = self.curr.fetchone()
+            value = self.curr.fetchall()
         except ProgrammingError as err:
             logger.info(f'Query had no results, message: {err}')
-            return None
+            return Value
 
         return value
 
-    def _transform_committee_detail(self, committee_detail: JSONType):
+    def _transform_committee_detail(self, committee_detail: JSONType) -> JSONType:
         """handles transformation of CommitteeDetail object:
             - date this update - the database converts 'now' to a timestamp
             - rename name -> committee_name

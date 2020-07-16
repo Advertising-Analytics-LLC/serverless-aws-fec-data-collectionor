@@ -129,7 +129,9 @@ class Database:
         committee_id = committee_detail['committee_id']
         candidate_ids = committee_detail.pop('candidate_ids')
         committeeDetail = self._transform_committee_detail(committee_detail)
-        if self.committeedetail_exists(committee_id):
+        committee_exists = self.committeedetail_exists(committee_id)
+        self.conn.commit()
+        if committee_exists:
             query = schema.get_committeedetail_update_statement(**committeeDetail)
         else:
             query = schema.get_committeedetail_insert_statement(**committeeDetail)

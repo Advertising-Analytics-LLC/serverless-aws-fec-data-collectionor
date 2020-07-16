@@ -18,7 +18,7 @@ aws cloudformation deploy \
     --parameter-overrides 'Version='"${version_tag}" \
     --template-file prerequisite-cloudformation-resources.yml
 
-echo 'the serverless.yml should be updated with these values'
+echo 'CloudFormation outputs'
 aws cloudformation describe-stacks --stack-name fec-datasync-resources | jq '.Stacks[0].Outputs'
 
 echo 'deploying serverless function'

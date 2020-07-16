@@ -63,7 +63,7 @@ class Database:
         Returns:
             Any: result or None
         """
-        logger.debug(f'Executing query {query.as_string(self.curr)}')
+        logger.debug(f'Executing query {query}')
         self.curr.execute(query)
         try:
             value = self.curr.fetchall()
@@ -101,7 +101,7 @@ class Database:
         Returns:
             bool: [description]
         """
-        query = schema.get_candidatecommittee_by_id(committee_id, candidate_id)
+        query = schema.get_committeecandidates_by_id(committee_id, candidate_id)
         value = self._query(query)
         if value:
             logger.debug(f'existing committeecandidate record {value}')
@@ -109,14 +109,15 @@ class Database:
 
         return False
 
-    def upsert_committeecandidates(self, committee_id: str, candidate_ids: List[str]):
-        for candidate_id in candidate_ids:
-            if self.candidatecommittee_exists(committee_id, candidate_id):
-                continue
-            query = schema.get_committeecandidates_insert_statement(committee_id, candidate_id)
-            self._query(query)
-
     def committeedetail_exists(self, committee_id: str) -> bool:
+        """queries for ComitteeDetail record by unique primary key
+
+        Args:
+            committee_id (str): table unique primary key
+
+        Returns:
+            bool: True if it exsts, else false
+        """
         query = schema.get_committeedetail_by_id(committee_id)
         value = self._query(query)
         if value:
@@ -125,13 +126,43 @@ class Database:
 
         return False
 
+    def upsert_committeecandidate(self, committee_id: str, candidate_id:str):
+        """upsert single candidate
+
+        Args:
+            committee_id (str):
+            candidate_id (str):
+        """
+        if self.committeecandidates_exists(committee_id, candidate_id):
+            return
+        query = schema.get_committeecandidates_insert_statement(committee_id, candidate_id)
+        self._query(query)
+
+    def upsert_committeecandidates(self, committee_id: str, candidate_ids: List[str]):
+        """upsert list of candidateids
+
+        Args:
+            committee_id (str): [description]
+            candidate_ids (List[str]): [description]
+        """
+        for candidate_id in candidate_ids:
+            self.upsert_committeecandidate(committee_id, candidate_id)
+
     def upsert_committeedetail(self, committee_detail: JSONType):
+        """upserts CommitteeDetail record
+
+        Args:
+            committee_detail (JSONType): CommitteeDetail record As json or dict
+        """
         committee_id = committee_detail['committee_id']
         candidate_ids = committee_detail.pop('candidate_ids')
+        self.upsert_committeecandidates(committee_id, candidate_ids)
+
         committeeDetail = self._transform_committee_detail(committee_detail)
-        committee_exists = self.committeedetail_exists(committee_id)
+        committeedetail_exists = self.committeedetail_exists(committee_id)
         self.conn.commit()
-        if committee_exists:
+
+        if committeedetail_exists:
             query = schema.get_committeedetail_update_statement(**committeeDetail)
         else:
             query = schema.get_committeedetail_insert_statement(**committeeDetail)

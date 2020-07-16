@@ -45,18 +45,17 @@ def test_database_for_duplicate_committeedetail():
         query_results = db_obj._query(max_num_dups_query)
     assert query_results[0][0] == expected_query_result
 
-# error: currently there are no entries...
-# def test_database_for_duplicate_committeecandidates():
-#     query = '''
-# SELECT count(*)
-# from committeecandidates
-# group by committee_id, candidate_id
-# order by count(*) desc
-# limit 1;
-# '''
-#     expected_query_result = 1
-#     with Database() as db_obj:
-#         query_results = db_obj._query(hello_world_query)
-#         assert query_results[0] == expected_query_result
-#         return
-#     assert False
+def test_database_for_duplicate_committeecandidates():
+    query = '''
+SELECT count(*)
+from fec.committeecandidates
+group by committee_id, candidate_id
+order by count(*) desc
+limit 1;
+'''
+    expected_query_result = 1
+    with Database() as db_obj:
+        query_results = db_obj._query(query)
+        assert query_results[0][0] == expected_query_result
+        return
+    assert False

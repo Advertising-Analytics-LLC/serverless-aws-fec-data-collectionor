@@ -1,6 +1,11 @@
 Description: Prerequisite AWS Resources for FEC Data-sync serverless functions
 
 Parameters:
+  Version:
+    Default: v0.0.1
+    Description: Code verison, see bin/deploy.sh
+    Type: String
+
   DeploymentBucketName:
     Default: serverless-deploymentbucket
     Type: String
@@ -37,6 +42,9 @@ Resources:
       - Key: Name
         Value:
           Ref: DeploymentBucketName
+      - Key: Version
+        Value: !Ref Version
+
       BucketEncryption:
          ServerSideEncryptionConfiguration:
          - ServerSideEncryptionByDefault:
@@ -62,6 +70,8 @@ Resources:
         Value: sblack@rhythmictech.com
       - Key: Name
         Value: !Ref CommitteeSyncQueueName
+      - Key: Version
+        Value: !Ref Version
 
   NewFilingQueue:
     Type: AWS::SQS::Queue
@@ -76,6 +86,8 @@ Resources:
         Value: sblack@rhythmictech.com
       - Key: Name
         Value: !Ref NewFilingQueueName
+      - Key: Version
+        Value: !Ref Version
 
   RSSFeedTopic:
     Type: AWS::SNS::Topic
@@ -93,6 +105,9 @@ Resources:
         Value: sblack@rhythmictech.com
       - Key: Name
         Value: !Ref RSSFeedTopicName
+      - Key: Version
+        Value: !Ref Version
+
 
 
 Outputs:
@@ -120,3 +135,8 @@ Outputs:
   RSSFeedTopicArn:
     Description: Arn of SNS Topic for new new RSS filings
     Value: !Ref RSSFeedTopic
+
+  Version:
+    Description: see bin/deploy.sh
+    Value: !Ref Version
+

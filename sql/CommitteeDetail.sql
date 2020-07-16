@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS committeedetail (
   leadership_pac VARCHAR(MAX) DEFAULT NULL,
   lobbyist_registrant_pac VARCHAR(MAX) DEFAULT NULL,
   -- renamed from name to avoid collision
-  committee_name VARCHAR(MAX) DEFAULT NOT NULL,
+  committee_name VARCHAR(MAX) NOT NULL,
   organization_type VARCHAR(MAX) DEFAULT NULL,
   organization_type_full VARCHAR(MAX) DEFAULT NULL,
   party VARCHAR(MAX) DEFAULT NULL,
@@ -76,5 +76,6 @@ CREATE TABLE IF NOT EXISTS committeedetail (
   treasurer_zip VARCHAR(MAX) DEFAULT NULL,
   website VARCHAR(MAX) DEFAULT NULL,
   zip VARCHAR(MAX) DEFAULT NULL,
-  primary key(committee_id)
+  primary key(committee_id),
+  unique(committee_id)
 ) DISTSTYLE AUTO;

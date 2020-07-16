@@ -42,6 +42,7 @@ functions:
   RSSSubscriber:
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+
       RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
     events:
       - schedule: cron(0 0,8,16 * * ? *)

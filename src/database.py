@@ -50,6 +50,7 @@ class Database:
             exc_value ([type]): [description]
             exc_traceback ([type]): [description]
         """
+
         self.curr.close()
         self.conn.close()
 

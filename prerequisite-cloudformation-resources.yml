@@ -5,6 +5,7 @@ Parameters:
     Default: v0.0.1
     Description: Code verison, see bin/deploy.sh
     Type: String
+
   DeploymentBucketName:
     Default: serverless-deploymentbucket
     Type: String
@@ -43,6 +44,7 @@ Resources:
           Ref: DeploymentBucketName
       - Key: Version
         Value: !Ref Version
+
       BucketEncryption:
          ServerSideEncryptionConfiguration:
          - ServerSideEncryptionByDefault:
@@ -107,6 +109,7 @@ Resources:
         Value: !Ref Version
 
 
+
 Outputs:
 
   CommitteeSyncQueueArn:
@@ -136,3 +139,4 @@ Outputs:
   Version:
     Description: see bin/deploy.sh
     Value: !Ref Version
+

@@ -119,7 +119,7 @@ provider:
     Owner: Rhythmic Engineering
     Namespace: aws-AdvertisingAnalytics
     Env: ${self:provider.stage}
-    git_description: ${opt:Version}
+    git_description: ${self:custom.Version}
 
 # TODO: add cfn role
 # see https://www.albertgao.xyz/2020/02/26/how-to-resolve-require-the-cfnrole-option-warning-for-serverless-framework/

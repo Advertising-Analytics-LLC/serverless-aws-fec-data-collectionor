@@ -9,13 +9,13 @@ CommitteeLoader lambda:
 
 import boto3
 import json
-import logging
 import os
 from src import JSONType
 from src.database import Database
 from datetime import datetime, timedelta
 from time import time
 from typing import List, Dict, Any
+from src import logger
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.serialization import serialize_dates
@@ -24,9 +24,6 @@ from src.serialization import serialize_dates
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
-
-# LOGGING
-logger = logging.getLogger(__name__)
 
 # BUSYNESS LOGIC
 sqs = boto3.resource('sqs')

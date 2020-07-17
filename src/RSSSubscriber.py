@@ -6,20 +6,20 @@
 - Sends committee_id to SNS
 """
 
-import logging
 import os
 import re
 import requests
+import boto3
 from bs4 import BeautifulSoup
 from requests import Response
-from typing import List
+from src import logger
+from typing import List, Dict
 
 
 # SSM VARS
 RSS_SNS_TOPIC_ARN = os.getenv('RSS_SNS_TOPIC_ARN')
 
-# LOGGING
-logger = logging.getLogger(__name__)
+client = boto3.client('sns')
 
 class EFilingRSSFeed:
     """wrapper for the FEC Electronic Filing RSS Feed
@@ -65,7 +65,7 @@ class EFilingRSSFeed:
         return response
 
     def parse_rss(self, filing_response: Response) -> List[str]:
-        """takes in requests.Response, gets xml, parses xml
+        """takes in requests.Response, gets xml, parses xml, returns committee_id
 
         Args:
             filing_response (Response): requests.Response object
@@ -75,25 +75,38 @@ class EFilingRSSFeed:
         """
         regex = r'(CommitteeId: )(C[0-9]*)'
         committee_id_list = []
-        soup = BeautifulSoup(filing_response.content, 'xml')
+        soup = BeautifulSoup(filing_response.content)
         descriptions = soup.find_all('description')
         for desc in descriptions:
-            logger.debug(desc.text)
             matches = re.findall(regex, str(desc), re.MULTILINE)
-            if len(matches) > 1:
-                match = matches[1]
+            if len(matches) > 0:
+                match = matches[0][1]
                 committee_id_list.append(match)
 
         return committee_id_list
 
     def get_items_from_rss_feeds_of_interest(self) -> List[str]:
+        """gets committee_ids from all endpoints of interest
+
+        Returns:
+            List[str]: list of committee_ids
+        """
         items = []
         for key, item in self.filings_of_interest.items():
             rss = self.get_rss_by_type(item)
             rss_items = self.parse_rss(rss)
-            items.append(rss_items)
+            items += rss_items
         return items
 
+def send_message_to_sns(msg: str) -> Dict[str, str]:
+    """sends a single message to sns
+
+    Args:
+        msg (str): message
+    """
+    logger.debug(f'sending {msg} to sns')
+    ret = client.publish(TopicArn=RSS_SNS_TOPIC_ARN, Message=msg)
+    return ret
 
 # handler for aws lambda
 def lambdaHandler(event: dict, context: object):
@@ -105,3 +118,6 @@ def lambdaHandler(event: dict, context: object):
     """
     eFilingRSSFeed = EFilingRSSFeed()
     items = eFilingRSSFeed.get_items_from_rss_feeds_of_interest()
+    logger.debug(items)
+    for item in items:
+        send_message_to_sns(item)

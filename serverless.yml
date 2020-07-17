@@ -31,8 +31,9 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
     events:
       - schedule: cron(0 0,8,16 * * ? *)
-  CommitteLoader:
+  CommitteeLoader:
     handler: src/CommitteLoader.committeLoader
+    timeout: 10
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}

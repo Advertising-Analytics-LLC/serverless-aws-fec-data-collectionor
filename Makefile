@@ -2,6 +2,10 @@ SHELL := /bin/bash
 
 all: help
 
+clean:
+	@echo deleting all your compiled python files
+	bin/clean.sh
+
 .phony: deploy
 deploy:
 	bin/deploy.sh

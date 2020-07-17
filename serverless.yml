@@ -16,6 +16,7 @@ custom:
     deploymentBucketName: ${cf:fec-datasync-resources.DeploymentBucketName} #serverless-deploymentbucket-us-east-1-648881544937
     LOG_LEVEL: DEBUG
     rss_sns_topic_arn: ${cf:fec-datasync-resources.RSSFeedTopicArn}
+    rss_sqs_queue_arn: ${cf:fec-datasync-resources.NewFilingQueueArn}
     SQS_QUEUE_NAME: ${cf:fec-datasync-resources.CommitteeSyncQueueName}
     SQS_QUEUE_ARN: ${cf:fec-datasync-resources.CommitteeSyncQueueArn}
 
@@ -41,12 +42,18 @@ functions:
     events:
       - sqs: "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
   RSSSubscriber:
+    handler: src/RSSSubscriber.lambdaHandler
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
     events:
       - schedule: cron(0 0,8,16 * * ? *)
-    handler: src/RSSSubscriber.lambdaHandler
+  FilingWriter:
+    handler: src/FilingWriter.lambdaHandler
+    environment:
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+    events:
+      - sqs: "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
 
 # packaging instructuions, and ignore list
 package:

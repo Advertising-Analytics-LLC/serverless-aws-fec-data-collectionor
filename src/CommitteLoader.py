@@ -19,32 +19,13 @@ from src import logger
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.serialization import serialize_dates
+from src.sqs import pull_message_from_sqs
 
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
-SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
 
 # BUSYNESS LOGIC
-sqs = boto3.resource('sqs')
-queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
-
-def pull_message_from_sqs() -> Dict[str, Any]:
-    """pulls a committee id from SQS
-    see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs.html#SQS.Client.receive_message
-
-    Returns:
-        Any: SQS Message object
-    """
-
-    start_time = time()
-    time_to_end = start_time + 10
-    while time() < time_to_end:
-        message = queue.receive_messages(MaxNumberOfMessages=1)
-        if message:
-            return message[0]
-    logger.info('No messages received, exiting')
-    return {}
 
 
 def get_committee_data(committee_id: str) -> JSONType:

@@ -11,8 +11,17 @@ import boto3
 import json
 import os
 from src import JSONType, logger
+from src.OpenFec import OpenFec
+from src.secrets import get_param_value_by_name
 
 
+# SSM VARS
+API_KEY = get_param_value_by_name(os.environ['API_KEY'])
+SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
+
+# BUSYNESS LOGIC
+sqs = boto3.resource('sqs')
+queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
 
 def lambdaHandler(event: dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html

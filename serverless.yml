@@ -117,13 +117,8 @@ provider:
         - sqs:ReceiveMessage
         - sqs:SendMessage
       Resource:
-        Fn::Join:
-          - ""
-          - - "arn:aws:sqs:"
-            - Ref: AWS::Region
-            - ":"
-            - Ref: AWS::AccountId
-            - ":${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}"
+        - "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
+        - "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
   tags:
     serverless_managed: true
     serverless_name: ${self:service}

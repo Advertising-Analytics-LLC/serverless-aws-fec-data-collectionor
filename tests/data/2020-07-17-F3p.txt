@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+  <channel>
+    <title>FEC Electronic Filing RSS Feed - Presidential Filings (F3P)</title>
+    <link>http://docquery.fec.gov//rss</link>
+    <description>New filings within the last 7 days</description>
+    <item>
+      <title>New filing by JOHN MANIMAS CAMPAIGN</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1425762.fec</link>
+      <description>&lt;p&gt;The JOHN MANIMAS CAMPAIGN successfully filed  their F3PN APRIL QUARTERLY with the coverage period of 01/01/2020 to 03/31/2020 and a confirmation ID of FEC-1425762&lt;/p&gt;*********CommitteeId: C00724898 | FilingId: 1425762 | FormType: F3PN | CoverageFrom: 01/01/2020 | CoverageThrough: 03/31/2020 | ReportType: APRIL QUARTERLY*********</description>
+      <pubDate>Fri, 17 Jul 2020 13:21:09 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1425762.fec</guid>
+      <dc:date>2020-07-17T13:21:09Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by DAPHNE FOR A REUNITED AMERICA</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1425741.fec</link>
+      <description>&lt;p&gt;The DAPHNE FOR A REUNITED AMERICA successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1425741&lt;/p&gt;*********CommitteeId: C00689885 | FilingId: 1425741 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Fri, 17 Jul 2020 05:45:42 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1425741.fec</guid>
+      <dc:date>2020-07-17T05:45:42Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by DAPHNE FOR A REUNITED AMERICA</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1425740.fec</link>
+      <description>&lt;p&gt;The DAPHNE FOR A REUNITED AMERICA successfully filed  their F3PN APRIL QUARTERLY with the coverage period of 01/01/2020 to 03/31/2020 and a confirmation ID of FEC-1425740&lt;/p&gt;*********CommitteeId: C00689885 | FilingId: 1425740 | FormType: F3PN | CoverageFrom: 01/01/2020 | CoverageThrough: 03/31/2020 | ReportType: APRIL QUARTERLY*********</description>
+      <pubDate>Fri, 17 Jul 2020 05:44:03 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1425740.fec</guid>
+      <dc:date>2020-07-17T05:44:03Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by JOHN WASHINGTON FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1425670.fec</link>
+      <description>&lt;p&gt;The JOHN WASHINGTON FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1425670&lt;/p&gt;*********CommitteeId: C00652677 | FilingId: 1425670 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 23:04:04 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1425670.fec</guid>
+      <dc:date>2020-07-16T23:04:04Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by PRAG FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1425631.fec</link>
+      <description>&lt;p&gt;The PRAG FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1425631&lt;/p&gt;*********CommitteeId: C00589762 | FilingId: 1425631 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 21:20:33 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1425631.fec</guid>
+      <dc:date>2020-07-16T21:20:33Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by RD3 FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1425463.fec</link>
+      <description>&lt;p&gt;The RD3 FOR PRESIDENT successfully filed  their F3PT TERMINATION REPORT with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1425463&lt;/p&gt;*********CommitteeId: C00727776 | FilingId: 1425463 | FormType: F3PT | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: TERMINATION REPORT*********</description>
+      <pubDate>Thu, 16 Jul 2020 18:23:38 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1425463.fec</guid>
+      <dc:date>2020-07-16T18:23:38Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by CAMPAIGN TO ELECT HORACE</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1425316.fec</link>
+      <description>&lt;p&gt;The CAMPAIGN TO ELECT HORACE successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1425316&lt;/p&gt;*********CommitteeId: C00720391 | FilingId: 1425316 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 13:41:31 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1425316.fec</guid>
+      <dc:date>2020-07-16T13:41:31Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by CITIZENS FOR BELLAR AS PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1425263.fec</link>
+      <description>&lt;p&gt;The CITIZENS FOR BELLAR AS PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1425263&lt;/p&gt;*********CommitteeId: C00725796 | FilingId: 1425263 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 05:29:54 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1425263.fec</guid>
+      <dc:date>2020-07-16T05:29:54Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by BARTHELEMY FOR CONGRESS</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1425227.fec</link>
+      <description>&lt;p&gt;The BARTHELEMY FOR CONGRESS successfully filed  their F3PN JULY QUARTERLY with the coverage period of 05/21/2020 to 06/30/2020 and a confirmation ID of FEC-1425227&lt;/p&gt;*********CommitteeId: C00735993 | FilingId: 1425227 | FormType: F3PN | CoverageFrom: 05/21/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 04:38:43 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1425227.fec</guid>
+      <dc:date>2020-07-16T04:38:43Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by DARIO FOR AMERICA</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1425176.fec</link>
+      <description>&lt;p&gt;The DARIO FOR AMERICA successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1425176&lt;/p&gt;*********CommitteeId: C00697896 | FilingId: 1425176 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 03:46:30 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1425176.fec</guid>
+      <dc:date>2020-07-16T03:46:30Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by WARREN FOR PRESIDENT, INC.</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1425042.fec</link>
+      <description>&lt;p&gt;The WARREN FOR PRESIDENT, INC. successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1425042&lt;/p&gt;*********CommitteeId: C00693234 | FilingId: 1425042 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 02:56:42 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1425042.fec</guid>
+      <dc:date>2020-07-16T02:56:42Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by ROMNEY FOR PRESIDENT, INC.</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424934.fec</link>
+      <description>&lt;p&gt;The ROMNEY FOR PRESIDENT, INC. successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1424934&lt;/p&gt;*********CommitteeId: C00431171 | FilingId: 1424934 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 02:02:26 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424934.fec</guid>
+      <dc:date>2020-07-16T02:02:26Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by MCMULLIN FOR PRESIDENT COMMITTEE INC.</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424813.fec</link>
+      <description>&lt;p&gt;The MCMULLIN FOR PRESIDENT COMMITTEE INC. successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1424813&lt;/p&gt;*********CommitteeId: C00623884 | FilingId: 1424813 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 01:20:38 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424813.fec</guid>
+      <dc:date>2020-07-16T01:20:38Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by FRIENDS OF ANDREW YANG</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424754.fec</link>
+      <description>&lt;p&gt;The FRIENDS OF ANDREW YANG successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1424754&lt;/p&gt;*********CommitteeId: C00659938 | FilingId: 1424754 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 01:01:16 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424754.fec</guid>
+      <dc:date>2020-07-16T01:01:16Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by AMY FOR AMERICA</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424654.fec</link>
+      <description>&lt;p&gt;The AMY FOR AMERICA successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1424654&lt;/p&gt;*********CommitteeId: C00696419 | FilingId: 1424654 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 00:24:33 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424654.fec</guid>
+      <dc:date>2020-07-16T00:24:33Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by KAMALA HARRIS FOR THE PEOPLE</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424606.fec</link>
+      <description>&lt;p&gt;The KAMALA HARRIS FOR THE PEOPLE successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1424606&lt;/p&gt;*********CommitteeId: C00694455 | FilingId: 1424606 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Thu, 16 Jul 2020 00:11:18 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424606.fec</guid>
+      <dc:date>2020-07-16T00:11:18Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by AMY FOR AMERICA</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424519.fec</link>
+      <description>&lt;p&gt;The AMY FOR AMERICA successfully filed  their F3PA APRIL MONTHLY with the coverage period of 03/01/2020 to 03/31/2020 and a confirmation ID of FEC-1424519&lt;/p&gt;*********CommitteeId: C00696419 | FilingId: 1424519 | FormType: F3PA | CoverageFrom: 03/01/2020 | CoverageThrough: 03/31/2020 | ReportType: APRIL MONTHLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 23:46:08 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424519.fec</guid>
+      <dc:date>2020-07-15T23:46:08Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by AMY FOR AMERICA</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424472.fec</link>
+      <description>&lt;p&gt;The AMY FOR AMERICA successfully filed  their F3PA MARCH MONTHLY with the coverage period of 02/01/2020 to 02/29/2020 and a confirmation ID of FEC-1424472&lt;/p&gt;*********CommitteeId: C00696419 | FilingId: 1424472 | FormType: F3PA | CoverageFrom: 02/01/2020 | CoverageThrough: 02/29/2020 | ReportType: MARCH MONTHLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 23:32:21 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424472.fec</guid>
+      <dc:date>2020-07-15T23:32:21Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by KENNY RODEO 2020 PRESIDENTIAL ELECTION COMMITTEE</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424471.fec</link>
+      <description>&lt;p&gt;The KENNY RODEO 2020 PRESIDENTIAL ELECTION COMMITTEE successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1424471&lt;/p&gt;*********CommitteeId: C00734343 | FilingId: 1424471 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 23:32:30 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424471.fec</guid>
+      <dc:date>2020-07-15T23:32:30Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by AMY FOR AMERICA</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424437.fec</link>
+      <description>&lt;p&gt;The AMY FOR AMERICA successfully filed  their F3PA FEBRUARY MONTHLY with the coverage period of 01/01/2020 to 01/31/2020 and a confirmation ID of FEC-1424437&lt;/p&gt;*********CommitteeId: C00696419 | FilingId: 1424437 | FormType: F3PA | CoverageFrom: 01/01/2020 | CoverageThrough: 01/31/2020 | ReportType: FEBRUARY MONTHLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 23:21:31 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424437.fec</guid>
+      <dc:date>2020-07-15T23:21:31Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SCOTT WALKER INC</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424366.fec</link>
+      <description>&lt;p&gt;The SCOTT WALKER INC successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1424366&lt;/p&gt;*********CommitteeId: C00580480 | FilingId: 1424366 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 23:05:51 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424366.fec</guid>
+      <dc:date>2020-07-15T23:05:51Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by AMY FOR AMERICA</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424315.fec</link>
+      <description>&lt;p&gt;The AMY FOR AMERICA successfully filed  their F3PA QUATERLY YEAR-END with the coverage period of 10/01/2019 to 12/31/2019 and a confirmation ID of FEC-1424315&lt;/p&gt;*********CommitteeId: C00696419 | FilingId: 1424315 | FormType: F3PA | CoverageFrom: 10/01/2019 | CoverageThrough: 12/31/2019 | ReportType: QUATERLY YEAR-END*********</description>
+      <pubDate>Wed, 15 Jul 2020 22:52:11 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424315.fec</guid>
+      <dc:date>2020-07-15T22:52:11Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by WHITNEY 2020 INC.</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424277.fec</link>
+      <description>&lt;p&gt;The WHITNEY 2020 INC. successfully filed  their F3PT TERMINATION REPORT with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1424277&lt;/p&gt;*********CommitteeId: C00718569 | FilingId: 1424277 | FormType: F3PT | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: TERMINATION REPORT*********</description>
+      <pubDate>Wed, 15 Jul 2020 22:42:50 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424277.fec</guid>
+      <dc:date>2020-07-15T22:42:50Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by CRUZ FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424268.fec</link>
+      <description>&lt;p&gt;The CRUZ FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1424268&lt;/p&gt;*********CommitteeId: C00574624 | FilingId: 1424268 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 22:40:40 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424268.fec</guid>
+      <dc:date>2020-07-15T22:40:40Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by AMY FOR AMERICA</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424226.fec</link>
+      <description>&lt;p&gt;The AMY FOR AMERICA successfully filed  their F3PA OCTOBER QUARTERLY with the coverage period of 07/01/2019 to 09/30/2019 and a confirmation ID of FEC-1424226&lt;/p&gt;*********CommitteeId: C00696419 | FilingId: 1424226 | FormType: F3PA | CoverageFrom: 07/01/2019 | CoverageThrough: 09/30/2019 | ReportType: OCTOBER QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 22:31:31 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424226.fec</guid>
+      <dc:date>2020-07-15T22:31:31Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by MARIANNE WILLIAMSON FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424224.fec</link>
+      <description>&lt;p&gt;The MARIANNE WILLIAMSON FOR PRESIDENT successfully filed  their F3PA MONTHLY YEAR-END with the coverage period of 10/01/2019 to 12/31/2019 and a confirmation ID of FEC-1424224&lt;/p&gt;*********CommitteeId: C00696054 | FilingId: 1424224 | FormType: F3PA | CoverageFrom: 10/01/2019 | CoverageThrough: 12/31/2019 | ReportType: MONTHLY YEAR-END*********</description>
+      <pubDate>Wed, 15 Jul 2020 22:22:33 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424224.fec</guid>
+      <dc:date>2020-07-15T22:22:33Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by BULLOCK FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1424069.fec</link>
+      <description>&lt;p&gt;The BULLOCK FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 06/25/2020 to 06/30/2020 and a confirmation ID of FEC-1424069&lt;/p&gt;*********CommitteeId: C00706416 | FilingId: 1424069 | FormType: F3PN | CoverageFrom: 06/25/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 21:57:15 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1424069.fec</guid>
+      <dc:date>2020-07-15T21:57:15Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by PEPPE 2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1423938.fec</link>
+      <description>&lt;p&gt;The PEPPE 2020 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1423938&lt;/p&gt;*********CommitteeId: C00696120 | FilingId: 1423938 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 21:24:48 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1423938.fec</guid>
+      <dc:date>2020-07-15T21:24:48Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by DAVID ROLDE 2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1423384.fec</link>
+      <description>&lt;p&gt;The DAVID ROLDE 2020 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1423384&lt;/p&gt;*********CommitteeId: C00717371 | FilingId: 1423384 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 19:52:14 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1423384.fec</guid>
+      <dc:date>2020-07-15T19:52:14Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by MCCUTCHEON FOR FREEDOM</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1423347.fec</link>
+      <description>&lt;p&gt;The MCCUTCHEON FOR FREEDOM successfully filed  their F3PN JULY QUARTERLY with the coverage period of 05/05/2020 to 06/30/2020 and a confirmation ID of FEC-1423347&lt;/p&gt;*********CommitteeId: C00745661 | FilingId: 1423347 | FormType: F3PN | CoverageFrom: 05/05/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 19:45:17 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1423347.fec</guid>
+      <dc:date>2020-07-15T19:45:17Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by CARSON AMERICA</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1423241.fec</link>
+      <description>&lt;p&gt;The CARSON AMERICA successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1423241&lt;/p&gt;*********CommitteeId: C00573519 | FilingId: 1423241 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 19:26:31 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1423241.fec</guid>
+      <dc:date>2020-07-15T19:26:31Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by BERNIE 2016</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1423238.fec</link>
+      <description>&lt;p&gt;The BERNIE 2016 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1423238&lt;/p&gt;*********CommitteeId: C00577130 | FilingId: 1423238 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 19:26:01 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1423238.fec</guid>
+      <dc:date>2020-07-15T19:26:01Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by COMMITTEE FOR PEACE, JUSTICE, AND MIKE GRAVEL</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1423151.fec</link>
+      <description>&lt;p&gt;The COMMITTEE FOR PEACE, JUSTICE, AND MIKE GRAVEL successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1423151&lt;/p&gt;*********CommitteeId: C00700609 | FilingId: 1423151 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 19:10:38 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1423151.fec</guid>
+      <dc:date>2020-07-15T19:10:38Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by LINCOLN CHAFEE FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1423122.fec</link>
+      <description>&lt;p&gt;The LINCOLN CHAFEE FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1423122&lt;/p&gt;*********CommitteeId: C00733295 | FilingId: 1423122 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 19:03:20 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1423122.fec</guid>
+      <dc:date>2020-07-15T19:03:20Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by BOB ELY IS YOUR WORST ALTERNATIVE FOR PRESIDENT COMMITTEE</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1423049.fec</link>
+      <description>&lt;p&gt;The BOB ELY IS YOUR WORST ALTERNATIVE FOR PRESIDENT COMMITTEE successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1423049&lt;/p&gt;*********CommitteeId: C00726976 | FilingId: 1423049 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 18:48:57 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1423049.fec</guid>
+      <dc:date>2020-07-15T18:48:57Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SETH MOULTON FOR AMERICA, INC.</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1422918.fec</link>
+      <description>&lt;p&gt;The SETH MOULTON FOR AMERICA, INC. successfully filed  their F3PN JULY QUARTERLY with the coverage period of 06/01/2020 to 06/30/2020 and a confirmation ID of FEC-1422918&lt;/p&gt;*********CommitteeId: C00704510 | FilingId: 1422918 | FormType: F3PN | CoverageFrom: 06/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 18:24:36 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1422918.fec</guid>
+      <dc:date>2020-07-15T18:24:36Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SHARPTON 2004</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1422686.fec</link>
+      <description>&lt;p&gt;The SHARPTON 2004 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1422686&lt;/p&gt;*********CommitteeId: C00384388 | FilingId: 1422686 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 17:42:04 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1422686.fec</guid>
+      <dc:date>2020-07-15T17:42:04Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by MARCO RUBIO FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1422680.fec</link>
+      <description>&lt;p&gt;The MARCO RUBIO FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1422680&lt;/p&gt;*********CommitteeId: C00458844 | FilingId: 1422680 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 17:40:23 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1422680.fec</guid>
+      <dc:date>2020-07-15T17:40:23Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by HILLARY FOR AMERICA</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1422653.fec</link>
+      <description>&lt;p&gt;The HILLARY FOR AMERICA successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1422653&lt;/p&gt;*********CommitteeId: C00575795 | FilingId: 1422653 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 17:33:22 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1422653.fec</guid>
+      <dc:date>2020-07-15T17:33:22Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by JACOB HORNBERGER FOR PRESIDENT CAMPAIGN COMMITTEE</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1422444.fec</link>
+      <description>&lt;p&gt;The JACOB HORNBERGER FOR PRESIDENT CAMPAIGN COMMITTEE successfully filed  their F3PT TERMINATION REPORT with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1422444&lt;/p&gt;*********CommitteeId: C00725010 | FilingId: 1422444 | FormType: F3PT | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: TERMINATION REPORT*********</description>
+      <pubDate>Wed, 15 Jul 2020 16:35:20 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1422444.fec</guid>
+      <dc:date>2020-07-15T16:35:20Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by DENNIS LAMBERT FOR PRESIDENT 2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1422353.fec</link>
+      <description>&lt;p&gt;The DENNIS LAMBERT FOR PRESIDENT 2020 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1422353&lt;/p&gt;*********CommitteeId: C00716266 | FilingId: 1422353 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 16:07:20 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1422353.fec</guid>
+      <dc:date>2020-07-15T16:07:20Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by CORY 2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1422343.fec</link>
+      <description>&lt;p&gt;The CORY 2020 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 05/01/2020 to 06/30/2020 and a confirmation ID of FEC-1422343&lt;/p&gt;*********CommitteeId: C00695510 | FilingId: 1422343 | FormType: F3PN | CoverageFrom: 05/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 16:04:43 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1422343.fec</guid>
+      <dc:date>2020-07-15T16:04:43Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by COMMITTEE TO ELECT CHRIS FLORQUIST PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1422265.fec</link>
+      <description>&lt;p&gt;The COMMITTEE TO ELECT CHRIS FLORQUIST PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 05/01/2018 to 06/30/2020 and a confirmation ID of FEC-1422265&lt;/p&gt;*********CommitteeId: C00745331 | FilingId: 1422265 | FormType: F3PN | CoverageFrom: 05/01/2018 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 15:44:10 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1422265.fec</guid>
+      <dc:date>2020-07-15T15:44:10Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by JOHN MANIMAS CAMPAIGN</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1422193.fec</link>
+      <description>&lt;p&gt;The JOHN MANIMAS CAMPAIGN successfully filed  their F3PN MONTHLY YEAR-END with the coverage period of 10/01/2019 to 12/31/2019 and a confirmation ID of FEC-1422193&lt;/p&gt;*********CommitteeId: C00724898 | FilingId: 1422193 | FormType: F3PN | CoverageFrom: 10/01/2019 | CoverageThrough: 12/31/2019 | ReportType: MONTHLY YEAR-END*********</description>
+      <pubDate>Wed, 15 Jul 2020 15:22:30 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1422193.fec</guid>
+      <dc:date>2020-07-15T15:22:30Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by CITIZENS FOR TIM VILLARI</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1421574.fec</link>
+      <description>&lt;p&gt;The CITIZENS FOR TIM VILLARI successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1421574&lt;/p&gt;*********CommitteeId: C00696286 | FilingId: 1421574 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Wed, 15 Jul 2020 04:11:28 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1421574.fec</guid>
+      <dc:date>2020-07-15T04:11:28Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by CITIZENS FOR ADAM NICHOLAS PAUL</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1420863.fec</link>
+      <description>&lt;p&gt;The CITIZENS FOR ADAM NICHOLAS PAUL successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1420863&lt;/p&gt;*********CommitteeId: C00704874 | FilingId: 1420863 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Tue, 14 Jul 2020 19:04:33 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1420863.fec</guid>
+      <dc:date>2020-07-14T19:04:33Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by EDWARDS FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1420372.fec</link>
+      <description>&lt;p&gt;The EDWARDS FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1420372&lt;/p&gt;*********CommitteeId: C00384073 | FilingId: 1420372 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Tue, 14 Jul 2020 13:19:57 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1420372.fec</guid>
+      <dc:date>2020-07-14T13:19:57Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by DENNIS NOW 2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1420135.fec</link>
+      <description>&lt;p&gt;The DENNIS NOW 2020 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1420135&lt;/p&gt;*********CommitteeId: C00745679 | FilingId: 1420135 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Mon, 13 Jul 2020 22:08:52 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1420135.fec</guid>
+      <dc:date>2020-07-13T22:08:52Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by COMMITTEE TO ELECT JOSEPH KISHORE</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1420007.fec</link>
+      <description>&lt;p&gt;The COMMITTEE TO ELECT JOSEPH KISHORE successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1420007&lt;/p&gt;*********CommitteeId: C00735654 | FilingId: 1420007 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Mon, 13 Jul 2020 20:07:51 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1420007.fec</guid>
+      <dc:date>2020-07-13T20:07:51Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by JUDGE JIM GRAY 2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419789.fec</link>
+      <description>&lt;p&gt;The JUDGE JIM GRAY 2020 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1419789&lt;/p&gt;*********CommitteeId: C00744466 | FilingId: 1419789 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Mon, 13 Jul 2020 17:26:01 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419789.fec</guid>
+      <dc:date>2020-07-13T17:26:01Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by NEWT 2012</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419532.fec</link>
+      <description>&lt;p&gt;The NEWT 2012 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1419532&lt;/p&gt;*********CommitteeId: C00496497 | FilingId: 1419532 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Mon, 13 Jul 2020 13:48:46 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419532.fec</guid>
+      <dc:date>2020-07-13T13:48:46Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by RAY SENEY FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419347.fec</link>
+      <description>&lt;p&gt;The RAY SENEY FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1419347&lt;/p&gt;*********CommitteeId: C00693697 | FilingId: 1419347 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Sun, 12 Jul 2020 19:04:50 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419347.fec</guid>
+      <dc:date>2020-07-12T19:04:50Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by DRAFT COMMITTEE DONALD ROBERT FRAYER FOR PRESIDENT 2024</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419200.fec</link>
+      <description>&lt;p&gt;The DRAFT COMMITTEE DONALD ROBERT FRAYER FOR PRESIDENT 2024 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1419200&lt;/p&gt;*********CommitteeId: C00677799 | FilingId: 1419200 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 23:52:44 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419200.fec</guid>
+      <dc:date>2020-07-11T23:52:44Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by GARY JOHNSON 2016</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419184.fec</link>
+      <description>&lt;p&gt;The GARY JOHNSON 2016 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1419184&lt;/p&gt;*********CommitteeId: C00605568 | FilingId: 1419184 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 22:46:47 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419184.fec</guid>
+      <dc:date>2020-07-11T22:46:47Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by MARIANNE WILLIAMSON FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419080.fec</link>
+      <description>&lt;p&gt;The MARIANNE WILLIAMSON FOR PRESIDENT successfully filed  their F3PA JUNE MONTHLY with the coverage period of 05/01/2020 to 05/31/2020 and a confirmation ID of FEC-1419080&lt;/p&gt;*********CommitteeId: C00696054 | FilingId: 1419080 | FormType: F3PA | CoverageFrom: 05/01/2020 | CoverageThrough: 05/31/2020 | ReportType: JUNE MONTHLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 18:28:55 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419080.fec</guid>
+      <dc:date>2020-07-11T18:28:55Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by MARIANNE WILLIAMSON FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419079.fec</link>
+      <description>&lt;p&gt;The MARIANNE WILLIAMSON FOR PRESIDENT successfully filed  their F3PA MAY MONTHLY with the coverage period of 04/01/2020 to 04/30/2020 and a confirmation ID of FEC-1419079&lt;/p&gt;*********CommitteeId: C00696054 | FilingId: 1419079 | FormType: F3PA | CoverageFrom: 04/01/2020 | CoverageThrough: 04/30/2020 | ReportType: MAY MONTHLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 18:27:20 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419079.fec</guid>
+      <dc:date>2020-07-11T18:27:20Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by MARIANNE WILLIAMSON FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419077.fec</link>
+      <description>&lt;p&gt;The MARIANNE WILLIAMSON FOR PRESIDENT successfully filed  their F3PA APRIL MONTHLY with the coverage period of 03/01/2020 to 03/31/2020 and a confirmation ID of FEC-1419077&lt;/p&gt;*********CommitteeId: C00696054 | FilingId: 1419077 | FormType: F3PA | CoverageFrom: 03/01/2020 | CoverageThrough: 03/31/2020 | ReportType: APRIL MONTHLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 18:25:12 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419077.fec</guid>
+      <dc:date>2020-07-11T18:25:12Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by MARIANNE WILLIAMSON FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419075.fec</link>
+      <description>&lt;p&gt;The MARIANNE WILLIAMSON FOR PRESIDENT successfully filed  their F3PA MARCH MONTHLY with the coverage period of 02/01/2020 to 02/29/2020 and a confirmation ID of FEC-1419075&lt;/p&gt;*********CommitteeId: C00696054 | FilingId: 1419075 | FormType: F3PA | CoverageFrom: 02/01/2020 | CoverageThrough: 02/29/2020 | ReportType: MARCH MONTHLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 18:21:54 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419075.fec</guid>
+      <dc:date>2020-07-11T18:21:54Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by MARIANNE WILLIAMSON FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419073.fec</link>
+      <description>&lt;p&gt;The MARIANNE WILLIAMSON FOR PRESIDENT successfully filed  their F3PA FEBRUARY MONTHLY with the coverage period of 01/01/2020 to 01/31/2020 and a confirmation ID of FEC-1419073&lt;/p&gt;*********CommitteeId: C00696054 | FilingId: 1419073 | FormType: F3PA | CoverageFrom: 01/01/2020 | CoverageThrough: 01/31/2020 | ReportType: FEBRUARY MONTHLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 18:16:10 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419073.fec</guid>
+      <dc:date>2020-07-11T18:16:10Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by JOEY BERRY FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419052.fec</link>
+      <description>&lt;p&gt;The JOEY BERRY FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1419052&lt;/p&gt;*********CommitteeId: C00584359 | FilingId: 1419052 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 17:32:00 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419052.fec</guid>
+      <dc:date>2020-07-11T17:32:00Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by LAROUCHE IN 2004</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419027.fec</link>
+      <description>&lt;p&gt;The LAROUCHE IN 2004 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1419027&lt;/p&gt;*********CommitteeId: C00364091 | FilingId: 1419027 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 16:07:20 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419027.fec</guid>
+      <dc:date>2020-07-11T16:07:20Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by LAROUCHE'S COMMITTEE FOR A NEW BRETTON WOODS</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419006.fec</link>
+      <description>&lt;p&gt;The LAROUCHE'S COMMITTEE FOR A NEW BRETTON WOODS successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1419006&lt;/p&gt;*********CommitteeId: C00329706 | FilingId: 1419006 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 14:47:10 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419006.fec</guid>
+      <dc:date>2020-07-11T14:47:10Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SEDINAM2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1419002.fec</link>
+      <description>&lt;p&gt;The SEDINAM2020 successfully filed  their F3PA JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1419002&lt;/p&gt;*********CommitteeId: C00715292 | FilingId: 1419002 | FormType: F3PA | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 14:18:11 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1419002.fec</guid>
+      <dc:date>2020-07-11T14:18:11Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SEDINAM2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418961.fec</link>
+      <description>&lt;p&gt;The SEDINAM2020 successfully filed  their F3PA JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1418961&lt;/p&gt;*********CommitteeId: C00715292 | FilingId: 1418961 | FormType: F3PA | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 02:15:29 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418961.fec</guid>
+      <dc:date>2020-07-11T02:15:29Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SEDINAM2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418960.fec</link>
+      <description>&lt;p&gt;The SEDINAM2020 successfully filed  their F3PA QUATERLY YEAR-END with the coverage period of 10/01/2019 to 12/31/2019 and a confirmation ID of FEC-1418960&lt;/p&gt;*********CommitteeId: C00715292 | FilingId: 1418960 | FormType: F3PA | CoverageFrom: 10/01/2019 | CoverageThrough: 12/31/2019 | ReportType: QUATERLY YEAR-END*********</description>
+      <pubDate>Sat, 11 Jul 2020 02:12:54 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418960.fec</guid>
+      <dc:date>2020-07-11T02:12:54Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SEDINAM2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418959.fec</link>
+      <description>&lt;p&gt;The SEDINAM2020 successfully filed  their F3PA OCTOBER QUARTERLY with the coverage period of 07/01/2019 to 09/30/2019 and a confirmation ID of FEC-1418959&lt;/p&gt;*********CommitteeId: C00715292 | FilingId: 1418959 | FormType: F3PA | CoverageFrom: 07/01/2019 | CoverageThrough: 09/30/2019 | ReportType: OCTOBER QUARTERLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 02:11:55 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418959.fec</guid>
+      <dc:date>2020-07-11T02:11:55Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SEDINAM2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418958.fec</link>
+      <description>&lt;p&gt;The SEDINAM2020 successfully filed  their F3PA JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1418958&lt;/p&gt;*********CommitteeId: C00715292 | FilingId: 1418958 | FormType: F3PA | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 02:09:09 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418958.fec</guid>
+      <dc:date>2020-07-11T02:09:09Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SEDINAM2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418957.fec</link>
+      <description>&lt;p&gt;The SEDINAM2020 successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1418957&lt;/p&gt;*********CommitteeId: C00715292 | FilingId: 1418957 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 02:03:40 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418957.fec</guid>
+      <dc:date>2020-07-11T02:03:40Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SEDINAM2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418925.fec</link>
+      <description>&lt;p&gt;The SEDINAM2020 successfully filed  their F3PA APRIL QUARTERLY with the coverage period of 01/01/2020 to 03/31/2020 and a confirmation ID of FEC-1418925&lt;/p&gt;*********CommitteeId: C00715292 | FilingId: 1418925 | FormType: F3PA | CoverageFrom: 01/01/2020 | CoverageThrough: 03/31/2020 | ReportType: APRIL QUARTERLY*********</description>
+      <pubDate>Sat, 11 Jul 2020 00:10:20 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418925.fec</guid>
+      <dc:date>2020-07-11T00:10:20Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SEDINAM2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418924.fec</link>
+      <description>&lt;p&gt;The SEDINAM2020 successfully filed  their F3PA QUATERLY YEAR-END with the coverage period of 10/01/2019 to 12/31/2019 and a confirmation ID of FEC-1418924&lt;/p&gt;*********CommitteeId: C00715292 | FilingId: 1418924 | FormType: F3PA | CoverageFrom: 10/01/2019 | CoverageThrough: 12/31/2019 | ReportType: QUATERLY YEAR-END*********</description>
+      <pubDate>Sat, 11 Jul 2020 00:09:02 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418924.fec</guid>
+      <dc:date>2020-07-11T00:09:02Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by WILLIE CARTER FOR PRESIDENT COMMITTEE</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418919.fec</link>
+      <description>&lt;p&gt;The WILLIE CARTER FOR PRESIDENT COMMITTEE successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1418919&lt;/p&gt;*********CommitteeId: C00202176 | FilingId: 1418919 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Fri, 10 Jul 2020 23:54:19 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418919.fec</guid>
+      <dc:date>2020-07-10T23:54:19Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SEDINAM2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418915.fec</link>
+      <description>&lt;p&gt;The SEDINAM2020 successfully filed  their F3PN OCTOBER QUARTERLY with the coverage period of 07/01/2019 to 09/30/2019 and a confirmation ID of FEC-1418915&lt;/p&gt;*********CommitteeId: C00715292 | FilingId: 1418915 | FormType: F3PN | CoverageFrom: 07/01/2019 | CoverageThrough: 09/30/2019 | ReportType: OCTOBER QUARTERLY*********</description>
+      <pubDate>Fri, 10 Jul 2020 23:43:28 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418915.fec</guid>
+      <dc:date>2020-07-10T23:43:28Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by JORGENSON FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418902.fec</link>
+      <description>&lt;p&gt;The JORGENSON FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1418902&lt;/p&gt;*********CommitteeId: C00628628 | FilingId: 1418902 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Fri, 10 Jul 2020 23:03:40 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418902.fec</guid>
+      <dc:date>2020-07-10T23:03:40Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by SEDINAM2020</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418897.fec</link>
+      <description>&lt;p&gt;The SEDINAM2020 successfully filed  their F3PN APRIL QUARTERLY with the coverage period of 01/01/2020 to 03/31/2020 and a confirmation ID of FEC-1418897&lt;/p&gt;*********CommitteeId: C00715292 | FilingId: 1418897 | FormType: F3PN | CoverageFrom: 01/01/2020 | CoverageThrough: 03/31/2020 | ReportType: APRIL QUARTERLY*********</description>
+      <pubDate>Fri, 10 Jul 2020 22:38:23 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418897.fec</guid>
+      <dc:date>2020-07-10T22:38:23Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by BLEVINS FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418817.fec</link>
+      <description>&lt;p&gt;The BLEVINS FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1418817&lt;/p&gt;*********CommitteeId: C00708586 | FilingId: 1418817 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Fri, 10 Jul 2020 20:45:00 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418817.fec</guid>
+      <dc:date>2020-07-10T20:45:00Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by ROCKY 101 LLC</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418732.fec</link>
+      <description>&lt;p&gt;The ROCKY 101 LLC successfully filed  their F3PN JULY MONTHLY with the coverage period of 06/01/2020 to 06/30/2020 and a confirmation ID of FEC-1418732&lt;/p&gt;*********CommitteeId: C00588426 | FilingId: 1418732 | FormType: F3PN | CoverageFrom: 06/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY MONTHLY*********</description>
+      <pubDate>Fri, 10 Jul 2020 18:50:41 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418732.fec</guid>
+      <dc:date>2020-07-10T18:50:41Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by PEOPLE POWERED ACTION</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418516.fec</link>
+      <description>&lt;p&gt;The PEOPLE POWERED ACTION successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1418516&lt;/p&gt;*********CommitteeId: C00699090 | FilingId: 1418516 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Fri, 10 Jul 2020 12:58:03 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418516.fec</guid>
+      <dc:date>2020-07-10T12:58:03Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by HERZ FOR PRESIDENT</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418487.fec</link>
+      <description>&lt;p&gt;The HERZ FOR PRESIDENT successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1418487&lt;/p&gt;*********CommitteeId: C00660647 | FilingId: 1418487 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Fri, 10 Jul 2020 05:45:16 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418487.fec</guid>
+      <dc:date>2020-07-10T05:45:16Z</dc:date>
+    </item>
+    <item>
+      <title>New filing by ENVOYS FOR HUMANITY</title>
+      <link>http://docquery.fec.gov/dcdev/posted/1418485.fec</link>
+      <description>&lt;p&gt;The ENVOYS FOR HUMANITY successfully filed  their F3PN JULY QUARTERLY with the coverage period of 04/01/2020 to 06/30/2020 and a confirmation ID of FEC-1418485&lt;/p&gt;*********CommitteeId: C00742338 | FilingId: 1418485 | FormType: F3PN | CoverageFrom: 04/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY QUARTERLY*********</description>
+      <pubDate>Fri, 10 Jul 2020 05:34:17 GMT</pubDate>
+      <guid>http://docquery.fec.gov/dcdev/posted/1418485.fec</guid>
+      <dc:date>2020-07-10T05:34:17Z</dc:date>
+    </item>
+  </channel>
+</rss>

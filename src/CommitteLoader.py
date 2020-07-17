@@ -9,13 +9,13 @@ CommitteeLoader lambda:
 
 import boto3
 import json
-import logging
 import os
 from src import JSONType
 from src.database import Database
 from datetime import datetime, timedelta
 from time import time
 from typing import List, Dict, Any
+from src import logger
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.serialization import serialize_dates
@@ -24,9 +24,6 @@ from src.serialization import serialize_dates
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
-
-# LOGGING
-logger = logging.getLogger(__name__)
 
 # BUSYNESS LOGIC
 sqs = boto3.resource('sqs')
@@ -40,12 +37,15 @@ def pull_message_from_sqs() -> Dict[str, Any]:
         Any: SQS Message object
     """
 
-    message = queue.receive_messages(MaxNumberOfMessages=1)
-    if not message:
-        logger.info('No messages received, exiting')
-        exit(0)
+    start_time = time()
+    time_to_end = start_time + 10
+    while time() < time_to_end:
+        message = queue.receive_messages(MaxNumberOfMessages=1)
+        if message:
+            return message[0]
+    logger.info('No messages received, exiting')
+    return {}
 
-    return message[0]
 
 def get_committee_data(committee_id: str) -> JSONType:
     """Pulls the committee data from the openFEC API
@@ -76,7 +76,7 @@ def write_committee_data(committee_data: JSONType):
     with Database() as db_obj:
         db_obj.upsert_committeedetail(committee_data)
 
-def committeLoader(event: dict, context: object):
+def committeLoader(event: dict, context: object) -> bool:
     """Gets committee IDs from SQS, pulls data from OpenFEC API, and pushes to RedShift
         and loops like that for ten minutes
     Args:
@@ -93,12 +93,14 @@ def committeLoader(event: dict, context: object):
 
     while time() < time_to_end:
         message = pull_message_from_sqs()
+        if not message:
+            return
         committee_id = message.body
         committee_data = get_committee_data(committee_id)
 
         if not committee_data:
             logger.error(f'Committee {committee_id} not found! exiting.')
-            exit(1)
+            return False
 
         write_committee_data(committee_data[0])
         message.delete()
@@ -106,3 +108,5 @@ def committeLoader(event: dict, context: object):
     if time() > time_to_end:
         minutes_ran = (time() - start_time) / 60
         logger.warn(f'committeeLoader ended late at {minutes_ran} ')
+
+    return True

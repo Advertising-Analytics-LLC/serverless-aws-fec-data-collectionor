@@ -1,23 +1,9 @@
-
---
--- Table structure for table CommitteeDetail generated from model 'CommitteeDetail'
--- See https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
---
-CREATE TABLE IF NOT EXISTS committeecandidates (
-  committee_candidate_id INT IDENTITY(1,1),
-  committee_id VARCHAR(10),
-  candidate_id VARCHAR(10),
-  PRIMARY KEY(committee_candidate_id)
-) DISTSTYLE AUTO;
-
-COMMENT ON TABLE committeecandidates is 'Linking table to connect CommitteeDetail to CandidateDetail';
-
 --
 -- Table structure for table CommitteeDetail generated from model 'CommitteeDetail'
 -- See https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
 --
 CREATE TABLE IF NOT EXISTS committeedetail (
-  committee_id VARCHAR(10) NOT NULL,
+  committee_id VARCHAR(10) NOT NULL UNIQUE,
   affiliated_committee_name VARCHAR(MAX) DEFAULT NULL,
   city VARCHAR(MAX) DEFAULT NULL,
   committee_type VARCHAR(MAX) NOT NULL,
@@ -50,7 +36,7 @@ CREATE TABLE IF NOT EXISTS committeedetail (
   leadership_pac VARCHAR(MAX) DEFAULT NULL,
   lobbyist_registrant_pac VARCHAR(MAX) DEFAULT NULL,
   -- renamed from name to avoid collision
-  committee_name VARCHAR(MAX) DEFAULT NOT NULL,
+  committee_name VARCHAR(MAX) NOT NULL,
   organization_type VARCHAR(MAX) DEFAULT NULL,
   organization_type_full VARCHAR(MAX) DEFAULT NULL,
   party VARCHAR(MAX) DEFAULT NULL,
@@ -76,5 +62,6 @@ CREATE TABLE IF NOT EXISTS committeedetail (
   treasurer_zip VARCHAR(MAX) DEFAULT NULL,
   website VARCHAR(MAX) DEFAULT NULL,
   zip VARCHAR(MAX) DEFAULT NULL,
-  primary key(committee_id)
+  PRIMARY KEY(committee_id),
+  UNIQUE(committee_id)
 ) DISTSTYLE AUTO;

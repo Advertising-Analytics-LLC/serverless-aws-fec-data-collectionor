@@ -8,14 +8,16 @@ frameworkVersion: ">=1.73.0 <2.0.0"
 
 # Custom variables
 custom:
+  Version: ${cf:fec-datasync-resources.Version}
   pythonRequirements:
     dockerizePip: false
   dev:
-    deploymentBucketName: ${cf:fec-datasync-resources.DeploymentBucketName} #serverless-deploymentbucket-us-east-1-648881544937
     API_KEY: /global/openfec-api/api_key
-    SQS_QUEUE_NAME: ${cf:fec-datasync-resources.QueueName}
-    SQS_QUEUE_ARN: ${cf:fec-datasync-resources.QueueARN}
+    deploymentBucketName: ${cf:fec-datasync-resources.DeploymentBucketName} #serverless-deploymentbucket-us-east-1-648881544937
     LOG_LEVEL: DEBUG
+    rss_sns_topic_arn: ${cf:fec-datasync-resources.RSSFeedTopicArn}
+    SQS_QUEUE_NAME: ${cf:fec-datasync-resources.CommitteeSyncQueueName}
+    SQS_QUEUE_ARN: ${cf:fec-datasync-resources.CommitteeSyncQueueArn}
 
 
 # The lambda function(s) defined in this serverless config
@@ -25,16 +27,26 @@ functions:
     handler: src/CommitteSync.committeSync
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
     events:
       - schedule: cron(0 0,8,16 * * ? *)
-  CommitteLoader:
+  CommitteeLoader:
     handler: src/CommitteLoader.committeLoader
+    timeout: 10
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
     events:
       - sqs: "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
+  RSSSubscriber:
+    environment:
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
+    events:
+      - schedule: cron(0 0,8,16 * * ? *)
+    handler: src/RSSSubscriber.lambdaHandler
 
 # packaging instructuions, and ignore list
 package:
@@ -76,7 +88,7 @@ provider:
         - ssm:GetParameters
         - ssm:DescribeParameters
       Resource:
-        Fn::Join:
+        - Fn::Join:
           - ""
           - - "arn:aws:ssm:"
             - Ref: AWS::Region
@@ -111,6 +123,7 @@ provider:
     Owner: Rhythmic Engineering
     Namespace: aws-AdvertisingAnalytics
     Env: ${self:provider.stage}
+    git_description: ${self:custom.Version}
 
 # TODO: add cfn role
 # see https://www.albertgao.xyz/2020/02/26/how-to-resolve-require-the-cfnrole-option-warning-for-serverless-framework/

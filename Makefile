@@ -2,6 +2,10 @@ SHELL := /bin/bash
 
 all: help
 
+clean:
+	@echo deleting all your compiled python files
+	bin/clean.sh
+
 .phony: deploy
 deploy:
 	bin/deploy.sh
@@ -10,10 +14,6 @@ deploy:
 help:
 	@echo 'pick a target to run. see Makefile:'
 	cat Makefile
-
-.phony: login
-login:
-	aws_okta_login advertisinganalytics-admin-okta
 
 .phony: run-sync
 run-sync:
@@ -27,6 +27,11 @@ run-loader:
 setup:
 	@echo make sure you've installed python3 and npm as explained in the README
 	bin/dev-setup.sh
+
+.phony: test
+test:
+	@echo 'pick a target to run. see Makefile:'
+	pytest
 
 .phony: test-sync
 test-sync:

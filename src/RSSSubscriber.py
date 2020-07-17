@@ -133,14 +133,10 @@ def send_message_to_sns(msg: str) -> Dict[str, str]:
     """
 
     logger.debug(f'sending {msg} to sns')
-    # message_json = json.loads({'default': msg})
-    # logger.debug(message_json)
 
     sns_response = client.publish(
         TopicArn=RSS_SNS_TOPIC_ARN,
         Message=str(msg))
-        # Message=message_json,
-        # MessageStructure='json')
 
     return sns_response
 

@@ -28,6 +28,7 @@ functions:
 
   CommitteeSync:
     handler: src/CommitteSync.committeSync
+    timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -37,7 +38,7 @@ functions:
 
   CommitteeLoader:
     handler: src/CommitteLoader.committeLoader
-    timeout: 10
+    timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -47,7 +48,7 @@ functions:
 
   RSSSubscriber:
     handler: src/RSSSubscriber.lambdaHandler
-    timeout: 30
+    timeout: 90
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"

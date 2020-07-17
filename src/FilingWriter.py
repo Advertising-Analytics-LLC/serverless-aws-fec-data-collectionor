@@ -10,6 +10,7 @@ FilingWriter lambda:
 import boto3
 import json
 import os
+from time import time
 from src import JSONType, logger
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -55,8 +56,27 @@ def lambdaHandler(event: dict, context: object) -> bool:
     Returns:
         bool: Did this go well?
     """
-    logger.debug(f'running {__file__}')
-    logger.debug(event)
 
-    sqs_message = pull_message_from_sqs()
-    logger.debug(sqs_message)
+    start_time = time()
+    time_to_end = start_time + 60 * 10
+    logger.debug(f'running {__file__} from now until {time_to_end}')
+
+    while time() < time_to_end:
+        message = pull_message_from_sqs()
+        if not message:
+            return
+        logger.debug(message.body)
+        # committee_data = get_committee_data(committee_id)
+
+        # if not committee_data:
+        #     logger.error(f'Committee {committee_id} not found! exiting.')
+        #     return False
+
+        # write_committee_data(committee_data[0])
+        message.delete()
+
+    if time() > time_to_end:
+        minutes_ran = (time() - start_time) / 60
+        logger.warn(f'committeeLoader ended late at {minutes_ran} ')
+
+    return True

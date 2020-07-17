@@ -76,6 +76,47 @@ class OpenFec:
             response = self._get_request(url, payload)
         return response
 
+    def get_route(self, route:str, payload: dict) -> JSONType:
+        """get response from committee API
+            https://api.open.fec.gov/developers/#/committee/get_committees_
+
+        Args:
+            payload (dict): request params object
+
+        Returns:
+            json: response as json object, has this structure:
+                    {
+                      "api_version": "1.0",
+                      "pagination": {
+                        "page": 1,
+                        "per_page": 20,
+                        "count": 0,
+                        "pages": 0
+                      },
+                      "results": []
+                    }
+        """
+        url = self._get_route(route)
+        response = self._get_request(url, payload)
+        return response.json()
+
+    def get_route_paginator(self, route: str, payload: dict) -> Generator:
+        """paginator for committees endpoint
+
+        Args:
+            payload (dict): request params
+
+        Yields:
+            Generator: python Generator object to iteratate over committee responses
+        """
+        first_response = self.get_route(route, payload)
+        yield first_response
+        num_pages = first_response['pagination']['pages']
+        for page in range(2, num_pages + 1):
+            payload['page'] = page
+            next_page = self.get_committees(payload)
+            yield next_page
+
     def get_committees(self, payload: dict) -> JSONType:
         """get response from committee API
             https://api.open.fec.gov/developers/#/committee/get_committees_

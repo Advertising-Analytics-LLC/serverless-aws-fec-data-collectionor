@@ -65,27 +65,49 @@ class EFilingRSSFeed:
 
         return response.content
 
-    def parse_rss(self, rss: str) -> List[str]:
+    def parse_rss(self, rss: str) -> List[dict]:
         """takes in requests.Response, gets xml, parses xml, returns committee_id
 
         Args:
-            rss (str): XML RSS from requests.Response.content
+            rss (str): XML RSS from requests.Response.content - baiscally a big list of
+
+        <title>New filing by LOCAL 32BJ SERVICE EMPLOYEES INTERNATIONAL UNION AMERICAN DREAM POLITICAL ACTION FUND</title>
+        <link/>http://docquery.fec.gov/dcdev/posted/1418494.fec
+        <description>&lt;p&gt;The CBOE GLOBAL MARKETS, INC. PAC (CBOE PAC) successfully filed  their F3XN JULY MONTHLY with the coverage period of
+        06/01/2020 to 06/30/2020 and a confirmation ID of FEC-1418518&lt;/p&gt;*********
+        CommitteeId: C00100693 | FilingId: 1418518 | FormType: F3XN | CoverageFrom: 06/01/2020 | CoverageThrough: 06/30/2020 | ReportType: JULY MONTHLY
+        *********</description<pubdate>Fri, 10 Jul 2020 11:15:40 GMT</pubdate>
+        <guid>http://docquery.fec.gov/dcdev/posted/1418495.fec</guid>
+        <dc:date>2020-07-10T11:15:40Z</dc:date>
+        </item>
+        <item>>
 
         Returns:
             List[dict]: The RSS items as a list of dictionaries
         """
 
-        regex = r'(CommitteeId: )(C[0-9]*)'
-        committee_id_list = []
-        soup = BeautifulSoup(rss)
-        descriptions = soup.find_all('description')
-        for desc in descriptions:
+        # gets committee_id and
+        def parse_for_x(regex: str, description: str):
             matches = re.findall(regex, str(desc), re.MULTILINE)
-            if len(matches) > 0:
-                match = matches[0][1]
-                committee_id_list.append(match)
+            if matches:
+                return matches[0][1]
+            return ''
 
-        return committee_id_list
+        id_list = []
+        soup = BeautifulSoup(rss)
+        logger.debug(soup)
+        items = soup.find_all('item')
+        for desc in items:
+            # logger.debug(help(desc))
+            id_list.append({
+                'committee_id': parse_for_x('(CommitteeId: )([C]?[0-9]*)', desc),
+                'filing_id': parse_for_x('(FilingId: )([0-9]*)', desc),
+                'form_type':  parse_for_x('(FormType: )([F3XNP]*)', desc),
+                'guid': desc.guid.text if desc.guid else desc.link
+            })
+        logger.debug(id_list)
+
+        return id_list
 
     def get_items_from_rss_feeds_of_interest(self) -> List[str]:
         """gets committee_ids from all endpoints of interest
@@ -111,11 +133,14 @@ def send_message_to_sns(msg: str) -> Dict[str, str]:
     """
 
     logger.debug(f'sending {msg} to sns')
-    message_json = json.dumps({'default': msg})
+    # message_json = json.loads({'default': msg})
+    # logger.debug(message_json)
+
     sns_response = client.publish(
         TopicArn=RSS_SNS_TOPIC_ARN,
-        Message=message_json,
-        MessageStructure='json')
+        Message=str(msg))
+        # Message=message_json,
+        # MessageStructure='json')
 
     return sns_response
 
@@ -130,10 +155,8 @@ def lambdaHandler(event: dict, context: object):
 
     eFilingRSSFeed = EFilingRSSFeed()
     items = eFilingRSSFeed.get_items_from_rss_feeds_of_interest()
-    logger.debug(items)
     sns_replies = []
     for item in items:
         ret = send_message_to_sns(item)
-        logger.debug(ret)
         sns_replies.append(ret)
     return sns_replies

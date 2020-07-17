@@ -38,17 +38,17 @@ class EFilingRSSFeed:
             'pac_and_party': 'F3X'
         }
 
-    def get_rss_by_type(self, filing_type: str, payload={}) -> Response:
-        """Given a request type it will return that RSS as a requests.Response
-        uses session, adapter to prevent
-        `RemoteDisconnected('Remote end closed connection without response`
+    def get_rss_by_type(self, filing_type: str, payload={}) -> str:
+        """Given a request type it will return that RSS as a string
+        uses session, adapter to prevent this error:
+            `RemoteDisconnected('Remote end closed connection without response`...
 
         Args:
             filing_type (str): (see self.filings_of_interest)
             payload (dict): request params object
 
         Returns:
-            Response: requests.Response containing RSS
+            Response: XML string
         """
 
         url = self.base_url + self.query_param + filing_type
@@ -63,20 +63,21 @@ class EFilingRSSFeed:
         response = session.get(url, stream=True, timeout=5, headers=headers)
         logger.debug(f'status_code: {response.status_code}')
 
-        return response
+        return response.content
 
-    def parse_rss(self, filing_response: Response) -> List[str]:
+    def parse_rss(self, rss: str) -> List[str]:
         """takes in requests.Response, gets xml, parses xml, returns committee_id
 
         Args:
-            filing_response (Response): requests.Response object
+            rss (str): XML RSS from requests.Response.content
 
         Returns:
             List[dict]: The RSS items as a list of dictionaries
         """
+
         regex = r'(CommitteeId: )(C[0-9]*)'
         committee_id_list = []
-        soup = BeautifulSoup(filing_response.content)
+        soup = BeautifulSoup(rss)
         descriptions = soup.find_all('description')
         for desc in descriptions:
             matches = re.findall(regex, str(desc), re.MULTILINE)
@@ -126,9 +127,13 @@ def lambdaHandler(event: dict, context: object):
         event (dict): json object containing headers and body of request
         context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
     """
+
     eFilingRSSFeed = EFilingRSSFeed()
     items = eFilingRSSFeed.get_items_from_rss_feeds_of_interest()
     logger.debug(items)
+    sns_replies = []
     for item in items:
         ret = send_message_to_sns(item)
         logger.debug(ret)
+        sns_replies.append(ret)
+    return sns_replies

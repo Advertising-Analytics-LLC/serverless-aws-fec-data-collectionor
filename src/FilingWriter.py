@@ -10,7 +10,9 @@ FilingWriter lambda:
 import boto3
 import json
 import os
+from requests import Response
 from time import time
+from typing import Dict
 from src import JSONType, logger
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -23,6 +25,11 @@ API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 # BUSYNESS LOGIC
 openFec = OpenFec(API_KEY)
 
+
+def parse_message(message: Response) -> Dict[str, str]:
+    msg_body = json.loads(message.body)
+    body_content = json.loads(msg_body['Message'].replace("'", '"'))
+    return body_content
 
 def load_reports_and_totals(committee_id):
     filters = {
@@ -65,15 +72,17 @@ def lambdaHandler(event: dict, context: object) -> bool:
         message = pull_message_from_sqs()
         if not message:
             return
-        logger.debug(message.body)
-        # committee_data = get_committee_data(committee_id)
+        message_parsed = parse_message(message)
+        committee_id = message_parsed['committee_id']
+        committee_data = load_reports_and_totals(committee_id)
 
-        # if not committee_data:
-        #     logger.error(f'Committee {committee_id} not found! exiting.')
-        #     return False
+        if not committee_data:
+            logger.error(f'Committee {committee_id} not found! exiting.')
+            return False
 
+        logger.debug(committee_data)
         # write_committee_data(committee_data[0])
-        message.delete()
+        # message.delete()
 
     if time() > time_to_end:
         minutes_ran = (time() - start_time) / 60

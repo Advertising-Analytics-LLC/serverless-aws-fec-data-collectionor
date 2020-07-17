@@ -48,7 +48,7 @@ functions:
 
   RSSSubscriber:
     handler: src/RSSSubscriber.lambdaHandler
-    timeout: 90
+    timeout: 180
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"

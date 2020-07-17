@@ -5,14 +5,17 @@ sqs:
 """
 
 import boto3
-import json
 import os
-from time import time
+import json
 from src import logger
+from time import time
+from typing import Any, Dict
 
 
 sqs = boto3.resource('sqs')
-SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
+SQS_QUEUE_NAME = os.environ['SQS_QUEUE_NAME']
+logger.debug(f'using queue: {SQS_QUEUE_NAME}')
+# SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', '')
 queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
 
 def pull_message_from_sqs() -> Dict[str, Any]:

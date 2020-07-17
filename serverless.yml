@@ -17,6 +17,7 @@ custom:
     LOG_LEVEL: DEBUG
     rss_sns_topic_arn: ${cf:fec-datasync-resources.RSSFeedTopicArn}
     rss_sqs_queue_arn: ${cf:fec-datasync-resources.NewFilingQueueArn}
+    rss_sqs_queue_name: ${cf:fec-datasync-resources.NewFilingQueueName}
     SQS_QUEUE_NAME: ${cf:fec-datasync-resources.CommitteeSyncQueueName}
     SQS_QUEUE_ARN: ${cf:fec-datasync-resources.CommitteeSyncQueueArn}
 
@@ -24,6 +25,7 @@ custom:
 # The lambda function(s) defined in this serverless config
 # nested interpolation allows for stage-specific references
 functions:
+
   CommitteeSync:
     handler: src/CommitteSync.committeSync
     environment:
@@ -32,6 +34,7 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
     events:
       - schedule: cron(0 0,8,16 * * ? *)
+
   CommitteeLoader:
     handler: src/CommitteLoader.committeLoader
     timeout: 10
@@ -41,17 +44,23 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
     events:
       - sqs: "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
+
   RSSSubscriber:
     handler: src/RSSSubscriber.lambdaHandler
+    timeout: 30
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
     events:
       - schedule: cron(0 0,8,16 * * ? *)
+
   FilingWriter:
     handler: src/FilingWriter.lambdaHandler
+    timeout: 15
     environment:
+      API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.rss_sqs_queue_name}
     events:
       - sqs: "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
 
@@ -119,6 +128,11 @@ provider:
       Resource:
         - "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
         - "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
+    - Effect: "Allow"
+      Action:
+        - sns:Publish
+      Resource:
+        - "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
   tags:
     serverless_managed: true
     serverless_name: ${self:service}

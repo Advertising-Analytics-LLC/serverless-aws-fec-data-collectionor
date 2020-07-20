@@ -58,22 +58,29 @@ class OpenFec:
             return True
         return False
 
-    def _get_request(self, url: str, payload: dict) -> Response:
+    def _get_request(self, url: str, payload: dict, throttle_multiplier=1) -> Response:
         """light wrapper over requests.get
+            Checks for OVER_RATE_LIMIT warning and throttles
 
         Args:
             url (str): url to get
             payload (dict): params payload
+            throttle_multiplier (int): multiplier for throttling timeout
 
         Returns:
             Response: Reponse object
         """
-        response = requests.get(url, params=payload)
+
         logger.debug(f'GET {url}, {payload}'.replace(self.api_key, 'API_KEY'))
+        response = requests.get(url, params=payload)
         logger.debug(response.json())
         if self._over_rate_limit(response):
-            sleep(self.throttle)
-            response = self._get_request(url, payload)
+            sleep_for_seconds = self.throttle * throttle_multiplier
+            logger.info(f'Sleeping for {sleep_for_seconds} seconds')
+            sleep(sleep_for_seconds)
+            throttle_multiplier += 1
+            response = self._get_request(url, payload, throttle_multiplier)
+
         return response
 
     def get_route(self, route:str, payload: dict) -> JSONType:
@@ -114,7 +121,7 @@ class OpenFec:
         num_pages = first_response['pagination']['pages']
         for page in range(2, num_pages + 1):
             payload['page'] = page
-            next_page = self.get_route(payload)
+            next_page = self.get_route(route, payload)
             yield next_page
 
     def get_committees(self, payload: dict) -> JSONType:

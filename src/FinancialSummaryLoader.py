@@ -84,6 +84,7 @@ def get_totals(committee_id: str, filters: Dict[str, Any]) -> Dict[str, Any]:
 
     return totals
 
+
 def get_filings_and_totals(committee_id: str) -> List[Dict[str, Any]]:
     """gets filings and totals for committee
 
@@ -93,6 +94,7 @@ def get_filings_and_totals(committee_id: str) -> List[Dict[str, Any]]:
     Returns:
         List[Dict[str, Any]]: List of responses
     """
+
     filters = {
         'committee_id': committee_id,
         'cycle': '2020', #fallback_cycle if cycle_out_of_range else cycle, # TODO: ?
@@ -103,9 +105,18 @@ def get_filings_and_totals(committee_id: str) -> List[Dict[str, Any]]:
     }
     filings = get_filings(deepcopy(filters))
     totals = get_totals(committee_id, deepcopy(filters))
+
     return filings, totals
 
+
 def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
+    """upserts amendment chain linker table
+
+    Args:
+        filing_id (str): ID of filing
+        amendment_chain (List[str]): list of amendment ids
+    """
+
     amendment_number = 0
     for amendment in amendment_chain:
         amendment_chain_exists_query = schema.amendment_chain_exists(filing_id, amendment)
@@ -115,8 +126,9 @@ def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
                 db.query(query)
             amendment_number += 1
 
+
 def upsert_filing(filing: JSONType):
-    """just dynamicaly generate the query
+    """upserts single filing record
 
     Args:
         filing (JSONType): A dictionary representing a single filing record
@@ -134,8 +146,41 @@ def upsert_filing(filing: JSONType):
 
 
 def upsert_filings(filings_list: JSONType):
+    """loops over filing records and upserts into db
+
+    Args:
+        filings_list (JSONType): list of filings as json/dict
+    """
     for filing in filings_list:
         upsert_filing(filing)
+
+
+def upsert_committee_total(commitee_total: JSONType):
+    """upserts single commitee total given as dict/json
+
+    Args:
+        filing (JSONType): A dictionary representing a single committee total record
+    """
+    pk1 = commitee_total['commitee_total']
+    pk2 = commitee_total['cycle']
+
+    total_exists_query = schema.committee_total_exists(pk1, pk2)
+    with Database() as db:
+        if db.record_exists(total_exists_query):
+            query = schema.insert_committee_total(commitee_total)
+        else:
+            query = schema.update_committee_total(commitee_total)
+        db.query(query)
+
+
+def upsert_committee_totals(commitee_total_list: JSONType):
+    """loops over list of committee totals records
+
+    Args:
+        commitee_total_list (JSONType): record as list of json/dicts
+    """
+    for committee_total in commitee_total_list:
+        upsert_committee_total(committee_total)
 
 
 def lambdaHandler(event:dict, context: object) -> bool:
@@ -167,6 +212,11 @@ def lambdaHandler(event:dict, context: object) -> bool:
         # filing is list of lists, flatten it
         filings_flat = [item for sublist in filings for item in sublist]
         upsert_filings(filings_flat)
+
+        # filing is list of lists, flatten it
+        totals_flat = [item for sublist in totals for item in sublist]
+        upsert_committee_totals(totals_flat)
+
         message.delete()
 
     if time() > time_to_end:

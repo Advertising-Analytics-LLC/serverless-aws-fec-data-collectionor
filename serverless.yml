@@ -46,8 +46,8 @@ functions:
     events:
       - sqs: "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
 
-  RSSSubscriber:
-    handler: src/RSSSubscriber.lambdaHandler
+  FilingSync:
+    handler: src/FilingSync.lambdaHandler
     timeout: 180
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -55,8 +55,8 @@ functions:
     events:
       - schedule: cron(0 0,8,16 * * ? *)
 
-  FilingWriter:
-    handler: src/FilingWriter.lambdaHandler
+  FinancialSummaryLoader:
+    handler: src/FinancialSummaryLoader.lambdaHandler
     timeout: 15
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}

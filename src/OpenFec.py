@@ -54,7 +54,7 @@ class OpenFec:
             bool: is request OVER_RATE_LIMIT
         """
         if response.status_code == 429:
-            logger.info(response.to_json())
+            logger.info(f'Over rate limit, {response.json()}')
             return True
         return False
 
@@ -77,8 +77,8 @@ class OpenFec:
         return response
 
     def get_route(self, route:str, payload: dict) -> JSONType:
-        """get response from committee API
-            https://api.open.fec.gov/developers/#/committee/get_committees_
+        """get response from openfec API
+            https://api.open.fec.gov/developers/
 
         Args:
             payload (dict): request params object
@@ -101,20 +101,20 @@ class OpenFec:
         return response.json()
 
     def get_route_paginator(self, route: str, payload: dict) -> Generator:
-        """paginator for committees endpoint
+        """paginator for any endpoint
 
         Args:
             payload (dict): request params
 
         Yields:
-            Generator: python Generator object to iteratate over committee responses
+            Generator: python Generator object to iteratate over responses
         """
         first_response = self.get_route(route, payload)
         yield first_response
         num_pages = first_response['pagination']['pages']
         for page in range(2, num_pages + 1):
             payload['page'] = page
-            next_page = self.get_committees(payload)
+            next_page = self.get_route(payload)
             yield next_page
 
     def get_committees(self, payload: dict) -> JSONType:

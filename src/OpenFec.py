@@ -69,7 +69,7 @@ class OpenFec:
             Response: Reponse object
         """
         response = requests.get(url, params=payload)
-        logger.debug(f'GET {url}'.replace(self.api_key, 'API_KEY'))
+        logger.debug(f'GET {url}, {payload}'.replace(self.api_key, 'API_KEY'))
         logger.debug(response.json())
         if self._over_rate_limit(response):
             sleep(self.throttle)

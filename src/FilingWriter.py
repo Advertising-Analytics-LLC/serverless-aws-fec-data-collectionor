@@ -44,12 +44,16 @@ def load_reports_and_totals(committee_id):
     # (3) call /filings? under tag:filings
     # get reports from filings endpoint filter by form_category=REPORT
     path = '/filings/'
-    reports = openFec.get_route(path, filters)
+    reports = []
+    for report in  openFec.get_route_paginator(path, filters):
+        reports.append(report)
 
     # (4)call committee/{committee_id}/totals? under tag:financial
     # get financial totals
     path = '/committee/' + committee_id + '/totals/'
-    totals = openFec.get_route(path, filters)
+    totals = []
+    for report in openFec.get_route_paginator(path, filters):
+        totals.append(report)
 
     return reports, totals
 

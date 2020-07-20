@@ -10,6 +10,7 @@ FilingWriter lambda:
 import boto3
 import json
 import os
+from copy import deepcopy
 from requests import Response
 from time import asctime, gmtime, time
 from typing import Any, Dict, List
@@ -99,9 +100,13 @@ def get_filings_and_totals(committee_id: str) -> List[Dict[str, Any]]:
         'most_recent': True,
         'form_category': 'REPORT'
     }
-    filings = get_filings(filters)
-    totals = get_totals(committee_id, filters)
-    return [filings, totals]
+    filings = get_filings(deepcopy(filters))
+    totals = get_totals(committee_id, deepcopy(filters))
+    return filings, totals
+
+
+def upsert_filings():
+    pass
 
 
 def lambdaHandler(event: dict, context: object) -> bool:
@@ -121,18 +126,20 @@ def lambdaHandler(event: dict, context: object) -> bool:
     logger.debug(f'running {__file__} for {minutes_to_run}, from now until {asctime(gmtime(time_to_end))}')
 
     while time() < time_to_end:
-        message = pull_message_from_sqs()
-        if not message:
-            return
-        message_parsed = parse_message(message)
-        committee_id = message_parsed['committee_id']
-        committee_data = get_filings_and_totals(committee_id)
+        # message = pull_message_from_sqs()
+        # if not message:
+        #     return
+        # message_parsed = parse_message(message)
+        # committee_id = message_parsed['committee_id']
+        # committee_id = 'C00745505'# C00703124
+        committee_id = 'C00696070'
+        filings, totals = get_filings_and_totals(committee_id)
+        logger.debug('filings')
+        logger.debug(filings)
+        logger.debug('totals')
+        logger.debug(totals)
 
-        if not committee_data:
-            logger.error(f'Committee {committee_id} not found! exiting.')
-            return False
 
-        logger.debug(committee_data)
         exit(0)
         # write_committee_data(committee_data[0])
         message.delete()

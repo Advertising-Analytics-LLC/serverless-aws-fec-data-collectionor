@@ -6,13 +6,6 @@
 -- Table structure for table Filings generated from model 'Filings'
 --
 
-CREATE TABLE IF NOT EXISTS fec.filing_amendment_chain (
-  filing_amendment_chain_id INT IDENTITY(1,1),
-  PRIMARY KEY(filing_amendment_chain_id)
-) DISTSTYLE AUTO;
-
-COMMENT ON TABLE filing_amendment_chain is 'Linking table to connect filings to amendments';
-
 CREATE TABLE IF NOT EXISTS fec.filings (
   amendment_indicator TEXT DEFAULT NULL,
   amendment_version INT DEFAULT NULL,
@@ -35,7 +28,7 @@ CREATE TABLE IF NOT EXISTS fec.filings (
   document_type_full TEXT DEFAULT NULL,
   election_year INT DEFAULT NULL,
   ending_image_number TEXT DEFAULT NULL,
-  fec_file_id TEXT DEFAULT NULL,
+  fec_file_id TEXT NOT NULL,
   fec_url TEXT DEFAULT NULL,
   file_number INT DEFAULT NULL,
   form_category TEXT DEFAULT NULL,
@@ -68,5 +61,6 @@ CREATE TABLE IF NOT EXISTS fec.filings (
   total_individual_contributions DECIMAL(20, 9) DEFAULT NULL,
   total_receipts DECIMAL(20, 9) DEFAULT NULL,
   treasurer_name TEXT DEFAULT NULL,
-  update_date DATE DEFAULT NULL
+  update_date DATE DEFAULT NULL,
+  PRIMARY KEY(fec_file_id)
 ) DISTSTYLE AUTO;

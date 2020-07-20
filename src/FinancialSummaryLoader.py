@@ -14,7 +14,8 @@ from copy import deepcopy
 from requests import Response
 from time import asctime, gmtime, time
 from typing import Any, Dict, List
-from src import JSONType, logger
+from src import JSONType, logger, schema
+from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.sqs import pull_message_from_sqs
@@ -104,12 +105,33 @@ def get_filings_and_totals(committee_id: str) -> List[Dict[str, Any]]:
     totals = get_totals(committee_id, deepcopy(filters))
     return filings, totals
 
-
-def upsert_filings():
+def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
     pass
 
+def upsert_filing(filing: JSONType):
+    """just dynamicaly generate the query
 
-def lambdaHandler(event: dict, context: object) -> bool:
+    Args:
+        filing (JSONType): A dictionary representing a single filing record
+    """
+    pk = filing['fec_file_id']
+    amendment_chain = filing.pop('amendment_chain')
+    upsert_amendment_chain(pk, amendment_chain)
+    filing_exists_query = schema.fec_file_exists(pk)
+    with Database() as db:
+        if db.record_exists(filing_exists_query):
+            query = schema.insert_fec_filing(filing)
+        else:
+            query = schema.insert_fec_filing(filing)
+        db.query(query)
+
+
+def upsert_filings(filings_list: JSONType):
+    for filing in filings_list:
+        upsert_filing(filing)
+
+
+def lambdaHandler(event:dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
 
     Args:
@@ -124,24 +146,20 @@ def lambdaHandler(event: dict, context: object) -> bool:
     minutes_to_run = 10
     time_to_end = start_time + 60 * minutes_to_run
     logger.debug(f'running {__file__} for {minutes_to_run}, from now until {asctime(gmtime(time_to_end))}')
+    logger.debug(event)
 
     while time() < time_to_end:
-        # message = pull_message_from_sqs()
-        # if not message:
-        #     return
-        # message_parsed = parse_message(message)
-        # committee_id = message_parsed['committee_id']
-        # committee_id = 'C00745505'# C00703124
-        committee_id = 'C00696070'
+        message = pull_message_from_sqs()
+        if not message:
+            return
+        message_parsed = parse_message(message)
+        committee_id = message_parsed['committee_id']
+
         filings, totals = get_filings_and_totals(committee_id)
-        logger.debug('filings')
-        logger.debug(filings)
-        logger.debug('totals')
-        logger.debug(totals)
 
-
-        exit(0)
-        # write_committee_data(committee_data[0])
+        # filing is list of lists, flatten it
+        filings_flat = [item for sublist in filings for item in sublist]
+        upsert_filings(filings_flat)
         message.delete()
 
     if time() > time_to_end:

@@ -7,15 +7,10 @@ influences:
 
 import json
 import requests
-import logging
 from requests import Response
-from src import JSONType
+from src import JSONType, logger
 from time import sleep
 from typing import Generator
-
-
-# logging
-logger = logging.getLogger(__name__)
 
 class OpenFec:
     """Lightweight wrapper over the openFEC api - https://api.open.fec.gov/developers/

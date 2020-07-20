@@ -74,6 +74,35 @@ class Database:
 
         return value
 
+    def query(self, query: sql.SQL) -> Any:
+        """exec and commit a single query
+
+        Args:
+            query (sql.SQL): SQL query
+
+        Returns:
+            Any: the result of fetchall
+        """
+        return_value = self._query(query)
+        self.conn.commit()
+        return return_value
+
+
+    def record_exists(self, query: sql.SQL) -> bool:
+        """takes a select query and queries for existing records
+
+        Args:
+            query (sql.SQL): SELECT query to establish existance
+
+        Returns:
+            bool: True if exists else False
+        """
+        value = self._query(query)
+        if value:
+            logger.debug(f'Record exists for {query.as_string(self.curr)}')
+            return True
+        return False
+
     def _transform_committee_detail(self, committee_detail: JSONType) -> JSONType:
         """handles transformation of CommitteeDetail object:
             - date this update - the database converts 'now' to a timestamp

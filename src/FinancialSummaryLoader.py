@@ -106,7 +106,14 @@ def get_filings_and_totals(committee_id: str) -> List[Dict[str, Any]]:
     return filings, totals
 
 def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
-    pass
+    amendment_number = 0
+    for amendment in amendment_chain:
+        amendment_chain_exists_query = schema.amendment_chain_exists(filing_id, amendment)
+        with Database() as db:
+            if not db.record_exists(amendment_chain_exists_query):
+                query = schema.insert_amendment_chain(filing_id, amendment, amendment_number)
+                db.query(query)
+            amendment_number += 1
 
 def upsert_filing(filing: JSONType):
     """just dynamicaly generate the query

@@ -335,3 +335,13 @@ def update_fec_filing(filing: JSONType) -> SQL:
     query = sql.SQL(query_string)\
                 .format(*[Literal(val) for key, val in values.items()], Literal(fec_file_id))
     return query
+
+def amendment_chain_exists(fec_file_id: str, amendment_id: str) -> SQL:
+    query = sql.SQL('SELECT * FROM fec.filing_amendment_chain WHERE fec_file_id={} AND amendment_id={}')\
+                .format(Literal(fec_file_id), Literal(amendment_id))
+    return query
+
+def insert_amendment_chain(fec_file_id: str, amendment_id: str, amendment_number: int) -> SQL:
+    query = sql.SQL('INSERT INTO fec.filing_amendment_chain(fec_file_id, amendment_id, amendment_number) VALUES ({}, {}, {})')\
+                .format(Literal(fec_file_id), Literal(amendment_id), Literal(amendment_number))
+    return query

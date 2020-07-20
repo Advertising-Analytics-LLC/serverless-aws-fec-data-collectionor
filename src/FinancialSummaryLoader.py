@@ -122,7 +122,7 @@ def upsert_filing(filing: JSONType):
         if db.record_exists(filing_exists_query):
             query = schema.insert_fec_filing(filing)
         else:
-            query = schema.insert_fec_filing(filing)
+            query = schema.update_fec_filing(filing)
         db.query(query)
 
 

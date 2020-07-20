@@ -325,3 +325,13 @@ def insert_fec_filing(filing: JSONType) -> SQL:
     INSERT INTO fec.filings VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
     ''').format(*[Literal(val) for key, val in values.items()])
     return query
+
+def update_fec_filing(filing: JSONType) -> SQL:
+    fec_file_id = filing.pop('fec_file_id')
+    values = OrderedDict(sorted(filing.items()))
+    query_string = 'UPDATE fec.filings SET ' \
+                    + ', '.join([f' {key}={{}}' for key, val in values.items()])\
+                    + ' WHERE fec_file_id={}'
+    query = sql.SQL(query_string)\
+                .format(*[Literal(val) for key, val in values.items()], Literal(fec_file_id))
+    return query

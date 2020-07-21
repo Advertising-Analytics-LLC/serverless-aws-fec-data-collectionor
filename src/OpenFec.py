@@ -70,7 +70,7 @@ class OpenFec:
         response = requests.get(url, params=payload)
         logger.debug(response.json())
         if self._over_rate_limit(response):
-            sleep_for_seconds = self.throttle * throttle_multiplier
+            sleep_for_seconds = self.throttle * throttle_multiplier ** 2
             logger.info(f'Sleeping for {sleep_for_seconds} seconds')
             sleep(sleep_for_seconds)
             throttle_multiplier += 1

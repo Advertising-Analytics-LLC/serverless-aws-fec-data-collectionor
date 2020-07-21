@@ -213,11 +213,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
         bool: Did this go well?
     """
 
-    start_time = time()
-    minutes_to_run = 10
-    time_to_end = start_time + 60 * minutes_to_run
-    logger.debug(f'running {__file__} for {minutes_to_run}, from now until {asctime(gmtime(time_to_end))}')
-    logger.debug(event)
+    logger.debug(f'running {__file__}')
 
     messages = parse_events(event)
 
@@ -235,7 +231,5 @@ def lambdaHandler(event:dict, context: object) -> bool:
         # filing is list of lists, flatten it
         totals_flat = [item for sublist in totals for item in sublist]
         upsert_committee_totals(totals_flat)
-
-
 
     return True

@@ -18,48 +18,13 @@ from src import JSONType, logger, schema
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
+from src.sqs import delete_message_from_sqs, parse_message
 
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 
 # BUSYNESS LOGIC
-
-def parse_events(event: JSONType) -> List[Dict[str, Any]]:
-    """takes the raw event from AWS Lambda and parses into a list of messages
-
-    Args:
-        event (JSONType): List of SQS Message events
-            see https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html
-
-    Returns:
-        List[Dict[str, Any]]: List of message bodies
-    """
-
-    message_body_list = []
-    records = event['Records']
-    for record in records:
-        my_body = record['body']
-        json_body = json.loads(my_body)
-        message_body_list.append(json_body)
-
-    return message_body_list
-
-
-def parse_message(message: JSONType) -> Dict[str, str]:
-    """parse string from sqs - it's kind of jsonish
-
-    Args:
-        message (JSON): almost json
-
-    Returns:
-        Dict[str, str]: python dictionary
-    """
-
-    body_content = json.loads(message['Message'].replace("'", '"'))
-
-    return body_content
-
 
 def get_filings(filters: Dict[str, str]) -> Dict[str, Any]:
     """pulls filings from openfec api
@@ -214,8 +179,9 @@ def lambdaHandler(event:dict, context: object) -> bool:
     """
 
     logger.debug(f'running {__file__}')
+    logger.debug(event)
 
-    messages = parse_events(event)
+    messages = event['Records']
 
     for message in messages:
 
@@ -231,5 +197,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
         # filing is list of lists, flatten it
         totals_flat = [item for sublist in totals for item in sublist]
         upsert_committee_totals(totals_flat)
+
+        delete_message_from_sqs(message)
 
     return True

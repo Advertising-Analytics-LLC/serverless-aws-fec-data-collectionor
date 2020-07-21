@@ -27,9 +27,10 @@ custom:
 functions:
 
   CommitteeSync:
+    description: Polls OpenFEC API (once) for committees that have filed recently and sends the IDs to SQS
     handler: src/CommitteSync.committeSync
-    timeout: 30
     reservedConcurrency: 2
+    timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -38,7 +39,9 @@ functions:
       - schedule: cron(0 0,8,16 * * ? *)
 
   CommitteeLoader:
+    description: Recieves committee Ids from SQS, queries api for committee info, updates DB
     handler: src/CommitteLoader.committeLoader
+    reservedConcurrency: 2
     timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -48,6 +51,7 @@ functions:
       - sqs: "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
 
   FilingSync:
+    description: Scrapes FEC RSS feed for recent filings, pushes the new filings to SNS and SQS
     handler: src/FilingSync.lambdaHandler
     timeout: 180
     environment:
@@ -57,9 +61,10 @@ functions:
       - schedule: cron(0 0,8,16 * * ? *)
 
   FinancialSummaryLoader:
+    description: Takes new filings from SQS, queries api, writes to DB
     handler: src/FinancialSummaryLoader.lambdaHandler
     reservedConcurrency: 2
-    timeout: 60
+    timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}

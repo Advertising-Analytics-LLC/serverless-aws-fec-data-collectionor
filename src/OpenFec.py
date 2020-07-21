@@ -7,15 +7,10 @@ influences:
 
 import json
 import requests
-import logging
 from requests import Response
-from src import JSONType
+from src import JSONType, logger
 from time import sleep
 from typing import Generator
-
-
-# logging
-logger = logging.getLogger(__name__)
 
 class OpenFec:
     """Lightweight wrapper over the openFEC api - https://api.open.fec.gov/developers/
@@ -54,27 +49,75 @@ class OpenFec:
             bool: is request OVER_RATE_LIMIT
         """
         if response.status_code == 429:
-            logger.info(response.to_json())
+            logger.info(f'Over rate limit, {response.json()}')
             return True
         return False
 
-    def _get_request(self, url: str, payload: dict) -> Response:
+    def _get_request(self, url: str, payload: dict, throttle_multiplier=1) -> Response:
         """light wrapper over requests.get
+            Checks for OVER_RATE_LIMIT warning and throttles
 
         Args:
             url (str): url to get
             payload (dict): params payload
+            throttle_multiplier (int): multiplier for throttling timeout
 
         Returns:
             Response: Reponse object
         """
+
+        logger.debug(f'GET {url}, {payload}'.replace(self.api_key, 'API_KEY'))
         response = requests.get(url, params=payload)
-        logger.debug(f'GET {url}')
         logger.debug(response.json())
         if self._over_rate_limit(response):
-            sleep(self.throttle)
-            response = self._get_request(url, payload)
+            sleep_for_seconds = self.throttle * throttle_multiplier ** 2
+            logger.info(f'Sleeping for {sleep_for_seconds} seconds')
+            sleep(sleep_for_seconds)
+            throttle_multiplier += 1
+            response = self._get_request(url, payload, throttle_multiplier)
+
         return response
+
+    def get_route(self, route:str, payload: dict) -> JSONType:
+        """get response from openfec API
+            https://api.open.fec.gov/developers/
+
+        Args:
+            payload (dict): request params object
+
+        Returns:
+            json: response as json object, has this structure:
+                    {
+                      "api_version": "1.0",
+                      "pagination": {
+                        "page": 1,
+                        "per_page": 20,
+                        "count": 0,
+                        "pages": 0
+                      },
+                      "results": []
+                    }
+        """
+        url = self._get_route(route)
+        response = self._get_request(url, payload)
+        return response.json()
+
+    def get_route_paginator(self, route: str, payload: dict) -> Generator:
+        """paginator for any endpoint
+
+        Args:
+            payload (dict): request params
+
+        Yields:
+            Generator: python Generator object to iteratate over responses
+        """
+        first_response = self.get_route(route, payload)
+        yield first_response
+        num_pages = first_response['pagination']['pages']
+        for page in range(2, num_pages + 1):
+            payload['page'] = page
+            next_page = self.get_route(route, payload)
+            yield next_page
 
     def get_committees(self, payload: dict) -> JSONType:
         """get response from committee API

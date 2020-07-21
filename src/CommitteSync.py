@@ -13,6 +13,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 from typing import List, Dict
+from src import logger
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.serialization import serialize_dates
@@ -22,11 +23,6 @@ from src.serialization import serialize_dates
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
 MIN_LAST_F1_DATE = os.getenv('MIN_LAST_F1_DATE', datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d'))
-
-# LOGGING
-logger = logging.getLogger(__name__)
-logger.setLevel(os.environ.get('LOG_LEVEL', logging.INFO))
-
 
 # BUSYNESS LOGIC
 def get_committees_since(isodate: str) -> json:

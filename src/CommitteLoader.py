@@ -71,6 +71,7 @@ def committeLoader(event: dict, context: object) -> bool:
     start_time = time()
     time_to_end = start_time + 60 * 10
     logger.info(f'Running committeeLoader from now until {time_to_end}')
+    logger.debug(event)
 
     while time() < time_to_end:
         message = pull_message_from_sqs()

@@ -29,6 +29,7 @@ functions:
   CommitteeSync:
     handler: src/CommitteSync.committeSync
     timeout: 30
+    reservedConcurrency: 2
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -57,7 +58,8 @@ functions:
 
   FinancialSummaryLoader:
     handler: src/FinancialSummaryLoader.lambdaHandler
-    timeout: 15
+    reservedConcurrency: 2
+    timeout: 60
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}

@@ -128,9 +128,9 @@ def upsert_filing(filing: JSONType) -> bool:
     filing_exists_query = schema.fec_file_exists(pk)
     with Database() as db:
         if db.record_exists(filing_exists_query):
-            query = schema.insert_fec_filing(filing)
-        else:
             query = schema.update_fec_filing(filing)
+        else:
+            query = schema.insert_fec_filing(filing)
 
         success = db.try_query(query)
         return success
@@ -161,9 +161,9 @@ def upsert_committee_total(commitee_total: JSONType) -> bool:
     total_exists_query = schema.committee_total_exists(pk1, pk2)
     with Database() as db:
         if db.record_exists(total_exists_query):
-            query = schema.insert_committee_total(commitee_total)
-        else:
             query = schema.update_committee_total(commitee_total)
+        else:
+            query = schema.insert_committee_total(commitee_total)
 
         success = db.try_query(query)
         return success

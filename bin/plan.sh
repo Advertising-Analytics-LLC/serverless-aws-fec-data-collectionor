@@ -10,6 +10,11 @@ aws cloudformation create-change-set \
     --stack-name "${stack_name}" \
     --template-body file://$(pwd)/prerequisite-cloudformation-resources.yml
 
+echo 'waiting cloudformation change set creation completion'
+aws cloudformation wait change-set-create-complete \
+    --change-set-name "${change_set_name}" \
+    --stack-name "${stack_name}"
+
 echo 'describing cloudformation change set'
 aws cloudformation describe-change-set \
     --change-set-name "${change_set_name}" \

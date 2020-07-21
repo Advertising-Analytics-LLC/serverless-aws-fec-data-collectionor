@@ -161,7 +161,7 @@ def upsert_committee_total(commitee_total: JSONType):
     Args:
         filing (JSONType): A dictionary representing a single committee total record
     """
-    pk1 = commitee_total['commitee_total']
+    pk1 = commitee_total['committee_id']
     pk2 = commitee_total['cycle']
 
     total_exists_query = schema.committee_total_exists(pk1, pk2)

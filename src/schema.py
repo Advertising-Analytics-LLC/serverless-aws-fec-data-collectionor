@@ -356,13 +356,13 @@ def insert_amendment_chain(fec_file_id: str, amendment_id: str, amendment_number
 # comittee totals
 
 def committee_total_exists(committee_id: str, cycle: int) -> SQL:
-    query = sql.SQL('SELECT * FROM fec.committee_totals WHERE fec_file_id={committee_id} AND cycle={cycle}')\
+    query = sql.SQL('SELECT * FROM fec.committee_totals WHERE committee_id={committee_id} AND cycle={cycle}')\
         .format(committee_id=Literal(committee_id), cycle=Literal(cycle))
     return query
 
 
 def insert_committee_total(committee_total: JSONType) -> SQL:
-    values = OrderedDict(sorted(filing.items()))
+    values = OrderedDict(sorted(committee_total.items()))
     query = sql.SQL('''
     INSERT INTO fec.committee_totals
     VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
@@ -373,7 +373,7 @@ def update_committee_total(committee_total: JSONType) -> SQL:
     committee_id = committee_total.pop('committee_id')
     cycle = committee_total.pop('cycle')
 
-    values = OrderedDict(sorted(filing.items()))
+    values = OrderedDict(sorted(committee_total.items()))
     query_string = 'UPDATE fec.committee_totals SET ' \
         + ', '.join([f' {key}={{}}' for key, val in values.items()])\
         + ' WHERE committee_id={}'\

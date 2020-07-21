@@ -77,17 +77,19 @@ package:
   exclude:
     - .env
     - .venv
-    - .vscode
+    - .vscode/**
     - .git/**
     - .gitignore
-    - .pytest_cache
+    - .pytest_cache/**
+    - bin/**
     - node_modules/**
     - package.json
     - package-lock.json
     - prerequisite-cloudformation-resources.yml
     - README.md
     - requirements.txt
-    - tmp
+    - sql/**
+    - tmp/**
 
 # plugin to package dependencies
 plugins:

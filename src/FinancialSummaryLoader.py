@@ -111,22 +111,29 @@ def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
             amendment_number += 1
 
 
-def upsert_filing(filing: JSONType):
+def upsert_filing(filing: JSONType) -> bool:
     """upserts single filing record
 
     Args:
         filing (JSONType): A dictionary representing a single filing record
+
+    Returns:
+        bool: success
     """
+
     pk = filing['fec_file_id']
     amendment_chain = filing.pop('amendment_chain')
     upsert_amendment_chain(pk, amendment_chain)
+
     filing_exists_query = schema.fec_file_exists(pk)
     with Database() as db:
         if db.record_exists(filing_exists_query):
-            query = schema.insert_fec_filing(filing)
-        else:
             query = schema.update_fec_filing(filing)
-        db.query(query)
+        else:
+            query = schema.insert_fec_filing(filing)
+
+        success = db.try_query(query)
+        return success
 
 
 def upsert_filings(filings_list: JSONType):
@@ -139,11 +146,14 @@ def upsert_filings(filings_list: JSONType):
         upsert_filing(filing)
 
 
-def upsert_committee_total(commitee_total: JSONType):
+def upsert_committee_total(commitee_total: JSONType) -> bool:
     """upserts single commitee total given as dict/json
 
     Args:
         filing (JSONType): A dictionary representing a single committee total record
+
+    Returns:
+        bool: success
     """
     pk1 = commitee_total['committee_id']
     pk2 = commitee_total['cycle']
@@ -151,10 +161,12 @@ def upsert_committee_total(commitee_total: JSONType):
     total_exists_query = schema.committee_total_exists(pk1, pk2)
     with Database() as db:
         if db.record_exists(total_exists_query):
-            query = schema.insert_committee_total(commitee_total)
-        else:
             query = schema.update_committee_total(commitee_total)
-        db.query(query)
+        else:
+            query = schema.insert_committee_total(commitee_total)
+
+        success = db.try_query(query)
+        return success
 
 
 def upsert_committee_totals(commitee_total_list: JSONType):

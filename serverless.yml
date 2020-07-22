@@ -27,7 +27,9 @@ custom:
 functions:
 
   CommitteeSync:
+    description: Polls OpenFEC API (once) for committees that have filed recently and sends the IDs to SQS
     handler: src/CommitteSync.committeSync
+    reservedConcurrency: 1
     timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -37,7 +39,9 @@ functions:
       - schedule: cron(0 0,8,16 * * ? *)
 
   CommitteeLoader:
+    description: Recieves committee Ids from SQS, queries api for committee info, updates DB
     handler: src/CommitteLoader.committeLoader
+    reservedConcurrency: 1
     timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -47,7 +51,9 @@ functions:
       - sqs: "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
 
   FilingSync:
+    description: Scrapes FEC RSS feed for recent filings, pushes the new filings to SNS and SQS
     handler: src/FilingSync.lambdaHandler
+    reservedConcurrency: 1
     timeout: 180
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -56,8 +62,10 @@ functions:
       - schedule: cron(0 0,8,16 * * ? *)
 
   FinancialSummaryLoader:
+    description: Takes new filings from SQS, queries api, writes to DB
     handler: src/FinancialSummaryLoader.lambdaHandler
-    timeout: 15
+    reservedConcurrency: 1
+    timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -70,17 +78,19 @@ package:
   exclude:
     - .env
     - .venv
-    - .vscode
+    - .vscode/**
     - .git/**
     - .gitignore
-    - .pytest_cache
+    - .pytest_cache/**
+    - bin/**
     - node_modules/**
     - package.json
     - package-lock.json
     - prerequisite-cloudformation-resources.yml
     - README.md
     - requirements.txt
-    - tmp
+    - sql/**
+    - tmp/**
 
 # plugin to package dependencies
 plugins:

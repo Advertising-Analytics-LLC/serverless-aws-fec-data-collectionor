@@ -18,29 +18,13 @@ from src import JSONType, logger, schema
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
-from src.sqs import pull_message_from_sqs
+from src.sqs import delete_message_from_sqs, parse_message
 
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 
 # BUSYNESS LOGIC
-
-def parse_message(message: JSONType) -> Dict[str, str]:
-    """parse string from sqs - it's kind of jsonish
-
-    Args:
-        message (JSON): almost json
-
-    Returns:
-        Dict[str, str]: python dictionary
-    """
-
-    msg_body = json.loads(message.body)
-    body_content = json.loads(msg_body['Message'].replace("'", '"'))
-
-    return body_content
-
 
 def get_filings(filters: Dict[str, str]) -> Dict[str, Any]:
     """pulls filings from openfec api
@@ -194,16 +178,13 @@ def lambdaHandler(event:dict, context: object) -> bool:
         bool: Did this go well?
     """
 
-    start_time = time()
-    minutes_to_run = 10
-    time_to_end = start_time + 60 * minutes_to_run
-    logger.debug(f'running {__file__} for {minutes_to_run}, from now until {asctime(gmtime(time_to_end))}')
+    logger.debug(f'running {__file__}')
     logger.debug(event)
 
-    while time() < time_to_end:
-        message = pull_message_from_sqs()
-        if not message:
-            return
+    messages = event['Records']
+
+    for message in messages:
+
         message_parsed = parse_message(message)
         committee_id = message_parsed['committee_id']
 
@@ -217,10 +198,6 @@ def lambdaHandler(event:dict, context: object) -> bool:
         totals_flat = [item for sublist in totals for item in sublist]
         upsert_committee_totals(totals_flat)
 
-        message.delete()
-
-    if time() > time_to_end:
-        minutes_ran = (time() - start_time) / 60
-        logger.warn(f'committeeLoader ended late at {minutes_ran} ')
+        delete_message_from_sqs(message)
 
     return True

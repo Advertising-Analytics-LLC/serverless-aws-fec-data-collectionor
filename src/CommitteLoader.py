@@ -19,7 +19,7 @@ from src import logger
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.serialization import serialize_dates
-from src.sqs import pull_message_from_sqs
+from src.sqs import delete_message_from_sqs, parse_message
 
 
 # SSM VARS
@@ -68,15 +68,16 @@ def committeLoader(event: dict, context: object) -> bool:
         json:
     """
 
-    start_time = time()
-    time_to_end = start_time + 60 * 10
-    logger.info(f'Running committeeLoader from now until {time_to_end}')
+    logger.info(f'running {__file__}')
+    logger.debug(event)
 
-    while time() < time_to_end:
-        message = pull_message_from_sqs()
-        if not message:
-            return
-        committee_id = message.body
+    messages = event['Records']
+
+    for message in messages:
+
+        message_parsed = parse_message(message)
+        committee_id = message_parsed
+
         committee_data = get_committee_data(committee_id)
 
         if not committee_data:
@@ -84,10 +85,7 @@ def committeLoader(event: dict, context: object) -> bool:
             return False
 
         write_committee_data(committee_data[0])
-        message.delete()
 
-    if time() > time_to_end:
-        minutes_ran = (time() - start_time) / 60
-        logger.warn(f'committeeLoader ended late at {minutes_ran} ')
+        delete_message_from_sqs(message)
 
     return True

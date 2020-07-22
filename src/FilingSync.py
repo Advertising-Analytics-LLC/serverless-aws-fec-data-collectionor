@@ -140,6 +140,7 @@ def send_message_to_sns(msg: str) -> Dict[str, str]:
 
     return sns_response
 
+
 # handler for aws lambda
 def lambdaHandler(event: dict, context: object):
     """lambdaHandler
@@ -152,7 +153,9 @@ def lambdaHandler(event: dict, context: object):
     eFilingRSSFeed = EFilingRSSFeed()
     items = eFilingRSSFeed.get_items_from_rss_feeds_of_interest()
     sns_replies = []
+
     for item in items:
         ret = send_message_to_sns(item)
         sns_replies.append(ret)
+
     return sns_replies

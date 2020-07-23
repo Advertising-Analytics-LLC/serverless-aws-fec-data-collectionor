@@ -8,14 +8,26 @@ FECFileLoader lambda:
 """
 
 import boto3
+import fecfile
 import json
 import os
-from requests import Response
+import requests
 from typing import Any, Dict, List
 from src import JSONType, logger, schema
 from src.database import Database
 from src.sqs import delete_message_from_sqs, parse_message
 
+from src.serialization import serialize_dates
+
+def get_fec_file(url: str) -> bytes:
+    logger.debug(f'GET {url}')
+    headers = {'User-Agent': 'curl/7.64.1'}
+    response = requests.get(url, allow_redirects=True, headers=headers)
+    return response.text
+
+# def parse_fec_file(fec_file: bytes) -> str:
+#     newline = r'\n'
+#     seperator = r'\x1c'
 
 def lambdaHandler(event:dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
@@ -34,10 +46,11 @@ def lambdaHandler(event:dict, context: object) -> bool:
     messages = event['Records']
 
     for message in messages:
-        exit(1)
-
         message_parsed = parse_message(message)
+        filing_id = message_parsed['filing_id']
+        fec_file_dict = fecfile.from_http(filing_id)
+        schedule_b_dict = fec_file_dict['itemizations']['Schedule B']
 
-        delete_message_from_sqs(message)
+        # delete_message_from_sqs(message)
 
     return True

@@ -62,5 +62,6 @@ CREATE TABLE IF NOT EXISTS fec.filings (
   total_receipts DECIMAL(20, 9) DEFAULT NULL,
   treasurer_name TEXT DEFAULT NULL,
   update_date DATE DEFAULT NULL,
-  PRIMARY KEY(fec_file_id)
+  PRIMARY KEY(fec_file_id),
+  UNIQUE(fec_file_id)
 ) DISTSTYLE AUTO;

@@ -4,6 +4,8 @@
 -- Table structure for table CommitteeTotals generated from model 'CommitteeTotals'
 --
 
+SET search_path TO fec;
+
 CREATE TABLE IF NOT EXISTS fec.committee_totals (
   all_loans_received DECIMAL(20, 9) DEFAULT NULL,
   all_other_loans DECIMAL(20, 9) DEFAULT NULL,
@@ -109,5 +111,6 @@ CREATE TABLE IF NOT EXISTS fec.committee_totals (
   unitemized_other_income DECIMAL(20, 9) DEFAULT NULL,
   unitemized_other_refunds DECIMAL(20, 9) DEFAULT NULL,
   unitemized_refunds_relating_convention_exp DECIMAL(20, 9) DEFAULT NULL,
-  PRIMARY KEY(committee_id, cycle)
+  PRIMARY KEY(committee_id, cycle),
+  FOREIGN KEY(committee_id) REFERENCES committeedetails(committee_id)
 ) DISTSTYLE AUTO;

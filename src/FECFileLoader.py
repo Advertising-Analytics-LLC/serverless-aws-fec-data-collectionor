@@ -17,20 +17,53 @@ from src import JSONType, logger, schema
 from src.database import Database
 from src.sqs import delete_message_from_sqs, parse_message
 
-from src.serialization import serialize_dates
 
-def get_fec_file(url: str) -> bytes:
-    logger.debug(f'GET {url}')
-    headers = {'User-Agent': 'curl/7.64.1'}
-    response = requests.get(url, allow_redirects=True, headers=headers)
-    return response.text
+# business logic
 
-# def parse_fec_file(fec_file: bytes) -> str:
-#     newline = r'\n'
-#     seperator = r'\x1c'
+def upsert_schedule_b_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
+    """upserts a single filing
+
+    Args:
+        fec_file_id (str): FEC filing ID
+        filing (Dict[str, Any]): Filing object
+
+    Returns:
+        bool: if upsert succeeded
+    """
+
+    pk = filing['transaction_id_number']
+    exists_query = schema.schedule_b_exists(pk)
+    with Database() as db:
+        record_exists = db.record_exists(exists_query)
+        if record_exists:
+            query = schema.schedule_b_update(fec_file_id, filing)
+        else:
+            query = schema.schedule_b_insert(fec_file_id, filing)
+
+        success = db.try_query(query)
+
+    return success
+
+
+def upsert_schedule_b_filings(fec_file_id: str, filings: List[Dict[str, Any]]) -> List[bool]:
+    """upserts a list of schedule b filings
+
+    Args:
+        filings (List[Dict[str, Any]]): List of filings
+    """
+
+    successes = []
+
+    for filing in filings:
+        success = upsert_schedule_b_filing(filing)
+        successes.append(success)
+
+    return successes
+
 
 def lambdaHandler(event:dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
+        takes events that have fec file IDs, gets the filing from docquery and writes to the DB
 
     Args:
         event (dict): for event types see https://docs.aws.amazon.com/lambda/latest/dg/lambda-services.html
@@ -49,8 +82,10 @@ def lambdaHandler(event:dict, context: object) -> bool:
         message_parsed = parse_message(message)
         filing_id = message_parsed['filing_id']
         fec_file_dict = fecfile.from_http(filing_id)
-        schedule_b_dict = fec_file_dict['itemizations']['Schedule B']
+        list_of_schedule_b_dicts = fec_file_dict['itemizations']['Schedule B']
 
-        # delete_message_from_sqs(message)
+        upsert_schedule_b_filings(filing_id, list_of_schedule_b_dicts)
+
+        delete_message_from_sqs(message)
 
     return True

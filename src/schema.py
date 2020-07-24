@@ -7,7 +7,7 @@ from collections import OrderedDict
 from psycopg2 import sql
 from psycopg2.sql import SQL, Literal
 from src import logger, JSONType
-from typing import Union
+from typing import Any, Dict, Union
 
 
 def parse_value(value: Union[str, int]) -> Union[str, int]:
@@ -424,6 +424,7 @@ def schedule_b_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
         SQL: SQL insert query
     """
 
+    filing['fec_file_id'] = fec_file_id
     values = OrderedDict(sorted(filing.items()))
 
     query_string = 'INSERT INTO fec.filings_schedule_b ('\
@@ -450,6 +451,7 @@ def schedule_b_update(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
         SQL: SQL update query
     """
 
+    filing['fec_file_id'] = fec_file_id
     primary_key = filing['transaction_id_number']
     values = OrderedDict(sorted(filing.items()))
 

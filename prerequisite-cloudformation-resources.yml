@@ -95,7 +95,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref TransactionLoadingQueueName
-      VisibilityTimeout: 90
+      VisibilityTimeout: 180
       Tags:
       - Key: managed_by
         Value: CloudFormation

@@ -8,6 +8,9 @@ Parameters:
   DeploymentBucketName:
     Default: serverless-deploymentbucket
     Type: String
+  CandidateSyncQueueName:
+    Default: candidate-sync-queue
+    Type: String
   CommitteeSyncQueueName:
     Default: committee-sync-queue
     Type: String
@@ -58,10 +61,27 @@ Resources:
       VersioningConfiguration:
          Status: Enabled
 
+  CandidateSyncQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref CandidateSyncQueueName
+      Tags:
+      - Key: managed_by
+        Value: CloudFormation
+      - Key: Project
+        Value: FEC Data-sync
+      - Key: created_by
+        Value: sblack@rhythmictech.com
+      - Key: Name
+        Value: !Ref CandidateSyncQueueName
+      - Key: Version
+        Value: !Ref Version
+
   CommitteeSyncQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref CommitteeSyncQueueName
+      VisibilityTimeout: 90
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -154,6 +174,14 @@ Resources:
 
 
 Outputs:
+
+  CandidateSyncQueueArn:
+    Description: The Arn of the Queue for candidates that just filed
+    Value: !GetAtt CandidateSyncQueue.Arn
+
+  CandidateSyncQueueName:
+    Description: The name of the Queue for candidates that just filed
+    Value: !GetAtt CandidateSyncQueue.QueueName
 
   CommitteeSyncQueueArn:
     Description: The Arn of the Queue for committees that just filed

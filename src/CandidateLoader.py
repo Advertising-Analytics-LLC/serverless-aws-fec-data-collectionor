@@ -28,8 +28,11 @@ def condense_dimension(containing_dict: Dict[str, Any], column_name: str) -> Dic
     Returns:
         Dict[str, Any]: input dict with that list as a str
     """
+
     containing_dict[column_name] = '~'.join(containing_dict.pop(column_name))
+
     return containing_dict
+
 
 def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
     """upserts a single filing

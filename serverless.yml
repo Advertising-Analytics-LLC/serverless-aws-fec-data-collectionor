@@ -168,6 +168,7 @@ provider:
         - sqs:ReceiveMessage
         - sqs:SendMessage
       Resource:
+        - "${self:custom.${self:provider.stage}.candidate_sync_queue_arn}"
         - "${self:custom.${self:provider.stage}.transaction_loding_queue_arn}"
         - "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
         - "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"

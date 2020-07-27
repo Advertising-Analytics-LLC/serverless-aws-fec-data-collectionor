@@ -9,7 +9,8 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List
 from src import JSONType, logger, schema
 from src.OpenFec import OpenFec
-from src.sqs import delete_message_from_sqs, parse_message
+from src.secrets import get_param_value_by_name
+from src.sqs import delete_message_from_sqs, push_message_to_sqs
 
 
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
@@ -30,7 +31,9 @@ def get_candidates_since(isodate: str) -> json:
         json: json list containing IDs
     """
 
-    get_candidates_payload = {'min_last_f1_date': isodate}
+    logger.debug(f'Querying for Candidates who file after {isodate}')
+
+    get_candidates_payload = {'min_first_file_date': isodate}
     openFec = OpenFec(API_KEY)
 
     response_generator = openFec.get_route_paginator(
@@ -56,5 +59,10 @@ def lambdaHandler(event:dict, context: object) -> bool:
     """
 
     logger.debug(f'running {__file__}')
+
+    candidates_list = get_candidates_since(MIN_FIST_FILE_DATE)
+
+    for candidate in candidates_list:
+        push_message_to_sqs(candidate)
 
     return True

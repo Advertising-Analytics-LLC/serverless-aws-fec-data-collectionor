@@ -29,7 +29,7 @@ def condense_dimension(containing_dict: Dict[str, Any], column_name: str) -> Dic
         Dict[str, Any]: input dict with that list as a str
     """
 
-    containing_dict[column_name] = '~'.join(containing_dict.pop(column_name))
+    containing_dict[column_name] = '~'.join([str(item) for item in containing_dict.pop(column_name)])
 
     return containing_dict
 

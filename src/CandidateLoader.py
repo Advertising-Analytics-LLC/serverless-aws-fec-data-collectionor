@@ -1,10 +1,6 @@
 #!/bin/env python3
 """
-FECFileLoader lambda:
-- read FEC files from queue,
-- downloads files
-- parses file
-- writes data to redshift
+CandidateLoader lambda:
 """
 
 import boto3
@@ -21,6 +17,20 @@ from src.sqs import delete_message_from_sqs, parse_message
 # business logic
 
 
+def condense_dimension(containing_dict: Dict[str, Any], column_name: str) -> Dict[str, Any]:
+    """takes a dimension (list) in a dictionary and joins the elements with ~s
+        WARNING: this method uses dict.pop and so has side effets
+
+    Args:
+        containing_dict (Dict[str, Any]): Dictionary containing the
+        column_name (str): to join
+
+    Returns:
+        Dict[str, Any]: input dict with that list as a str
+    """
+    containing_dict[column_name] = '~'.join(containing_dict.pop(column_name))
+    return containing_dict
+
 def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
     """upserts a single filing
 
@@ -31,6 +41,14 @@ def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
     Returns:
         bool: if upsert succeeded
     """
+
+    # get rid of extra column
+    candidate_message.pop('inactive_election_years')
+
+    # condense a few lists
+    candidate_message = condense_dimension(candidate_message, 'cycles')
+    candidate_message = condense_dimension(candidate_message, 'election_districts')
+    candidate_message = condense_dimension(candidate_message, 'election_years')
 
     pk = candidate_message['candidate_id']
     exists_query = schema.candidate_exists(pk)

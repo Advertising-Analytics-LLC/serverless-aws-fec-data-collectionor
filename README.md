@@ -1,17 +1,17 @@
-# serverless-aws-python3-openfec-starter
-Reference serverless project
+# serverless-aws-fec-data-collectionor
+Serverless applications to get near-real-time FEC data
 
 ## About
 All the serverless functions in this module do a few things:
 - Gets values from SSM
 - Use them to call the openFEC API
 - Push that data to a queue or database
-- Do so on a schedule powered by CloudWatch Events
+- Do so on a schedule or via event trigger
 
-### Committee Sync
-Iterates on /committees API and publishes committee IDs to a queue thing.
-It should read the last filing date scanned parameter
-and query for only committees updated in the 24 hours prior (just to make sure we don't miss anything)
+You can see the serverless functions defined in `serverless.yml` and the code in `src/`
+The resources that support them are defined in CloudFormation in `prerequisite-cloudformation-resources.yml`.
+The DDL is in the `sql/` directory.
+The `bin/` has useful scripts that can be called via `make` targets defined in the `Makefile`.
 
 ## Getting started
 

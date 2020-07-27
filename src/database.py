@@ -97,8 +97,9 @@ class Database:
             self._query(query)
             self.commit()
             return True
-        except:
+        except Exception as e:
             logger.error(sys.exc_info()[0])
+            logger.error(e)
             self.rollback()
             return False
 

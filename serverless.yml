@@ -18,6 +18,8 @@ custom:
     rss_sns_topic_arn: ${cf:fec-datasync-resources.RSSFeedTopicArn}
     rss_sqs_queue_arn: ${cf:fec-datasync-resources.NewFilingQueueArn}
     rss_sqs_queue_name: ${cf:fec-datasync-resources.NewFilingQueueName}
+    transaction_loding_queue_arn: ${cf:fec-datasync-resources.TransactionLoadingQueueArn}
+    transaction_loding_queue_name: ${cf:fec-datasync-resources.TransactionLoadingQueueName}
     SQS_QUEUE_NAME: ${cf:fec-datasync-resources.CommitteeSyncQueueName}
     SQS_QUEUE_ARN: ${cf:fec-datasync-resources.CommitteeSyncQueueArn}
 
@@ -73,6 +75,18 @@ functions:
     events:
       - sqs: "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
 
+  FECFileLoader:
+    description: Gets FEC file url from SQS, downloads, parses, loads into DB
+    handler: src/FECFileLoader.lambdaHandler
+    memorySize: 3008
+    reservedConcurrency: 1
+    timeout: 180
+    environment:
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.transaction_loding_queue_name}
+    events:
+      - sqs: "${self:custom.${self:provider.stage}.transaction_loding_queue_arn}"
+
 # packaging instructuions, and ignore list
 package:
   exclude:
@@ -95,6 +109,7 @@ package:
 # plugin to package dependencies
 plugins:
   - serverless-python-requirements
+  - serverless-sam
 
 # Cloud Provider config
 provider:
@@ -104,11 +119,13 @@ provider:
   region: ${opt:region, 'us-east-1'}
   runtime: python3.7
   stage: ${opt:stage,'dev'}
+
   deploymentBucket:
     blockPublicAccess: true
     maxPreviousDeploymentArtifacts: 10
     name: ${self:custom.${self:provider.stage}.deploymentBucketName}
     serverSideEncryption: AES256
+
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -138,6 +155,7 @@ provider:
         - sqs:ReceiveMessage
         - sqs:SendMessage
       Resource:
+        - "${self:custom.${self:provider.stage}.transaction_loding_queue_arn}"
         - "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
         - "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
     - Effect: "Allow"

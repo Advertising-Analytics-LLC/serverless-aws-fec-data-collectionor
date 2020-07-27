@@ -78,6 +78,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref NewFilingQueueName
+      VisibilityTimeout: 90
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -94,6 +95,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref TransactionLoadingQueueName
+      VisibilityTimeout: 180
       Tags:
       - Key: managed_by
         Value: CloudFormation

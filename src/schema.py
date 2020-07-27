@@ -479,7 +479,7 @@ def candidate_exists(candidate_id: str) -> SQL:
         SQL: select query for record
     """
 
-    query = sql.SQL('SELECT * FROM fec.candidate_details WHERE candidate_id={}')\
+    query = sql.SQL('SELECT * FROM fec.candidate_detail WHERE candidate_id={}')\
                 .format(Literal(candidate_id))
 
     return query

@@ -65,8 +65,6 @@ def lambdaHandler(event:dict, context: object) -> bool:
 
     for message in messages:
         body = json.loads(message['body'])
-        logger.debug(body)
-        logger.debug(type(body))
         upsert_candidate(body)
 
     return True

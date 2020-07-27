@@ -20,7 +20,8 @@ from src.sqs import delete_message_from_sqs, parse_message
 
 # business logic
 
-def upsert_candidate(fec_file_id: str, filing: Dict[str, Any]) -> bool:
+
+def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
     """upserts a single filing
 
     Args:
@@ -31,14 +32,14 @@ def upsert_candidate(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         bool: if upsert succeeded
     """
 
-    pk = filing['transaction_id_number']
-    exists_query = schema.schedule_b_exists(pk)
+    pk = candidate_message['candidate_id']
+    exists_query = schema.candidate_exists(pk)
+
     with Database() as db:
-        record_exists = db.record_exists(exists_query)
-        if record_exists:
-            query = schema.schedule_b_update(fec_file_id, filing)
+        if db.record_exists(exists_query):
+            query = schema.candidate_update(candidate_message)
         else:
-            query = schema.schedule_b_insert(fec_file_id, filing)
+            query = schema.candidate_insert(candidate_message)
 
         success = db.try_query(query)
 
@@ -63,8 +64,9 @@ def lambdaHandler(event:dict, context: object) -> bool:
     messages = event['Records']
 
     for message in messages:
-        logger.debug(message)
-
-        # delete_message_from_sqs(message)
+        body = json.loads(message['body'])
+        logger.debug(body)
+        logger.debug(type(body))
+        upsert_candidate(body)
 
     return True

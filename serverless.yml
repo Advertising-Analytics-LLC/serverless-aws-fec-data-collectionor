@@ -17,6 +17,8 @@ custom:
     LOG_LEVEL: DEBUG
     candidate_sync_queue_arn: ${cf:fec-datasync-resources.CandidateSyncQueueArn}
     candidate_sync_queue_name: ${cf:fec-datasync-resources.CandidateSyncQueueName}
+    rss_schedule_e_queue_arn: ${cf:fec-datasync-resources.NewFilingQueueSEArn}
+    rss_schedule_e_sqs_queue_name: ${cf:fec-datasync-resources.NewFilingQueueSEName}
     rss_sns_topic_arn: ${cf:fec-datasync-resources.RSSFeedTopicArn}
     rss_sqs_queue_arn: ${cf:fec-datasync-resources.NewFilingQueueArn}
     rss_sqs_queue_name: ${cf:fec-datasync-resources.NewFilingQueueName}
@@ -100,17 +102,31 @@ functions:
     events:
       - sqs: "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
 
-  FECFileLoader:
-    description: Gets FEC file url from SQS, downloads, parses, loads into DB
+  FECFileLoaderSB:
+    description: Gets FEC file url from SQS, downloads, parses for Schedule B filings, loads into DB
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008
     reservedConcurrency: 1
-    timeout: 600
+    timeout: 900
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.transaction_loding_queue_name}
+      FILING_TYPE: 'SB'
     events:
       - sqs: "${self:custom.${self:provider.stage}.transaction_loding_queue_arn}"
+
+  FECFileLoaderSE:
+    description: Gets FEC file url from SQS, downloads, parses for Schedule E filings, loads into DB
+    handler: src/FECFileLoader.lambdaHandler
+    memorySize: 3008
+    reservedConcurrency: 1
+    timeout: 900
+    environment:
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.rss_schedule_e_sqs_queue_name}
+      FILING_TYPE: 'SE'
+    events:
+      - sqs: "${self:custom.${self:provider.stage}.rss_schedule_e_sqs_queue_name}"
 
 # packaging instructuions, and ignore list
 package:
@@ -182,6 +198,7 @@ provider:
         - "${self:custom.${self:provider.stage}.candidate_sync_queue_arn}"
         - "${self:custom.${self:provider.stage}.transaction_loding_queue_arn}"
         - "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
+        - "${self:custom.${self:provider.stage}.rss_schedule_e_sqs_queue_name}"
         - "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
     - Effect: "Allow"
       Action:

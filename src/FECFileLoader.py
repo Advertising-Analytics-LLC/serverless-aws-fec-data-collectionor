@@ -19,6 +19,7 @@ from src.sqs import delete_message_from_sqs, parse_message
 
 
 # business logic
+FILING_TYPE = os.environ['FILING_TYPE']
 
 def upsert_schedule_b_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
     """upserts a single schedule B filing
@@ -117,7 +118,9 @@ def lambdaHandler(event:dict, context: object) -> bool:
         filing_id = message_parsed['filing_id']
         logger.debug(f'Grabbing FEC filing {filing_id}')
 
-        for fec_item in fecfile.iter_http(filing_id, options={'filter_itemizations': ['SB', 'SE']}):
+        for fec_item in fecfile.iter_http(filing_id,
+                                options={'filter_itemizations': [FILING_TYPE]}):
+
             if fec_item.data_type == 'itemization':
                 upsert_filing(filing_id, fec_item.data)
 

@@ -531,3 +531,75 @@ def candidate_update(candidate: Dict[str, str]) -> SQL:
         .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
 
     return query
+
+
+#
+# schedule E filings
+#
+
+def schedule_e_exists(transaction_id_number: str) -> SQL:
+    """returns a query to check if a transaction id has a record
+
+    Args:
+        transaction_id_number (str): ID representing transaction
+
+    Returns:
+        SQL: select query for record
+    """
+
+    query = sql.SQL('SELECT * FROM fec.filings_schedule_e WHERE transaction_id_number={}')\
+                .format(Literal(transaction_id_number))
+
+    return query
+
+
+def schedule_e_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
+    """inserts a record into fec.filings_schedule_e
+
+    Args:
+        fec_file_id (str): filing ID
+        filing (Dict[str, Any]): dictionary containing transaction data of filing
+
+    Returns:
+        SQL: SQL insert query
+    """
+
+    filing['fec_file_id'] = fec_file_id
+    values = OrderedDict(sorted(filing.items()))
+
+    query_string = 'INSERT INTO fec.filings_schedule_e ('\
+        + ', '.join([f'{key}' for key, val in values.items()])\
+        + ') '\
+        + 'VALUES ('\
+        + ', '.join(['{}' for key, val in values.items()])\
+        + ')'
+
+    query = sql.SQL(query_string)\
+                .format(*[Literal(val) for key, val in values.items()])
+
+    return query
+
+
+def schedule_e_update(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
+    """updates a record in fec.filings_schedule_e
+
+    Args:
+        fec_file_id (str): filing ID
+        filing (Dict[str, Any]): dictionary containing transaction data of filing
+
+    Returns:
+        SQL: SQL update query
+    """
+
+    filing['fec_file_id'] = fec_file_id
+    primary_key = filing['transaction_id_number']
+    values = OrderedDict(sorted(filing.items()))
+
+    query_string = 'UPDATE fec.filings_schedule_e SET ' \
+        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
+        + ' WHERE transaction_id_number={}'
+
+    query = sql.SQL(query_string)\
+        .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
+
+    return query

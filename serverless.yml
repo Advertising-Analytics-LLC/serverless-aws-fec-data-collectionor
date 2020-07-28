@@ -105,7 +105,7 @@ functions:
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008
     reservedConcurrency: 1
-    timeout: 180
+    timeout: 600
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.transaction_loding_queue_name}

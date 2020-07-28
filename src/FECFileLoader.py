@@ -83,11 +83,11 @@ def upsert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
 
     if form_type.startswith('SB'):
 
-        return upsert_schedule_b_filing(filing_id, filing)
+        return upsert_schedule_b_filing(fec_file_id, filing)
 
     elif form_type.startswith('SE'):
 
-        return upsert_schedule_e_filing(filing_id, filing)
+        return upsert_schedule_e_filing(fec_file_id, filing)
 
     else:
         logger.error(f'Filing of form_type {form_type} does not match SE or SB')

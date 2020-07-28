@@ -18,7 +18,7 @@ custom:
     candidate_sync_queue_arn: ${cf:fec-datasync-resources.CandidateSyncQueueArn}
     candidate_sync_queue_name: ${cf:fec-datasync-resources.CandidateSyncQueueName}
     rss_schedule_e_queue_arn: ${cf:fec-datasync-resources.NewFilingQueueSEArn}
-    rss_schedule_e_sqs_queue_name: ${cf:fec-datasync-resources.NewFilingQueueSEName}
+    rss_schedule_e_queue_name: ${cf:fec-datasync-resources.NewFilingQueueSEName}
     rss_sns_topic_arn: ${cf:fec-datasync-resources.RSSFeedTopicArn}
     rss_sqs_queue_arn: ${cf:fec-datasync-resources.NewFilingQueueArn}
     rss_sqs_queue_name: ${cf:fec-datasync-resources.NewFilingQueueName}
@@ -126,7 +126,7 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.rss_schedule_e_sqs_queue_name}
       FILING_TYPE: 'SE'
     events:
-      - sqs: "${self:custom.${self:provider.stage}.rss_schedule_e_sqs_queue_name}"
+      - sqs: "${self:custom.${self:provider.stage}.rss_schedule_e_queue_name}"
 
 # packaging instructuions, and ignore list
 package:
@@ -198,7 +198,7 @@ provider:
         - "${self:custom.${self:provider.stage}.candidate_sync_queue_arn}"
         - "${self:custom.${self:provider.stage}.transaction_loding_queue_arn}"
         - "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
-        - "${self:custom.${self:provider.stage}.rss_schedule_e_sqs_queue_arn}"
+        - "${self:custom.${self:provider.stage}.rss_schedule_e_queue_arn}"
         - "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
     - Effect: "Allow"
       Action:

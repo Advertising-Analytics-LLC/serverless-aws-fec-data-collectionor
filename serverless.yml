@@ -198,7 +198,7 @@ provider:
         - "${self:custom.${self:provider.stage}.candidate_sync_queue_arn}"
         - "${self:custom.${self:provider.stage}.transaction_loding_queue_arn}"
         - "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
-        - "${self:custom.${self:provider.stage}.rss_schedule_e_sqs_queue_name}"
+        - "${self:custom.${self:provider.stage}.rss_schedule_e_sqs_queue_arn}"
         - "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
     - Effect: "Allow"
       Action:

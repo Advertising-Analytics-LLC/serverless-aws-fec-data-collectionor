@@ -42,6 +42,17 @@ functions:
     events:
       - schedule: cron(0 4 * * ? *)
 
+  CandidateLoader:
+    description: Triggered by SQS it recieves Messages and writes candidate data to the DB
+    handler: src/CandidateLoader.lambdaHandler
+    reservedConcurrency: 1
+    timeout: 30
+    environment:
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.candidate_sync_queue_name}
+    events:
+      - sqs: "${self:custom.${self:provider.stage}.candidate_sync_queue_arn}"
+
   CommitteeSync:
     description: Polls OpenFEC API (once) for committees that have filed recently and sends the IDs to SQS
     handler: src/CommitteSync.committeSync

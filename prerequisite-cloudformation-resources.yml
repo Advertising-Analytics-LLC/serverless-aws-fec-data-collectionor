@@ -174,7 +174,7 @@ Resources:
   RSSFanoutQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
-      Queues: [ !Ref NewFilingQueue, !Ref TransactionLoadingQueue ]
+      Queues: [ !Ref NewFilingQueue, !Ref NewFilingQueueSE, !Ref TransactionLoadingQueue ]
       PolicyDocument:
         Statement:
           - Action:
@@ -190,6 +190,14 @@ Resources:
             Effect: Allow
             Principal: "*"
             Resource: !GetAtt TransactionLoadingQueue.Arn
+            Condition:
+             ArnEquals:
+              aws:SourceArn: !Ref RSSFeedTopic
+          - Action:
+            - sqs:SendMessage
+            Effect: Allow
+            Principal: "*"
+            Resource: !GetAtt NewFilingQueueSE.Arn
             Condition:
              ArnEquals:
               aws:SourceArn: !Ref RSSFeedTopic

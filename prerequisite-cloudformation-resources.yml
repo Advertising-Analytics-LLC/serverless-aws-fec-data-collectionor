@@ -16,6 +16,11 @@ Parameters:
     Type: String
   NewFilingQueueName:
     Default: fec-new-filing-queue
+    Description: Queue for new filings, consumed by loader for Schedule B
+    Type: String
+  NewFilingQueueSEName:
+    Default: fec-new-filing-se-queue
+    Description: Queue for new filings, consumed by loader for Schedule E
     Type: String
   TransactionLoadingQueueName:
     Default: fec-transaction-loading-queue
@@ -111,11 +116,28 @@ Resources:
       - Key: Version
         Value: !Ref Version
 
+  NewFilingQueueSE:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref NewFilingQueueSEName
+      VisibilityTimeout: 900
+      Tags:
+      - Key: managed_by
+        Value: CloudFormation
+      - Key: Project
+        Value: FEC Data-sync
+      - Key: created_by
+        Value: sblack@rhythmictech.com
+      - Key: Name
+        Value: !Ref NewFilingQueueSEName
+      - Key: Version
+        Value: !Ref Version
+
   TransactionLoadingQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref TransactionLoadingQueueName
-      VisibilityTimeout: 180
+      VisibilityTimeout: 900
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -133,6 +155,8 @@ Resources:
     Properties:
       DisplayName: !Ref RSSFeedTopicName
       Subscription:
+        - Endpoint: !GetAtt NewFilingQueueSE.Arn
+          Protocol: "sqs"
         - Endpoint: !GetAtt NewFilingQueue.Arn
           Protocol: "sqs"
         - Endpoint: !GetAtt TransactionLoadingQueue.Arn
@@ -152,7 +176,7 @@ Resources:
   RSSFanoutQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
-      Queues: [ !Ref NewFilingQueue, !Ref TransactionLoadingQueue ]
+      Queues: [ !Ref NewFilingQueue, !Ref NewFilingQueueSE, !Ref TransactionLoadingQueue ]
       PolicyDocument:
         Statement:
           - Action:
@@ -168,6 +192,14 @@ Resources:
             Effect: Allow
             Principal: "*"
             Resource: !GetAtt TransactionLoadingQueue.Arn
+            Condition:
+             ArnEquals:
+              aws:SourceArn: !Ref RSSFeedTopic
+          - Action:
+            - sqs:SendMessage
+            Effect: Allow
+            Principal: "*"
+            Resource: !GetAtt NewFilingQueueSE.Arn
             Condition:
              ArnEquals:
               aws:SourceArn: !Ref RSSFeedTopic
@@ -196,12 +228,20 @@ Outputs:
     Value: !Ref DeploymentBucket
 
   NewFilingQueueArn:
-    Description: Arn of Queue for new new RSS filings
+    Description: Arn of Queue for new Schedule B RSS filings
     Value: !GetAtt NewFilingQueue.Arn
 
   NewFilingQueueName:
-    Description: Name of Queue for new new RSS filings
+    Description: Name of Queue for new Schedule B RSS filings
     Value: !GetAtt NewFilingQueue.QueueName
+
+  NewFilingQueueSEArn:
+    Description: Arn of Queue for new Schedule E RSS filings
+    Value: !GetAtt NewFilingQueueSE.Arn
+
+  NewFilingQueueSEName:
+    Description: Name of Queue for new Schedule E RSS filings
+    Value: !GetAtt NewFilingQueueSE.QueueName
 
   TransactionLoadingQueueArn:
     Value: !GetAtt TransactionLoadingQueue.Arn

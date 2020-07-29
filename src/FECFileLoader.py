@@ -82,16 +82,25 @@ def upsert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
 
     form_type = filing['form_type']
 
+    # Schedule B Filings
     if form_type.startswith('SB'):
 
         return upsert_schedule_b_filing(fec_file_id, filing)
 
+    # Schedule E Filings
     elif form_type.startswith('SE'):
 
         return upsert_schedule_e_filing(fec_file_id, filing)
 
+    # Form 1 Supplemental Data Filings
+    elif form_type.startswith('F1S'):
+
+        logger.debug(fec_file_id)
+        logger.debug(filing)
+        return True
+
     else:
-        logger.error(f'Filing of form_type {form_type} does not match SE or SB')
+        logger.error(f'Filing of form_type {form_type} does not match those available')
 
         return False
 

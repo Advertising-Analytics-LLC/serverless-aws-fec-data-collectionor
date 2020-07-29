@@ -5,7 +5,7 @@
 
 SET search_path TO fec;
 
-CREATE TABLE IF NOT EXISTS committeecandidates (
+CREATE TABLE IF NOT EXISTS committee_candidates (
   committee_candidate_id INT IDENTITY(1,1),
   committee_id VARCHAR(10),
   candidate_id VARCHAR(10),

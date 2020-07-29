@@ -130,7 +130,7 @@ functions:
     events:
       - sqs: "${self:custom.${self:provider.stage}.rss_schedule_e_queue_arn}"
 
-  FECFileLoaderSupplemental:
+  FECFileLoaderSupp:
     description: Gets FEC file url from SQS, downloads, parses for Form 1 Supplemental Data, loads into DB
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008

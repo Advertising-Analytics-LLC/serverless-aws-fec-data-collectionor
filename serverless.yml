@@ -26,6 +26,8 @@ custom:
     transaction_loding_queue_name: ${cf:fec-datasync-resources.TransactionLoadingQueueName}
     SQS_QUEUE_NAME: ${cf:fec-datasync-resources.CommitteeSyncQueueName}
     SQS_QUEUE_ARN: ${cf:fec-datasync-resources.CommitteeSyncQueueArn}
+    supplemental_data_queue_name: ${cf:fec-datasync-resources.SupplementalDataQueueName}
+    supplemental_data_queue_arn: ${cf:fec-datasync-resources.SupplementalDataQueueArn}
 
 
 # The lambda function(s) defined in this serverless config
@@ -128,6 +130,19 @@ functions:
     events:
       - sqs: "${self:custom.${self:provider.stage}.rss_schedule_e_queue_arn}"
 
+  FECFileLoaderSupplemental:
+    description: Gets FEC file url from SQS, downloads, parses for Form 1 Supplemental Data, loads into DB
+    handler: src/FECFileLoader.lambdaHandler
+    memorySize: 3008
+    reservedConcurrency: 1
+    timeout: 900
+    environment:
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.supplemental_data_queue_name}
+      FILING_TYPE: 'F1S'
+    events:
+      - sqs: "${self:custom.${self:provider.stage}.supplemental_data_queue_arn}"
+
 # packaging instructuions, and ignore list
 package:
   exclude:
@@ -200,6 +215,7 @@ provider:
         - "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
         - "${self:custom.${self:provider.stage}.rss_schedule_e_queue_arn}"
         - "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
+        - "${self:custom.${self:provider.stage}.supplemental_data_queue_arn}"
     - Effect: "Allow"
       Action:
         - sns:Publish

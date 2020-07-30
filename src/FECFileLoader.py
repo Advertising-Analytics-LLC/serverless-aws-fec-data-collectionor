@@ -84,12 +84,15 @@ def upsert_f1_supplemental(fec_file_id: str, filing: Dict[str, Any]) -> bool:
     pk1 = filing['affiliated_committee_id_number']
     pk2 = filing['filer_committee_id_number']
 
-    exists_query = schema.f1_supplemental_exists(fec_file_id, pk1, pk2)
+    exists_query = schema.f1_supplemental_exists(fec_file_id, filing)
 
     with Database() as db:
         record_exists = db.record_exists(exists_query)
+
         if record_exists:
-            query = schema.f1_supplemental_update(fec_file_id, filing)
+
+            return True
+
         else:
             query = schema.f1_supplemental_insert(fec_file_id, filing)
 
@@ -123,9 +126,6 @@ def upsert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
     # Form 1 Supplemental Data Filings
     elif form_type.startswith('F1S'):
 
-        logger.debug('we got a F1S!!!')
-        logger.debug(fec_file_id)
-        logger.debug(filing)
         return upsert_f1_supplemental(fec_file_id, filing)
 
     else:
@@ -152,10 +152,8 @@ def lambdaHandler(event:dict, context: object) -> bool:
     messages = event['Records']
 
     for message in messages:
-        logger.debug(json.dumps(message))
         message_parsed = parse_message(message)
         filing_id = message_parsed['filing_id']
-        logger.debug(f'Grabbing FEC filing {filing_id}')
 
         for fec_item in fecfile.iter_http(filing_id,
                                 options={'filter_itemizations': [FILING_TYPE]}):

@@ -608,28 +608,25 @@ def schedule_e_update(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
 # Form 1 Supplemental Data
 #
 
-def f1_supplemental_exists(fec_file_id: str,
-                           affiliated_committee_id_number: str,
-                           filer_committee_id_number: str) -> SQL:
+def f1_supplemental_exists(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
     """checks for existining supplemental data
 
     Args:
         fec_file_id (str): Filing ID
-        affiliated_committee_id_number (str): Committee ID of thee who supp data is for
-        filer_committee_id_number (str): Committee ID of thee who filed
+        filing (Dict[str, Any]): dictionary containing transaction data of filing
 
     Returns:
         SQL: select query
     """
 
-    query = sql.SQL('''
-        SELECT * FROM fec.form_1_supplemental
-        WHERE fec_file_id={}
-        AND affiliated_committee_id_number = {}
-        AND filer_committee_id_number = {}
-    ''').format(Literal(fec_file_id),
-                Literal(affiliated_committee_id_number),
-                Literal(filer_committee_id_number))
+    filing['fec_file_id'] = fec_file_id
+    values = OrderedDict(sorted(filing.items()))
+
+    query_string = 'SELECT * FROM fec.form_1_supplemental WHERE ' \
+        + ', '.join([f' {key}={{}}' for key, val in values.items()])
+
+    query = sql.SQL(query_string)\
+        .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
 
     return query
 
@@ -657,30 +654,5 @@ def f1_supplemental_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
 
     query = sql.SQL(query_string)\
                 .format(*[Literal(val) for key, val in values.items()])
-
-    return query
-
-
-def f1_supplemental_update(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
-    """updates a record in fec.form_1_supplemental
-
-    Args:
-        fec_file_id (str): filing ID
-        filing (Dict[str, Any]): dictionary containing transaction data of filing
-
-    Returns:
-        SQL: SQL update query
-    """
-
-    filing['fec_file_id'] = fec_file_id
-    primary_key = filing['transaction_id_number']
-    values = OrderedDict(sorted(filing.items()))
-
-    query_string = 'UPDATE fec.form_1_supplemental SET ' \
-        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
-        + ' WHERE transaction_id_number={}'
-
-    query = sql.SQL(query_string)\
-        .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
 
     return query

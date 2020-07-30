@@ -7,7 +7,7 @@
 SET search_path TO fec;
 
 CREATE TABLE IF NOT EXISTS fec.form_1_supplemental (
-    fec_file_id INT(10) NOT NULL,
+    fec_file_id INT NOT NULL,
     affiliated_candidate_id_number VARCHAR(100) DEFAULT NULL,
     affiliated_city VARCHAR(100) DEFAULT NULL,
     affiliated_committee_id_number VARCHAR(100) DEFAULT NULL,
@@ -45,5 +45,5 @@ CREATE TABLE IF NOT EXISTS fec.form_1_supplemental (
     filer_committee_id_number VARCHAR(100) DEFAULT NULL,
     form_type VARCHAR(100) DEFAULT NULL,
     joint_fund_participant_committee_id_number VARCHAR(100) DEFAULT NULL,
-    joint_fund_participant_committee_name VARCHAR(100) DEFAULT NULL,
+    joint_fund_participant_committee_name VARCHAR(100) DEFAULT NULL
 ) DISTSTYLE AUTO;

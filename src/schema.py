@@ -626,7 +626,7 @@ def f1_supplemental_exists(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
         + ', '.join([f' {key}={{}}' for key, val in values.items()])
 
     query = sql.SQL(query_string)\
-        .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
+        .format(*[Literal(val) for key, val in values.items()])
 
     return query
 

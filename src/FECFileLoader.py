@@ -81,9 +81,6 @@ def upsert_f1_supplemental(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         bool: if upsert succeeded
     """
 
-    pk1 = filing['affiliated_committee_id_number']
-    pk2 = filing['filer_committee_id_number']
-
     exists_query = schema.f1_supplemental_exists(fec_file_id, filing)
 
     with Database() as db:
@@ -96,7 +93,7 @@ def upsert_f1_supplemental(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         else:
             query = schema.f1_supplemental_insert(fec_file_id, filing)
 
-        return db.try_query(query)
+            return db.try_query(query)
 
 
 

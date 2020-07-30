@@ -623,7 +623,7 @@ def f1_supplemental_exists(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
     values = OrderedDict(sorted(filing.items()))
 
     query_string = 'SELECT * FROM fec.form_1_supplemental WHERE ' \
-        + ', '.join([f' {key}={{}}' for key, val in values.items()])
+        + ' AND '.join([f' {key}={{}}' for key, val in values.items()])
 
     query = sql.SQL(query_string)\
         .format(*[Literal(val) for key, val in values.items()])

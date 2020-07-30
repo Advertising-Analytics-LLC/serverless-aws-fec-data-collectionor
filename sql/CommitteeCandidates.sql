@@ -5,12 +5,13 @@
 
 SET search_path TO fec;
 
-CREATE TABLE IF NOT EXISTS committeecandidates (
+CREATE TABLE IF NOT EXISTS committee_candidates (
   committee_candidate_id INT IDENTITY(1,1),
   committee_id VARCHAR(10),
   candidate_id VARCHAR(10),
   PRIMARY KEY(committee_candidate_id),
-  FOREIGN KEY(committee_id) REFERENCES committeedetails(committee_id)
+  FOREIGN KEY(committee_id) REFERENCES committeedetails(committee_id),
+  FOREIGN KEY(candidate_id) REFERENCES candidate_detail(candidate_id)
 ) DISTSTYLE AUTO;
 
 COMMENT ON TABLE committeecandidates is 'Linking table to connect CommitteeDetail to CandidateDetail';

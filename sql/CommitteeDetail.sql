@@ -2,7 +2,7 @@
 -- Table structure for table CommitteeDetail generated from model 'CommitteeDetail'
 -- See https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
 --
-CREATE TABLE IF NOT EXISTS committeedetail (
+CREATE TABLE IF NOT EXISTS committee_detail (
   committee_id VARCHAR(10) NOT NULL UNIQUE,
   affiliated_committee_name VARCHAR(MAX) DEFAULT NULL,
   city VARCHAR(MAX) DEFAULT NULL,

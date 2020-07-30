@@ -62,11 +62,39 @@ def upsert_schedule_e_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
     with Database() as db:
         record_exists = db.record_exists(exists_query)
         if record_exists:
-            query = schema.schedule_e_update(fec_file_id, filing)
+            # query = schema.schedule_e_update(fec_file_id, filing)
+            logger.debug('exists')
         else:
             query = schema.schedule_e_insert(fec_file_id, filing)
 
         return db.try_query(query)
+
+
+def upsert_f1_supplemental(fec_file_id: str, filing: Dict[str, Any]) -> bool:
+    """upserts a single filing of Form 1 Supplemental Data
+
+    Args:
+        fec_file_id (str): FEC filing ID
+        filing (Dict[str, Any]): Filing object
+
+    Returns:
+        bool: if upsert succeeded
+    """
+
+    exists_query = schema.f1_supplemental_exists(fec_file_id, filing)
+
+    with Database() as db:
+        record_exists = db.record_exists(exists_query)
+
+        if record_exists:
+
+            return True
+
+        else:
+            query = schema.f1_supplemental_insert(fec_file_id, filing)
+
+            return db.try_query(query)
+
 
 
 def upsert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
@@ -82,16 +110,23 @@ def upsert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
 
     form_type = filing['form_type']
 
+    # Schedule B Filings
     if form_type.startswith('SB'):
 
         return upsert_schedule_b_filing(fec_file_id, filing)
 
+    # Schedule E Filings
     elif form_type.startswith('SE'):
 
         return upsert_schedule_e_filing(fec_file_id, filing)
 
+    # Form 1 Supplemental Data Filings
+    elif form_type.startswith('F1S'):
+
+        return upsert_f1_supplemental(fec_file_id, filing)
+
     else:
-        logger.error(f'Filing of form_type {form_type} does not match SE or SB')
+        logger.error(f'Filing of form_type {form_type} does not match those available')
 
         return False
 
@@ -116,7 +151,6 @@ def lambdaHandler(event:dict, context: object) -> bool:
     for message in messages:
         message_parsed = parse_message(message)
         filing_id = message_parsed['filing_id']
-        logger.debug(f'Grabbing FEC filing {filing_id}')
 
         for fec_item in fecfile.iter_http(filing_id,
                                 options={'filter_itemizations': [FILING_TYPE]}):

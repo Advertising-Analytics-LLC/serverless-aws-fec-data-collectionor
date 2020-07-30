@@ -603,3 +603,56 @@ def schedule_e_update(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
         .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
 
     return query
+
+#
+# Form 1 Supplemental Data
+#
+
+def f1_supplemental_exists(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
+    """checks for existining supplemental data
+
+    Args:
+        fec_file_id (str): Filing ID
+        filing (Dict[str, Any]): dictionary containing transaction data of filing
+
+    Returns:
+        SQL: select query
+    """
+
+    filing['fec_file_id'] = fec_file_id
+    values = OrderedDict(sorted(filing.items()))
+
+    query_string = 'SELECT * FROM fec.form_1_supplemental WHERE ' \
+        + ' AND '.join([f' {key}={{}}' for key, val in values.items()])
+
+    query = sql.SQL(query_string)\
+        .format(*[Literal(val) for key, val in values.items()])
+
+    return query
+
+
+def f1_supplemental_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
+    """inserts a record into fec.form_1_supplemental
+
+    Args:
+        fec_file_id (str): filing ID
+        filing (Dict[str, Any]): dictionary containing transaction data of filing
+
+    Returns:
+        SQL: SQL insert query
+    """
+
+    filing['fec_file_id'] = fec_file_id
+    values = OrderedDict(sorted(filing.items()))
+
+    query_string = 'INSERT INTO fec.form_1_supplemental ('\
+        + ', '.join([f'{key}' for key, val in values.items()])\
+        + ') '\
+        + 'VALUES ('\
+        + ', '.join(['{}' for key, val in values.items()])\
+        + ')'
+
+    query = sql.SQL(query_string)\
+                .format(*[Literal(val) for key, val in values.items()])
+
+    return query

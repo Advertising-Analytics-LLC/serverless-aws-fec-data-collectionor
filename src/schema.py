@@ -330,17 +330,6 @@ def insert_fec_filing(filing: JSONType) -> SQL:
     return query
 
 
-def update_fec_filing(filing: JSONType) -> SQL:
-    fec_file_id = filing.pop('fec_file_id')
-    values = OrderedDict(sorted(filing.items()))
-    query_string = 'UPDATE fec.filings SET ' \
-        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
-        + ' WHERE fec_file_id={}'
-    query = sql.SQL(query_string)\
-        .format(*[Literal(val) for key, val in values.items()], Literal(fec_file_id))
-    return query
-
-
 def amendment_chain_exists(fec_file_id: str, amendment_id: str) -> SQL:
     query = sql.SQL('SELECT * FROM fec.filing_amendment_chain WHERE fec_file_id={} AND amendment_id={}')\
         .format(Literal(fec_file_id), Literal(amendment_id))

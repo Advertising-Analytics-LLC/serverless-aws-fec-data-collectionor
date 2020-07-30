@@ -128,12 +128,14 @@ def upsert_filing(filing: JSONType) -> bool:
     filing_exists_query = schema.fec_file_exists(pk)
     with Database() as db:
         if db.record_exists(filing_exists_query):
-            query = schema.update_fec_filing(filing)
+            logger.error(f'Financial Summary with fec_file_id {fec_file_id} already exists')
+
+            return True
+
         else:
             query = schema.insert_fec_filing(filing)
 
-        success = db.try_query(query)
-        return success
+        return db.try_query(query)
 
 
 def upsert_filings(filings_list: JSONType):

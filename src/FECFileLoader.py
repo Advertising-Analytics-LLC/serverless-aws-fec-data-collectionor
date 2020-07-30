@@ -62,11 +62,39 @@ def upsert_schedule_e_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
     with Database() as db:
         record_exists = db.record_exists(exists_query)
         if record_exists:
-            query = schema.schedule_e_update(fec_file_id, filing)
+            # query = schema.schedule_e_update(fec_file_id, filing)
+            logger.debug('exists')
         else:
             query = schema.schedule_e_insert(fec_file_id, filing)
 
         return db.try_query(query)
+
+
+def upsert_f1_supplemental(fec_file_id: str, filing: Dict[str, Any]) -> bool:
+    """upserts a single filing of Form 1 Supplemental Data
+
+    Args:
+        fec_file_id (str): FEC filing ID
+        filing (Dict[str, Any]): Filing object
+
+    Returns:
+        bool: if upsert succeeded
+    """
+
+    pk1 = filing['affiliated_committee_id_number']
+    pk2 = filing['filer_committee_id_number']
+
+    exists_query = schema.f1_supplemental_exists(fec_file_id, pk1, pk2)
+
+    with Database() as db:
+        record_exists = db.record_exists(exists_query)
+        if record_exists:
+            query = schema.f1_supplemental_update(fec_file_id, filing)
+        else:
+            query = schema.f1_supplemental_insert(fec_file_id, filing)
+
+        return db.try_query(query)
+
 
 
 def upsert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
@@ -95,9 +123,10 @@ def upsert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
     # Form 1 Supplemental Data Filings
     elif form_type.startswith('F1S'):
 
+        logger.debug('we got a F1S!!!')
         logger.debug(fec_file_id)
         logger.debug(filing)
-        return True
+        return upsert_f1_supplemental(fec_file_id, filing)
 
     else:
         logger.error(f'Filing of form_type {form_type} does not match those available')
@@ -123,6 +152,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
     messages = event['Records']
 
     for message in messages:
+        logger.debug(json.dumps(message))
         message_parsed = parse_message(message)
         filing_id = message_parsed['filing_id']
         logger.debug(f'Grabbing FEC filing {filing_id}')

@@ -85,3 +85,29 @@ def parse_message(message: JSONType) -> Dict[str, str]:
         return body_content
 
     return json_body.replace("'", '')
+
+
+def push_message_to_sqs(message: str) -> Dict[str, str]:
+    """Sends unformatted message to SQS
+        see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs.html#SQS.Queue.send_message
+
+    Args:
+        message (str): Message can be unformatted string, JSON, or XML (as string)
+
+    Returns:
+        Dict[str, str]: Response from SQS, of format:
+            {
+                'MD5OfMessageBody': 'string',
+                'MD5OfMessageAttributes': 'string',
+                'MD5OfMessageSystemAttributes': 'string',
+                'MessageId': 'string',
+                'SequenceNumber': 'string'
+            }
+    """
+
+    response = queue.send_message(
+        MessageBody=json.dumps(message))
+
+    logger.debug(response)
+
+    return response

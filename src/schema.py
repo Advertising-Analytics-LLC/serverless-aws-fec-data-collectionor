@@ -7,7 +7,7 @@ from collections import OrderedDict
 from psycopg2 import sql
 from psycopg2.sql import SQL, Literal
 from src import logger, JSONType
-from typing import Union
+from typing import Any, Dict, Union
 
 
 def parse_value(value: Union[str, int]) -> Union[str, int]:
@@ -330,17 +330,6 @@ def insert_fec_filing(filing: JSONType) -> SQL:
     return query
 
 
-def update_fec_filing(filing: JSONType) -> SQL:
-    fec_file_id = filing.pop('fec_file_id')
-    values = OrderedDict(sorted(filing.items()))
-    query_string = 'UPDATE fec.filings SET ' \
-        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
-        + ' WHERE fec_file_id={}'
-    query = sql.SQL(query_string)\
-        .format(*[Literal(val) for key, val in values.items()], Literal(fec_file_id))
-    return query
-
-
 def amendment_chain_exists(fec_file_id: str, amendment_id: str) -> SQL:
     query = sql.SQL('SELECT * FROM fec.filing_amendment_chain WHERE fec_file_id={} AND amendment_id={}')\
         .format(Literal(fec_file_id), Literal(amendment_id))
@@ -390,5 +379,269 @@ def update_committee_total(committee_total: JSONType) -> SQL:
 
     query = sql.SQL(query_string)\
         .format(*[Literal(val) for key, val in values.items()], Literal(committee_id), Literal(cycle))
+
+    return query
+
+#
+# schedule B filings
+#
+
+def schedule_b_exists(transaction_id_number: str) -> SQL:
+    """returns a query to check if a transaction id has a record
+
+    Args:
+        transaction_id_number (str): ID representing transaction
+
+    Returns:
+        SQL: select query for record
+    """
+
+    query = sql.SQL('SELECT * FROM fec.filings_schedule_b WHERE transaction_id_number={}')\
+                .format(Literal(transaction_id_number))
+
+    return query
+
+
+def schedule_b_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
+    """inserts a record into fec.filings_schedule_b
+
+    Args:
+        fec_file_id (str): filing ID
+        filing (Dict[str, Any]): dictionary containing transaction data of filing
+
+    Returns:
+        SQL: SQL insert query
+    """
+
+    filing['fec_file_id'] = fec_file_id
+    values = OrderedDict(sorted(filing.items()))
+
+    query_string = 'INSERT INTO fec.filings_schedule_b ('\
+        + ', '.join([f'{key}' for key, val in values.items()])\
+        + ') '\
+        + 'VALUES ('\
+        + ', '.join(['{}' for key, val in values.items()])\
+        + ')'
+
+    query = sql.SQL(query_string)\
+                .format(*[Literal(val) for key, val in values.items()])
+
+    return query
+
+
+def schedule_b_update(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
+    """updates a record in fec.filings_schedule_b
+
+    Args:
+        fec_file_id (str): filing ID
+        filing (Dict[str, Any]): dictionary containing transaction data of filing
+
+    Returns:
+        SQL: SQL update query
+    """
+
+    filing['fec_file_id'] = fec_file_id
+    primary_key = filing['transaction_id_number']
+    values = OrderedDict(sorted(filing.items()))
+
+    query_string = 'UPDATE fec.filings_schedule_b SET ' \
+        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
+        + ' WHERE transaction_id_number={}'
+
+    query = sql.SQL(query_string)\
+        .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
+
+    return query
+
+
+#
+# Candidates
+#
+
+def candidate_exists(candidate_id: str) -> SQL:
+    """returns a query to check if a candidate id has a record
+
+    Args:
+        candidate_id (str): ID representing candidate
+
+    Returns:
+        SQL: select query for record
+    """
+
+    query = sql.SQL('SELECT * FROM fec.candidate_detail WHERE candidate_id={}')\
+                .format(Literal(candidate_id))
+
+    return query
+
+
+def candidate_insert(candidate: Dict[str, str]) -> SQL:
+    """inserts a record into fec.candidate_details
+
+    Args:
+        candidate (Dict[str, Any]): dictionary containing candidate data
+
+    Returns:
+        SQL: SQL insert query
+    """
+
+    values = OrderedDict(sorted(candidate.items()))
+
+    query_string = 'INSERT INTO fec.candidate_detail ('\
+        + ', '.join([f'{key}' for key, val in values.items()])\
+        + ') '\
+        + 'VALUES ('\
+        + ', '.join(['{}' for key, val in values.items()])\
+        + ')'
+
+    query = sql.SQL(query_string)\
+                .format(*[Literal(val) for key, val in values.items()])
+
+    return query
+
+
+def candidate_update(candidate: Dict[str, str]) -> SQL:
+    """updates a record in fec.candidate_detail
+
+    Args:
+        candidate (Dict[str, Any]): dictionary containing candidate data
+
+    Returns:
+        SQL: SQL update query
+    """
+
+    primary_key = candidate['candidate_id']
+    values = OrderedDict(sorted(candidate.items()))
+
+    query_string = 'UPDATE fec.candidate_detail SET ' \
+        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
+        + ' WHERE candidate_id={}'
+
+    query = sql.SQL(query_string)\
+        .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
+
+    return query
+
+
+#
+# schedule E filings
+#
+
+def schedule_e_exists(transaction_id_number: str) -> SQL:
+    """returns a query to check if a transaction id has a record
+
+    Args:
+        transaction_id_number (str): ID representing transaction
+
+    Returns:
+        SQL: select query for record
+    """
+
+    query = sql.SQL('SELECT * FROM fec.filings_schedule_e WHERE transaction_id_number={}')\
+                .format(Literal(transaction_id_number))
+
+    return query
+
+
+def schedule_e_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
+    """inserts a record into fec.filings_schedule_e
+
+    Args:
+        fec_file_id (str): filing ID
+        filing (Dict[str, Any]): dictionary containing transaction data of filing
+
+    Returns:
+        SQL: SQL insert query
+    """
+
+    filing['fec_file_id'] = fec_file_id
+    values = OrderedDict(sorted(filing.items()))
+
+    query_string = 'INSERT INTO fec.filings_schedule_e ('\
+        + ', '.join([f'{key}' for key, val in values.items()])\
+        + ') '\
+        + 'VALUES ('\
+        + ', '.join(['{}' for key, val in values.items()])\
+        + ')'
+
+    query = sql.SQL(query_string)\
+                .format(*[Literal(val) for key, val in values.items()])
+
+    return query
+
+
+def schedule_e_update(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
+    """updates a record in fec.filings_schedule_e
+
+    Args:
+        fec_file_id (str): filing ID
+        filing (Dict[str, Any]): dictionary containing transaction data of filing
+
+    Returns:
+        SQL: SQL update query
+    """
+
+    filing['fec_file_id'] = fec_file_id
+    primary_key = filing['transaction_id_number']
+    values = OrderedDict(sorted(filing.items()))
+
+    query_string = 'UPDATE fec.filings_schedule_e SET ' \
+        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
+        + ' WHERE transaction_id_number={}'
+
+    query = sql.SQL(query_string)\
+        .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
+
+    return query
+
+#
+# Form 1 Supplemental Data
+#
+
+def f1_supplemental_exists(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
+    """checks for existining supplemental data
+
+    Args:
+        fec_file_id (str): Filing ID
+        filing (Dict[str, Any]): dictionary containing transaction data of filing
+
+    Returns:
+        SQL: select query
+    """
+
+    filing['fec_file_id'] = fec_file_id
+    values = OrderedDict(sorted(filing.items()))
+
+    query_string = 'SELECT * FROM fec.form_1_supplemental WHERE ' \
+        + ' AND '.join([f' {key}={{}}' for key, val in values.items()])
+
+    query = sql.SQL(query_string)\
+        .format(*[Literal(val) for key, val in values.items()])
+
+    return query
+
+
+def f1_supplemental_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
+    """inserts a record into fec.form_1_supplemental
+
+    Args:
+        fec_file_id (str): filing ID
+        filing (Dict[str, Any]): dictionary containing transaction data of filing
+
+    Returns:
+        SQL: SQL insert query
+    """
+
+    filing['fec_file_id'] = fec_file_id
+    values = OrderedDict(sorted(filing.items()))
+
+    query_string = 'INSERT INTO fec.form_1_supplemental ('\
+        + ', '.join([f'{key}' for key, val in values.items()])\
+        + ') '\
+        + 'VALUES ('\
+        + ', '.join(['{}' for key, val in values.items()])\
+        + ')'
+
+    query = sql.SQL(query_string)\
+                .format(*[Literal(val) for key, val in values.items()])
 
     return query

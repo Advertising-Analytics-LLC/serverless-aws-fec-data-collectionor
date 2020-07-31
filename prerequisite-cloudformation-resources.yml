@@ -8,11 +8,22 @@ Parameters:
   DeploymentBucketName:
     Default: serverless-deploymentbucket
     Type: String
+  CandidateSyncQueueName:
+    Default: candidate-sync-queue
+    Type: String
   CommitteeSyncQueueName:
     Default: committee-sync-queue
     Type: String
   NewFilingQueueName:
     Default: fec-new-filing-queue
+    Description: Queue for new filings, consumed by loader for Schedule B
+    Type: String
+  NewFilingQueueSEName:
+    Default: fec-new-filing-se-queue
+    Description: Queue for new filings, consumed by loader for Schedule E
+    Type: String
+  SupplementalDataQueueName:
+    Default: fec-new-filing-supplemental-data-queue
     Type: String
   TransactionLoadingQueueName:
     Default: fec-transaction-loading-queue
@@ -58,10 +69,27 @@ Resources:
       VersioningConfiguration:
          Status: Enabled
 
+  CandidateSyncQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref CandidateSyncQueueName
+      Tags:
+      - Key: managed_by
+        Value: CloudFormation
+      - Key: Project
+        Value: FEC Data-sync
+      - Key: created_by
+        Value: sblack@rhythmictech.com
+      - Key: Name
+        Value: !Ref CandidateSyncQueueName
+      - Key: Version
+        Value: !Ref Version
+
   CommitteeSyncQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref CommitteeSyncQueueName
+      VisibilityTimeout: 90
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -78,6 +106,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref NewFilingQueueName
+      VisibilityTimeout: 90
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -90,10 +119,45 @@ Resources:
       - Key: Version
         Value: !Ref Version
 
+  NewFilingQueueSE:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref NewFilingQueueSEName
+      VisibilityTimeout: 900
+      Tags:
+      - Key: managed_by
+        Value: CloudFormation
+      - Key: Project
+        Value: FEC Data-sync
+      - Key: created_by
+        Value: sblack@rhythmictech.com
+      - Key: Name
+        Value: !Ref NewFilingQueueSEName
+      - Key: Version
+        Value: !Ref Version
+
+  SupplementalDataQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref SupplementalDataQueueName
+      VisibilityTimeout: 900
+      Tags:
+      - Key: managed_by
+        Value: CloudFormation
+      - Key: Project
+        Value: FEC Data-sync
+      - Key: created_by
+        Value: sblack@rhythmictech.com
+      - Key: Name
+        Value: !Ref SupplementalDataQueueName
+      - Key: Version
+        Value: !Ref Version
+
   TransactionLoadingQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref TransactionLoadingQueueName
+      VisibilityTimeout: 900
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -111,7 +175,11 @@ Resources:
     Properties:
       DisplayName: !Ref RSSFeedTopicName
       Subscription:
+        - Endpoint: !GetAtt NewFilingQueueSE.Arn
+          Protocol: "sqs"
         - Endpoint: !GetAtt NewFilingQueue.Arn
+          Protocol: "sqs"
+        - Endpoint: !GetAtt SupplementalDataQueue.Arn
           Protocol: "sqs"
         - Endpoint: !GetAtt TransactionLoadingQueue.Arn
           Protocol: "sqs"
@@ -130,7 +198,11 @@ Resources:
   RSSFanoutQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
-      Queues: [ !Ref NewFilingQueue, !Ref TransactionLoadingQueue ]
+      Queues:
+        - !Ref NewFilingQueue
+        - !Ref NewFilingQueueSE
+        - !Ref TransactionLoadingQueue
+        - !Ref SupplementalDataQueue
       PolicyDocument:
         Statement:
           - Action:
@@ -149,9 +221,33 @@ Resources:
             Condition:
              ArnEquals:
               aws:SourceArn: !Ref RSSFeedTopic
+          - Action:
+            - sqs:SendMessage
+            Effect: Allow
+            Principal: "*"
+            Resource: !GetAtt NewFilingQueueSE.Arn
+            Condition:
+             ArnEquals:
+              aws:SourceArn: !Ref RSSFeedTopic
+          - Action:
+            - sqs:SendMessage
+            Effect: Allow
+            Principal: "*"
+            Resource: !GetAtt SupplementalDataQueue.Arn
+            Condition:
+             ArnEquals:
+              aws:SourceArn: !Ref RSSFeedTopic
 
 
 Outputs:
+
+  CandidateSyncQueueArn:
+    Description: The Arn of the Queue for candidates that just filed
+    Value: !GetAtt CandidateSyncQueue.Arn
+
+  CandidateSyncQueueName:
+    Description: The name of the Queue for candidates that just filed
+    Value: !GetAtt CandidateSyncQueue.QueueName
 
   CommitteeSyncQueueArn:
     Description: The Arn of the Queue for committees that just filed
@@ -166,12 +262,26 @@ Outputs:
     Value: !Ref DeploymentBucket
 
   NewFilingQueueArn:
-    Description: Arn of Queue for new new RSS filings
+    Description: Arn of Queue for new Schedule B RSS filings
     Value: !GetAtt NewFilingQueue.Arn
 
   NewFilingQueueName:
-    Description: Name of Queue for new new RSS filings
+    Description: Name of Queue for new Schedule B RSS filings
     Value: !GetAtt NewFilingQueue.QueueName
+
+  NewFilingQueueSEArn:
+    Description: Arn of Queue for new Schedule E RSS filings
+    Value: !GetAtt NewFilingQueueSE.Arn
+
+  NewFilingQueueSEName:
+    Description: Name of Queue for new Schedule E RSS filings
+    Value: !GetAtt NewFilingQueueSE.QueueName
+
+  SupplementalDataQueueArn:
+    Value: !GetAtt SupplementalDataQueue.Arn
+
+  SupplementalDataQueueName:
+    Value: !GetAtt SupplementalDataQueue.QueueName
 
   TransactionLoadingQueueArn:
     Value: !GetAtt TransactionLoadingQueue.Arn

@@ -47,7 +47,7 @@ def get_committee_data(committee_id: str) -> JSONType:
     return results_json
 
 
-def upsert_committeecandidate(self, committee_id: str, candidate_id:str) -> bool:
+def upsert_committeecandidate(committee_id: str, candidate_id:str) -> bool:
     """upsert single record to committee-candidate linking table
 
     Args:
@@ -97,8 +97,8 @@ def upsert_committee_data(committee_data: JSONType) -> bool:
         bool: success
     """
 
-    committee_id = committee_detail['committee_id']
-    candidate_ids = committee_detail.pop('candidate_ids')
+    committee_id = committee_data['committee_id']
+    candidate_ids = committee_data.pop('candidate_ids')
 
     for candidate_id in candidate_ids:
         upsert_committeecandidate(committee_id, candidate_id)

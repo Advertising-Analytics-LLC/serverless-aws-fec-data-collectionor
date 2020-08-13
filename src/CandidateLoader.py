@@ -19,7 +19,7 @@ from src.sqs import delete_message_from_sqs, parse_message
 # business logic
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 
-def get_candidate(candidate_id: str) -> json:
+def get_candidate(candidate_id: str) -> List[Dict['str', Any]]:
     """gets list of candidate by id
 
     Args:
@@ -31,11 +31,12 @@ def get_candidate(candidate_id: str) -> json:
 
     openFec = OpenFec(API_KEY)
     response_generator = openFec.get_route_paginator(
-                                f'/candidates/{candidate_id}/')
+                                f'/candidate/{candidate_id}/')
 
     results_json = []
     for response in response_generator:
-        results_json += response['results']
+        # /candidate/#/ returns a list with one record
+        results_json += response['results'][0]
 
     return results_json
 

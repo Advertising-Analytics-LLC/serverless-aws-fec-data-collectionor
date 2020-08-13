@@ -19,7 +19,7 @@ from src.sqs import delete_message_from_sqs, parse_message
 # business logic
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 
-def get_candidate(candidate_id: str) -> List[Dict['str', Any]]:
+def get_candidate(candidate_id: str) -> Dict['str', Any]:
     """gets list of candidate by id
 
     Args:
@@ -35,10 +35,10 @@ def get_candidate(candidate_id: str) -> List[Dict['str', Any]]:
 
     results_json = []
     for response in response_generator:
-        # /candidate/#/ returns a list with one record
-        results_json += response['results'][0]
+        results_json += response['results']
 
-    return results_json
+        # /candidate/#/ returns a list with one record
+    return results_json[0]
 
 def condense_dimension(containing_dict: Dict[str, Any], column_name: str) -> Dict[str, Any]:
     """takes a dimension (list) in a dictionary and joins the elements with ~s
@@ -67,9 +67,6 @@ def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
     Returns:
         bool: if upsert succeeded
     """
-
-    # get rid of extra column
-    candidate_message.pop('inactive_election_years')
 
     # condense a few lists
     candidate_message = condense_dimension(candidate_message, 'cycles')
@@ -102,7 +99,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
         bool: Did this go well?
     """
 
-    logger.debug(f'running {__file__}')
+    logger.debug(f'running {__file__}, event:')
     logger.debug(event)
 
     messages = event['Records']

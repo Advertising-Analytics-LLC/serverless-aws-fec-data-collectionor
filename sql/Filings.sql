@@ -35,9 +35,9 @@ CREATE TABLE IF NOT EXISTS fec.filings (
   form_type TEXT DEFAULT NULL,
   house_personal_funds DECIMAL(20, 9) DEFAULT NULL,
   html_url TEXT DEFAULT NULL,
-  is_amended TINYINT(1) DEFAULT NULL,
+  is_amended INT DEFAULT NULL,
   means_filed TEXT DEFAULT NULL,
-  most_recent TINYINT(1) DEFAULT NULL,
+  most_recent INT DEFAULT NULL,
   most_recent_file_number INT DEFAULT NULL,
   net_donations DECIMAL(20, 9) DEFAULT NULL,
   office TEXT DEFAULT NULL,
@@ -64,5 +64,5 @@ CREATE TABLE IF NOT EXISTS fec.filings (
   update_date DATE DEFAULT NULL,
   PRIMARY KEY(fec_file_id),
   UNIQUE(fec_file_id),
-  FOREIGN KEY(candidate_id REFERENCES candidate_detail(candidate_id)
+  FOREIGN KEY(candidate_id) REFERENCES fec.candidate_detail(candidate_id)
 ) DISTSTYLE AUTO;

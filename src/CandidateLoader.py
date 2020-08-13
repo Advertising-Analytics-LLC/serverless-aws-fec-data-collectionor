@@ -11,11 +11,33 @@ import requests
 from typing import Any, Dict, List
 from src import JSONType, logger, schema
 from src.database import Database
+from src.OpenFec import OpenFec
+from src.secrets import get_param_value_by_name
 from src.sqs import delete_message_from_sqs, parse_message
 
 
 # business logic
+API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 
+def get_candidate(candidate_id: str) -> json:
+    """gets list of candidate by id
+
+    Args:
+        candidate_id (str): ID of candidate, eg
+
+    Returns:
+        json: json list containing IDs
+    """
+
+    openFec = OpenFec(API_KEY)
+    response_generator = openFec.get_route_paginator(
+                                f'/candidates/{candidate_id}/')
+
+    results_json = []
+    for response in response_generator:
+        results_json += response['results']
+
+    return results_json
 
 def condense_dimension(containing_dict: Dict[str, Any], column_name: str) -> Dict[str, Any]:
     """takes a dimension (list) in a dictionary and joins the elements with ~s
@@ -86,6 +108,8 @@ def lambdaHandler(event:dict, context: object) -> bool:
 
     for message in messages:
         body = json.loads(message['body'])
-        upsert_candidate(body)
+        candidate_id = body['candidate_id']
+        candidate_detail = get_candidate(candidate_id)
+        upsert_candidate(candidate_detail)
 
     return True

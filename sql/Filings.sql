@@ -63,5 +63,6 @@ CREATE TABLE IF NOT EXISTS fec.filings (
   treasurer_name TEXT DEFAULT NULL,
   update_date DATE DEFAULT NULL,
   PRIMARY KEY(fec_file_id),
-  UNIQUE(fec_file_id)
+  UNIQUE(fec_file_id),
+  FOREIGN KEY(candidate_id REFERENCES candidate_detail(candidate_id)
 ) DISTSTYLE AUTO;

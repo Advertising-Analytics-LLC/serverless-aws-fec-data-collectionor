@@ -3,9 +3,9 @@ Serverless applications to get near-real-time FEC data
 
 ## About
 All the serverless functions in this module do a few things:
-- Gets values from SSM
-- Use them to call the openFEC API
-- Push that data to a queue or database
+- Get secrets/variables from SSM
+- Call the openFEC API
+- Push data to a queue or database
 - Do so on a schedule or via event trigger
 
 ### Repo Contents
@@ -35,7 +35,8 @@ The DDL is in the `sql/` directory.
 The `bin/` has useful scripts that can be called via `make` targets defined in the `Makefile`.
 
 ### Functions
-The data-flow diagram below shows events, lambdas, queues, and RDS tables. Most data originates with the [FEC API](https://api.open.fec.gov/developers/) but also uses [fecfile](https://github.com/esonderegger/fecfile) to parse FEC filings from `https://docquery.fec.gov/paper/posted/{fec_file_id}.fec`
+The data-flow diagram below shows events, lambdas, queues, and RDS tables. Most data originates with the [FEC API](https://api.open.fec.gov/developers/) but also uses [fecfile](https://github.com/esonderegger/fecfile) to parse FEC filings from `https://docquery.fec.gov/paper/posted/{fec_file_id}.fec`.
+You can also view the lambdas, along with monitoring and logging, through the [aws console](https://console.aws.amazon.com/lambda/home?region=us-east-1#/applications/serverless-aws-python3-fec-datasync-dev?tab=overview)./
 
 ![](docs/data-flow-diagram.png)
 
@@ -59,6 +60,9 @@ Each API endpoint returns a different Data Model. The APIs and their DMs are lis
 The `docquery` API returns fec files which are pretty free-form
 
 #### Entity Relationship Diagarm
+
+This was generated using DataGrip and makes uses of the foreign keys which
+[are not enforced by redshift](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-defining-constraints.html)
 
 ![](docs/fec.png)
 

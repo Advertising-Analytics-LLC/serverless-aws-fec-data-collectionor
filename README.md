@@ -13,6 +13,12 @@ The resources that support them are defined in CloudFormation in `prerequisite-c
 The DDL is in the `sql/` directory.
 The `bin/` has useful scripts that can be called via `make` targets defined in the `Makefile`.
 
+### Functions
+![](docs/data-flow-diagram.png)
+
+### Entity Relationship Diagarm
+![fec.png](docs/fec.png)
+
 ## Getting started
 
 ### 0. Install prerequisites

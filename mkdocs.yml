@@ -1,0 +1,11 @@
+---
+docs_dir: docs
+edit_uri: edit/master/docs
+repo_url: https://github.com/Advertising-Analytics-LLC/serverless-aws-fec-data-collectionor
+site_description: Docs for serverless-advancedanalytics-fec-data-collection
+site_name: serverless-advancedanalytics-fec-data-collection
+
+nav:
+  - Home: 'README.md'
+  - Operations: 'OPS.md'
+  - Engineering: 'ENG.md'

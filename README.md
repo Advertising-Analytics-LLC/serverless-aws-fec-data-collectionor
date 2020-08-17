@@ -10,13 +10,9 @@ Serverless applications to get near-real-time FEC data
 - [About](#about)
   - [Repo Contents](#repo-contents)
   - [Functions](#functions)
+    - [Data-Flow Diagram](#data-flow-diagram)
   - [Data Model](#data-model)
     - [Entity Relationship Diagarm](#entity-relationship-diagarm)
-- [Getting started](#getting-started)
-  - [0. Install prerequisites](#0-install-prerequisites)
-  - [1. Install development packages](#1-install-development-packages)
-  - [2. Develop](#2-develop)
-  - [3. Deploy](#3-deploy)
 - [References](#references)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -29,6 +25,11 @@ All the serverless functions in this module do a few things:
 - Do so on a schedule or via event trigger
 
 ### Repo Contents
+
+You can see the serverless functions defined in `serverless.yml` and the code in `src/`
+The resources that support them are defined in CloudFormation in `prerequisite-cloudformation-resources.yml`.
+The DDL is in the `sql/` directory.
+The `bin/` has useful scripts that can be called via `make` targets defined in the `Makefile`.
 
 ```
 .
@@ -49,14 +50,11 @@ All the serverless functions in this module do a few things:
 └── tmp
 ```
 
-You can see the serverless functions defined in `serverless.yml` and the code in `src/`
-The resources that support them are defined in CloudFormation in `prerequisite-cloudformation-resources.yml`.
-The DDL is in the `sql/` directory.
-The `bin/` has useful scripts that can be called via `make` targets defined in the `Makefile`.
-
 ### Functions
 The data-flow diagram below shows events, lambdas, queues, and RDS tables. Most data originates with the [FEC API](https://api.open.fec.gov/developers/) but also uses [fecfile](https://github.com/esonderegger/fecfile) to parse FEC filings from `https://docquery.fec.gov/paper/posted/{fec_file_id}.fec`.
 You can also view the lambdas, along with monitoring and logging, through the [aws console](https://console.aws.amazon.com/lambda/home?region=us-east-1#/applications/serverless-aws-python3-fec-datasync-dev?tab=overview)./
+
+#### Data-Flow Diagram
 
 ![](docs/data-flow-diagram.png)
 
@@ -86,29 +84,10 @@ This was generated using DataGrip and makes uses of the foreign keys which
 
 ![](docs/fec.png)
 
-## Getting started
-
-### 0. Install prerequisites
-Make sure [python](https://www.python.org/), [npm](https://www.npmjs.com/), and the [aws cli](https://aws.amazon.com/cli/) are installed.
-The services are written in python and [serverless](https://www.serverless.com/) is an npm package. They are deployed to AWS.
-
-### 1. Install development packages
-These requirements can be installed with `bin/dev-setup.sh`.
-This script installs serverless and creates a local python [virtualenv](https://virtualenv.pypa.io/en/latest/) for developing the functions.
-See [bin/dev-setup.sh](bin/dev-setup.sh)
-
-### 2. Develop
-Edit the code and run locally with `sls invoke local -f hello`.
-Replace `hello` with the name of your function.
-
-### 3. Deploy
-First you will need to log into AWS through the cli.
-Then you can deploy your function with `sls deploy`.
-Happy coding!
-
 
 ## References
-If you want to see more let me suggest
+Resources I referenced when making design decisions
+
 - [the AWS serverless.yml reference](https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/)
 - this [serverless/examples example](https://github.com/serverless/examples/tree/master/aws-python-rest-api-with-pynamodb)
 - [FEC API docs](https://api.open.fec.gov/developers/)

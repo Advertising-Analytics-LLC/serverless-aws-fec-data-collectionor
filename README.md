@@ -8,7 +8,8 @@ Serverless applications to get near-real-time FEC data
 
 
 - [About](#about)
-  - [Repo Contents](#repo-contents)
+- [Documentation](#documentation)
+- [Repo Contents](#repo-contents)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -19,28 +20,33 @@ All the serverless functions in this module do a few things:
 - Push data to a queue or database
 - Do so on a schedule or via event trigger
 
-### Repo Contents
+## Documentation
+
+View it live on GitHub Pages: https://advertising-analytics-llc.github.io/serverless-aws-fec-data-collectionor/
+
+- `docs/ENG.md` has the Engineering stuff
+- `docs/OPS.md` has the Operations stuff
+- `docs/DATA.md` has the data models
+
+## Repo Contents
 
 You can see the serverless functions defined in `serverless.yml` and the code in `src/`
 The resources that support them are defined in CloudFormation in `prerequisite-cloudformation-resources.yml`.
 The DDL is in the `sql/` directory.
 The `bin/` has useful scripts that can be called via `make` targets defined in the `Makefile`.
 
-```
+```sh
 .
 ├── Makefile
 ├── README.md
-├── bin
-├── dev-requirements.txt
-├── docs
-├── node_modules
-├── package-lock.json
+├── bin                     # scripts
+├── dev-requirements.txt    # requirements for developing code
+├── docs                    # documentation source
 ├── package.json
-├── prerequisite-cloudformation-resources.yml
-├── requirements.txt
-├── serverless.yml
-├── sql
-├── src
+├── prerequisite-cloudformation-resources.yml # SQS qs, SNS topics, S3 Bucket
+├── requirements.txt    # requirements for running code
+├── serverless.yml      # functions
+├── sql                 # SQL DDL
+├── src                 # python code
 ├── tests
-└── tmp
 ```

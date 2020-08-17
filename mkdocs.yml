@@ -5,7 +5,20 @@ repo_url: https://github.com/Advertising-Analytics-LLC/serverless-aws-fec-data-c
 site_description: Docs for serverless-advancedanalytics-fec-data-collection
 site_name: serverless-advancedanalytics-fec-data-collection
 
+markdown_extensions:
+    - toc
+
 nav:
   - Home: 'README.md'
-  - Operations: 'OPS.md'
-  - Engineering: 'ENG.md'
+  - Data: 'DATA.md'
+  - Eng: 'ENG.md'
+  - Ops: 'OPS.md'
+
+plugins:
+  - search
+
+theme:
+  name: mkdocs
+  include_sidebar: false
+  navigation_depth: 4
+  nav_style: dark

@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Eng - serverless-advancedanalytics-fec-data-collection</title>
+        <title>Data - serverless-advancedanalytics-fec-data-collection</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -36,11 +36,11 @@
                             <li class="navitem">
                                 <a href=".." class="nav-link">Home</a>
                             </li>
-                            <li class="navitem">
-                                <a href="../DATA/" class="nav-link">Data</a>
-                            </li>
                             <li class="navitem active">
-                                <a href="./" class="nav-link">Eng</a>
+                                <a href="./" class="nav-link">Data</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../ENG/" class="nav-link">Eng</a>
                             </li>
                             <li class="navitem">
                                 <a href="../OPS/" class="nav-link">Ops</a>
@@ -54,17 +54,17 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../DATA/" class="nav-link">
+                                <a rel="prev" href=".." class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../OPS/" class="nav-link">
+                                <a rel="next" href="../ENG/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://github.com/Advertising-Analytics-LLC/serverless-aws-fec-data-collectionor/edit/master/docs/ENG.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                                <a href="https://github.com/Advertising-Analytics-LLC/serverless-aws-fec-data-collectionor/edit/master/docs/DATA.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
                             </li>
                     </ul>
                 </div>
@@ -84,23 +84,19 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#engineering" class="nav-link">Engineering</a>
+            <li class="nav-item" data-level="1"><a href="#data" class="nav-link">Data</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#getting-started" class="nav-link">Getting started</a>
+            <li class="nav-item" data-level="2"><a href="#data-flow" class="nav-link">Data Flow</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="3"><a href="#0-install-prerequisites" class="nav-link">0. Install prerequisites</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="3"><a href="#1-install-development-packages" class="nav-link">1. Install development packages</a>
+            <li class="nav-item" data-level="3"><a href="#data-flow-diagram" class="nav-link">Data-Flow Diagram</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="3"><a href="#2-develop" class="nav-link">2. Develop</a>
-              <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="3"><a href="#3-deploy" class="nav-link">3. Deploy</a>
+            <li class="nav-item" data-level="2"><a href="#data-model" class="nav-link">Data Model</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="3"><a href="#entity-relationship-diagarm" class="nav-link">Entity Relationship Diagarm</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -113,23 +109,32 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="engineering">Engineering</h1>
-<h2 id="getting-started">Getting started</h2>
-<p>These instructions are for engineers wishing to develop the project.</p>
-<h3 id="0-install-prerequisites">0. Install prerequisites</h3>
-<p>Make sure <a href="https://www.python.org/">python</a>, <a href="https://www.npmjs.com/">npm</a>, and the <a href="https://aws.amazon.com/cli/">aws cli</a> are installed.
-The services are written in python and <a href="https://www.serverless.com/">serverless</a> is an npm package. They are deployed to AWS.</p>
-<h3 id="1-install-development-packages">1. Install development packages</h3>
-<p>These requirements can be installed with <code>bin/dev-setup.sh</code>.
-This script installs serverless and creates a local python <a href="https://virtualenv.pypa.io/en/latest/">virtualenv</a> for developing the functions.
-See <a href="bin/dev-setup.sh">bin/dev-setup.sh</a></p>
-<h3 id="2-develop">2. Develop</h3>
-<p>Edit the code and run locally with <code>sls invoke local -f hello</code>.
-Replace <code>hello</code> with the name of your function.</p>
-<h3 id="3-deploy">3. Deploy</h3>
-<p>First you will need to log into AWS through the cli.
-Then you can deploy your function with <code>sls deploy</code>.
-Happy coding!</p></div>
+<h1 id="data">Data</h1>
+<h2 id="data-flow">Data Flow</h2>
+<p>The data-flow diagram below shows events, lambdas, queues, and RDS tables. Most data originates with the <a href="https://api.open.fec.gov/developers/">FEC API</a> but also uses <a href="https://github.com/esonderegger/fecfile">fecfile</a> to parse FEC filings from <code>https://docquery.fec.gov/paper/posted/{fec_file_id}.fec</code>.
+You can also view the lambdas, along with monitoring and logging, through the <a href="https://console.aws.amazon.com/lambda/home?region=us-east-1#/applications/serverless-aws-python3-fec-datasync-dev?tab=overview">aws console</a>./</p>
+<h3 id="data-flow-diagram">Data-Flow Diagram</h3>
+<p><img alt="" src="../data-flow-diagram.png" /></p>
+<h2 id="data-model">Data Model</h2>
+<p>The tables came from:
+- The <a href="https://api.open.fec.gov/developers/">FEC API</a>
+    - <code>candidate_detail</code> -&gt; <code>CandidateDetail</code> from https://api.open.fec.gov/developers/#/candidate/get_candidate__candidate_id__
+    - <code>committee_detail</code> -&gt; <code>CommitteeDetail</code> from https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
+    - <code>committee_candidates</code> -&gt; <code>CommitteeDetail</code>
+- The <a href="https://docquery.fec.gov/paper/">docquery filings</a>
+    - <code>filings</code>
+    - <code>filings_amendment_chain</code>
+    - <code>filings_schedule_b</code>
+    - <code>filings_schedule_e</code>
+    - <code>form_1_supplemental</code>
+    - <code>committee_totals</code></p>
+<p>If you inspect the data-flow-diagram above you can see what API was used to make any redshift table.
+Each API endpoint returns a different Data Model. The APIs and their DMs are listed above.
+The <code>docquery</code> API returns fec files which are pretty free-form</p>
+<h3 id="entity-relationship-diagarm">Entity Relationship Diagarm</h3>
+<p>This was generated using DataGrip and makes uses of the foreign keys which
+<a href="https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-defining-constraints.html">are not enforced by redshift</a></p>
+<p><img alt="" src="../fec.png" /></p></div>
             </div>
         </div>
 

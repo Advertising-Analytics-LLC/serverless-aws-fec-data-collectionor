@@ -64,5 +64,6 @@ CREATE TABLE IF NOT EXISTS fec.filings (
   update_date DATE DEFAULT NULL,
   PRIMARY KEY(fec_file_id),
   UNIQUE(fec_file_id),
-  FOREIGN KEY(candidate_id) REFERENCES fec.candidate_detail(candidate_id)
+  FOREIGN KEY(candidate_id) REFERENCES fec.candidate_detail(candidate_id),
+  FOREIGN KEY(committee_id) REFERENCES fec.committee_detail(committee_id)
 ) DISTSTYLE AUTO;

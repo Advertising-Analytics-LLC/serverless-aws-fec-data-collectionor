@@ -47,5 +47,8 @@ CREATE TABLE IF NOT EXISTS fec.form_1_supplemental (
     joint_fund_participant_committee_id_number VARCHAR(100) DEFAULT NULL,
     joint_fund_participant_committee_name VARCHAR(100) DEFAULT NULL,
     FOREIGN KEY(fec_file_id) REFERENCES fec.filings(fec_file_id),
-    FOREIGN KEY(affiliated_committee_id_number) REFERENCES fec.committee_detail(committee_id)
+    FOREIGN KEY(affiliated_candidate_id_number) REFERENCES fec.candidate_detail(candidate_id),
+    FOREIGN KEY(affiliated_committee_id_number) REFERENCES fec.committee_detail(committee_id),
+    FOREIGN KEY(filer_committee_id_number) REFERENCES fec.committee_detail(committee_id),
+    FOREIGN KEY(joint_fund_participant_committee_id_number) REFERENCES fec.committee_detail(committee_id)
 ) DISTSTYLE AUTO;

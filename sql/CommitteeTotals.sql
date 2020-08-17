@@ -112,5 +112,5 @@ CREATE TABLE IF NOT EXISTS fec.committee_totals (
   unitemized_other_refunds DECIMAL(20, 9) DEFAULT NULL,
   unitemized_refunds_relating_convention_exp DECIMAL(20, 9) DEFAULT NULL,
   PRIMARY KEY(committee_id, cycle),
-  FOREIGN KEY(committee_id) REFERENCES committeedetails(committee_id)
+  FOREIGN KEY(committee_id) REFERENCES fec.committee_detail(committee_id)
 ) DISTSTYLE AUTO;

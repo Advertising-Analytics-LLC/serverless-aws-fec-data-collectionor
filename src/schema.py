@@ -24,14 +24,14 @@ def parse_value(value: Union[str, int]) -> Union[str, int]:
     return str(value)
 
 
-def get_committeecandidates_by_id(committee_id: str, candidate_id: str) -> SQL:
-    query = SQL('SELECT * FROM fec.committeecandidates WHERE committee_id = {committee_id} AND candidate_id = {candidate_id}')\
+def get_committee_candidate_by_id(committee_id: str, candidate_id: str) -> SQL:
+    query = SQL('SELECT * FROM fec.committee_candidate WHERE committee_id = {committee_id} AND candidate_id = {candidate_id}')\
         .format(committee_id=Literal(parse_value(committee_id)), candidate_id=Literal(parse_value(candidate_id)))
     return query
 
 
-def get_committeecandidates_insert_statement(committee_id: str, candidate_id: str) -> SQL:
-    """returns SQL query object to insert committeecandidates record
+def get_committee_candidate_insert_statement(committee_id: str, candidate_id: str) -> SQL:
+    """returns SQL query object to insert committee_candidate record
 
     Args:
         committee_id (str): ID of committee
@@ -41,19 +41,19 @@ def get_committeecandidates_insert_statement(committee_id: str, candidate_id: st
         SQL: insert statement as SQL object
     """
     query = sql.SQL('''
-    INSERT INTO fec.committeecandidates(committee_id, candidate_id)
+    INSERT INTO fec.committee_candidate(committee_id, candidate_id)
     VALUES ({committee_id}, {candidate_id})
     ''').format(committee_id=Literal(committee_id), candidate_id=Literal(candidate_id))
     return query
 
 
-def get_committeedetail_by_id(committee_id: str) -> SQL:
+def get_committee_detail_by_id(committee_id: str) -> SQL:
     query = sql.SQL('SELECT * FROM fec.committee_detail WHERE committee_id = {committee_id}')\
         .format(committee_id=Literal(parse_value(committee_id)))
     return query
 
 
-def get_committeedetail_insert_statement(
+def get_committee_detail_insert_statement(
         committee_id: str,
         committee_type: str,
         affiliated_committee_name='',
@@ -183,7 +183,7 @@ VALUES ({affiliated_committee_name}, {city}, {committee_id}, {committee_name}, {
     return query
 
 
-def get_committeedetail_update_statement(
+def get_committee_detail_update_statement(
         committee_id: str,
         committee_type: str,
         affiliated_committee_name='',

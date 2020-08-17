@@ -18,6 +18,20 @@ from src.sqs import delete_message_from_sqs, parse_message
 
 # business logic
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
+openFec = OpenFec(API_KEY)
+
+# def get_canidacy_filing(candidate_id: str):
+
+#     payload = { 'candidate_id': candidate_id, 'form_type': 'F2' }
+#     response_generator = openFec.get_route_paginator(f'/filings/', payload=payload)
+
+#     results_json = []
+#     for response in response_generator:
+#         results_json += response['results']
+
+#         # /candidate/#/ returns a list with one record
+#     return results_json[0]
+
 
 def get_candidate(candidate_id: str) -> Dict['str', Any]:
     """gets list of candidate by id
@@ -29,7 +43,10 @@ def get_candidate(candidate_id: str) -> Dict['str', Any]:
         json: json list containing IDs
     """
 
-    openFec = OpenFec(API_KEY)
+    # payload = {
+    #     'election_full': True,
+    #     'cycle': 2020
+    # }
     response_generator = openFec.get_route_paginator(
                                 f'/candidate/{candidate_id}/')
 
@@ -107,7 +124,9 @@ def lambdaHandler(event:dict, context: object) -> bool:
     for message in messages:
         body = json.loads(message['body'])
         candidate_id = body['candidate_id']
+        # candidate_id = 'S0KY00339'
         candidate_detail = get_candidate(candidate_id)
+        # candidacy_filing = get_canidacy_filing(candidate_id)
         upsert_candidate(candidate_detail)
 
     return True

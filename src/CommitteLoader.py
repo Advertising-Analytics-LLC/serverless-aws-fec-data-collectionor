@@ -58,14 +58,14 @@ def upsert_committeecandidate(committee_id: str, candidate_id:str) -> bool:
         bool: success
     """
 
-    record_exists_query = schema.get_committeecandidates_by_id(committee_id, candidate_id)
+    record_exists_query = schema.get_committee_candidate_by_id(committee_id, candidate_id)
 
     with Database() as db:
 
         if db.record_exists(record_exists_query):
             return
 
-        query = schema.get_committeecandidates_insert_statement(committee_id, candidate_id)
+        query = schema.get_committee_candidate_insert_statement(committee_id, candidate_id)
 
         success = db.try_query(query)
         return success
@@ -105,14 +105,14 @@ def upsert_committee_data(committee_data: JSONType) -> bool:
 
     committee_detail = transform_committee_detail(committee_data)
 
-    committee_exists_query = schema.get_committeedetail_by_id(committee_id)
+    committee_exists_query = schema.get_committee_detail_by_id(committee_id)
 
     with Database() as db:
 
         if db.record_exists(committee_exists_query):
-            query = schema.get_committeedetail_update_statement(**committee_detail)
+            query = schema.get_committee_detail_update_statement(**committee_detail)
         else:
-            query = schema.get_committeedetail_insert_statement(**committee_detail)
+            query = schema.get_committee_detail_insert_statement(**committee_detail)
 
         success = db.try_query(query)
         return success

@@ -8,16 +8,59 @@ All the serverless functions in this module do a few things:
 - Push that data to a queue or database
 - Do so on a schedule or via event trigger
 
+### Repo Contents
+
+```
+.
+├── Makefile
+├── README.md
+├── bin
+├── dev-requirements.txt
+├── docs
+├── node_modules
+├── package-lock.json
+├── package.json
+├── prerequisite-cloudformation-resources.yml
+├── requirements.txt
+├── serverless.yml
+├── sql
+├── src
+├── tests
+└── tmp
+```
+
 You can see the serverless functions defined in `serverless.yml` and the code in `src/`
 The resources that support them are defined in CloudFormation in `prerequisite-cloudformation-resources.yml`.
 The DDL is in the `sql/` directory.
 The `bin/` has useful scripts that can be called via `make` targets defined in the `Makefile`.
 
 ### Functions
+The data-flow diagram below shows events, lambdas, queues, and RDS tables. Most data originates with the [FEC API](https://api.open.fec.gov/developers/) but also uses [fecfile](https://github.com/esonderegger/fecfile) to parse FEC filings from `https://docquery.fec.gov/paper/posted/{fec_file_id}.fec`
+
 ![](docs/data-flow-diagram.png)
 
-### Entity Relationship Diagarm
-![fec.png](docs/fec.png)
+### Data Model
+
+The tables came from:
+- The [FEC API](https://api.open.fec.gov/developers/)
+    - `candidate_detail` -> `CandidateDetail` from https://api.open.fec.gov/developers/#/candidate/get_candidate__candidate_id__
+    - `committee_detail` -> `CommitteeDetail` from https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
+    - `committee_candidates` -> `CommitteeDetail`
+- The [docquery filings](https://docquery.fec.gov/paper/)
+    - `filings`
+    - `filings_amendment_chain`
+    - `filings_schedule_b`
+    - `filings_schedule_e`
+    - `form_1_supplemental`
+    - `committee_totals`
+
+If you inspect the data-flow-diagram above you can see what API was used to make any redshift table.
+Each API endpoint returns a different Data Model. The APIs and their DMs are listed above.
+The `docquery` API returns fec files which are pretty free-form
+
+#### Entity Relationship Diagarm
+
+![](docs/fec.png)
 
 ## Getting started
 
@@ -44,3 +87,4 @@ Happy coding!
 If you want to see more let me suggest
 - [the AWS serverless.yml reference](https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/)
 - this [serverless/examples example](https://github.com/serverless/examples/tree/master/aws-python-rest-api-with-pynamodb)
+- [FEC API docs](https://api.open.fec.gov/developers/)

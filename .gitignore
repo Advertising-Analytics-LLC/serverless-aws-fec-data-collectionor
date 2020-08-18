@@ -31,3 +31,9 @@ tmp
 
 # editors
 .vscode
+
+# mac
+.DS_Store
+
+# doc site
+site

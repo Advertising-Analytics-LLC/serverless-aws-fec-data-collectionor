@@ -24,14 +24,14 @@ def parse_value(value: Union[str, int]) -> Union[str, int]:
     return str(value)
 
 
-def get_committeecandidates_by_id(committee_id: str, candidate_id: str) -> SQL:
-    query = SQL('SELECT * FROM fec.committeecandidates WHERE committee_id = {committee_id} AND candidate_id = {candidate_id}')\
+def get_committee_candidate_by_id(committee_id: str, candidate_id: str) -> SQL:
+    query = SQL('SELECT * FROM fec.committee_candidate WHERE committee_id = {committee_id} AND candidate_id = {candidate_id}')\
         .format(committee_id=Literal(parse_value(committee_id)), candidate_id=Literal(parse_value(candidate_id)))
     return query
 
 
-def get_committeecandidates_insert_statement(committee_id: str, candidate_id: str) -> SQL:
-    """returns SQL query object to insert committeecandidates record
+def get_committee_candidate_insert_statement(committee_id: str, candidate_id: str) -> SQL:
+    """returns SQL query object to insert committee_candidate record
 
     Args:
         committee_id (str): ID of committee
@@ -41,19 +41,19 @@ def get_committeecandidates_insert_statement(committee_id: str, candidate_id: st
         SQL: insert statement as SQL object
     """
     query = sql.SQL('''
-    INSERT INTO fec.committeecandidates(committee_id, candidate_id)
+    INSERT INTO fec.committee_candidate(committee_id, candidate_id)
     VALUES ({committee_id}, {candidate_id})
     ''').format(committee_id=Literal(committee_id), candidate_id=Literal(candidate_id))
     return query
 
 
-def get_committeedetail_by_id(committee_id: str) -> SQL:
-    query = sql.SQL('SELECT * FROM fec.committeedetail WHERE committee_id = {committee_id}')\
+def get_committee_detail_by_id(committee_id: str) -> SQL:
+    query = sql.SQL('SELECT * FROM fec.committee_detail WHERE committee_id = {committee_id}')\
         .format(committee_id=Literal(parse_value(committee_id)))
     return query
 
 
-def get_committeedetail_insert_statement(
+def get_committee_detail_insert_statement(
         committee_id: str,
         committee_type: str,
         affiliated_committee_name='',
@@ -110,7 +110,7 @@ def get_committeedetail_insert_statement(
         treasurer_zip='',
         website='',
         zip=''):
-    """returns insert statement as SQL object for record in committeedetail table
+    """returns insert statement as SQL object for record in committee_detail table
 
     Args:
         holy cow (str): all the items in a CommitteeDetail
@@ -119,7 +119,7 @@ def get_committeedetail_insert_statement(
         SQL: insert statement as SQL object
     """
     query = sql.SQL("""
-INSERT INTO fec.committeedetail (affiliated_committee_name, city, committee_id, committee_name, committee_type, committee_type_full, custodian_city, custodian_name_1, custodian_name_2, custodian_name_full, custodian_name_middle, custodian_name_prefix, custodian_name_suffix, custodian_name_title, custodian_phone, custodian_state, custodian_street_1, custodian_street_2, custodian_zip, cycles, designation, designation_full, email, fax, filing_frequency, first_file_date, form_type, last_file_date, last_updated, leadership_pac, lobbyist_registrant_pac, organization_type, organization_type_full, party, party_full, party_type, party_type_full, state, state_full, street_1, street_2, treasurer_city, treasurer_name, treasurer_name_1, treasurer_name_2, treasurer_name_middle, treasurer_name_prefix, treasurer_name_suffix, treasurer_name_title, treasurer_phone, treasurer_state, treasurer_street_1, treasurer_street_2, treasurer_zip, website, zip)
+INSERT INTO fec.committee_detail (affiliated_committee_name, city, committee_id, committee_name, committee_type, committee_type_full, custodian_city, custodian_name_1, custodian_name_2, custodian_name_full, custodian_name_middle, custodian_name_prefix, custodian_name_suffix, custodian_name_title, custodian_phone, custodian_state, custodian_street_1, custodian_street_2, custodian_zip, cycles, designation, designation_full, email, fax, filing_frequency, first_file_date, form_type, last_file_date, last_updated, leadership_pac, lobbyist_registrant_pac, organization_type, organization_type_full, party, party_full, party_type, party_type_full, state, state_full, street_1, street_2, treasurer_city, treasurer_name, treasurer_name_1, treasurer_name_2, treasurer_name_middle, treasurer_name_prefix, treasurer_name_suffix, treasurer_name_title, treasurer_phone, treasurer_state, treasurer_street_1, treasurer_street_2, treasurer_zip, website, zip)
 VALUES ({affiliated_committee_name}, {city}, {committee_id}, {committee_name}, {committee_type}, {committee_type_full}, {custodian_city}, {custodian_name_1}, {custodian_name_2}, {custodian_name_full}, {custodian_name_middle}, {custodian_name_prefix}, {custodian_name_suffix}, {custodian_name_title}, {custodian_phone}, {custodian_state}, {custodian_street_1}, {custodian_street_2}, {custodian_zip}, {cycles}, {designation}, {designation_full}, {email}, {fax}, {filing_frequency}, {first_file_date}, {form_type}, {last_file_date}, {last_updated}, {leadership_pac}, {lobbyist_registrant_pac}, {organization_type}, {organization_type_full}, {party}, {party_full}, {party_type}, {party_type_full}, {state}, {state_full}, {street_1}, {street_2}, {treasurer_city}, {treasurer_name}, {treasurer_name_1}, {treasurer_name_2}, {treasurer_name_middle}, {treasurer_name_prefix}, {treasurer_name_suffix}, {treasurer_name_title}, {treasurer_phone}, {treasurer_state}, {treasurer_street_1}, {treasurer_street_2}, {treasurer_zip}, {website}, {zip})
 """).format(
         affiliated_committee_name=Literal(
@@ -183,7 +183,7 @@ VALUES ({affiliated_committee_name}, {city}, {committee_id}, {committee_name}, {
     return query
 
 
-def get_committeedetail_update_statement(
+def get_committee_detail_update_statement(
         committee_id: str,
         committee_type: str,
         affiliated_committee_name='',
@@ -240,7 +240,7 @@ def get_committeedetail_update_statement(
         treasurer_zip='',
         website='',
         zip=''):
-    """returns insert statement as SQL object for record in committeedetail table
+    """returns insert statement as SQL object for record in committee_detail table
 
     Args:
         holy cow (str): all the items in a CommitteeDetail
@@ -249,7 +249,7 @@ def get_committeedetail_update_statement(
         SQL: insert statement as SQL object
     """
     query = sql.SQL("""
-UPDATE fec.committeedetail
+UPDATE fec.committee_detail
 SET affiliated_committee_name={affiliated_committee_name}, city={city}, committee_name={committee_name}, committee_type={committee_type}, committee_type_full={committee_type_full}, custodian_city={custodian_city}, custodian_name_1={custodian_name_1}, custodian_name_2={custodian_name_2}, custodian_name_full={custodian_name_full}, custodian_name_middle={custodian_name_middle}, custodian_name_prefix={custodian_name_prefix}, custodian_name_suffix={custodian_name_suffix}, custodian_name_title={custodian_name_title}, custodian_phone={custodian_phone}, custodian_state={custodian_state}, custodian_street_1={custodian_street_1}, custodian_street_2={custodian_street_2}, custodian_zip={custodian_zip}, cycles={cycles}, designation={designation}, designation_full={designation_full}, email={email}, fax={fax}, filing_frequency={filing_frequency}, first_file_date={first_file_date}, form_type={form_type}, last_file_date={last_file_date}, last_updated={last_updated}, leadership_pac={leadership_pac}, lobbyist_registrant_pac={lobbyist_registrant_pac}, organization_type={organization_type}, organization_type_full={organization_type_full}, party={party}, party_full={party_full}, party_type={party_type}, party_type_full={party_type_full}, state={state}, state_full={state_full}, street_1={street_1}, street_2={street_2}, treasurer_city={treasurer_city}, treasurer_name={treasurer_name}, treasurer_name_1={treasurer_name_1}, treasurer_name_2={treasurer_name_2}, treasurer_name_middle={treasurer_name_middle}, treasurer_name_prefix={treasurer_name_prefix}, treasurer_name_suffix={treasurer_name_suffix}, treasurer_name_title={treasurer_name_title}, treasurer_phone={treasurer_phone}, treasurer_state={treasurer_state}, treasurer_street_1={treasurer_street_1}, treasurer_street_2={treasurer_street_2}, treasurer_zip={treasurer_zip}, website={website}, zip={zip}
 WHERE committee_id={committee_id}
 """).format(

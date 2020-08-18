@@ -68,6 +68,10 @@ class OpenFec:
 
         logger.debug(f'GET {url}, {payload}'.replace(self.api_key, 'API_KEY'))
         response = requests.get(url, params=payload)
+
+        if response.status_code == 404:
+            raise Exception(f'404 from {url}, response: {response}')
+
         logger.debug(response.json())
         if self._over_rate_limit(response):
             sleep_for_seconds = self.throttle * throttle_multiplier ** 2
@@ -102,7 +106,7 @@ class OpenFec:
         response = self._get_request(url, payload)
         return response.json()
 
-    def get_route_paginator(self, route: str, payload: dict) -> Generator:
+    def get_route_paginator(self, route: str, payload={}) -> Generator:
         """paginator for any endpoint
 
         Args:

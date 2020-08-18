@@ -11,11 +11,51 @@ import requests
 from typing import Any, Dict, List
 from src import JSONType, logger, schema
 from src.database import Database
+from src.OpenFec import OpenFec
+from src.secrets import get_param_value_by_name
 from src.sqs import delete_message_from_sqs, parse_message
 
 
 # business logic
+API_KEY = get_param_value_by_name(os.environ['API_KEY'])
+openFec = OpenFec(API_KEY)
 
+# def get_canidacy_filing(candidate_id: str):
+
+#     payload = { 'candidate_id': candidate_id, 'form_type': 'F2' }
+#     response_generator = openFec.get_route_paginator(f'/filings/', payload=payload)
+
+#     results_json = []
+#     for response in response_generator:
+#         results_json += response['results']
+
+#         # /candidate/#/ returns a list with one record
+#     return results_json[0]
+
+
+def get_candidate(candidate_id: str) -> Dict['str', Any]:
+    """gets list of candidate by id
+
+    Args:
+        candidate_id (str): ID of candidate, eg
+
+    Returns:
+        json: json list containing IDs
+    """
+
+    # payload = {
+    #     'election_full': True,
+    #     'cycle': 2020
+    # }
+    response_generator = openFec.get_route_paginator(
+                                f'/candidate/{candidate_id}/')
+
+    results_json = []
+    for response in response_generator:
+        results_json += response['results']
+
+        # /candidate/#/ returns a list with one record
+    return results_json[0]
 
 def condense_dimension(containing_dict: Dict[str, Any], column_name: str) -> Dict[str, Any]:
     """takes a dimension (list) in a dictionary and joins the elements with ~s
@@ -44,9 +84,6 @@ def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
     Returns:
         bool: if upsert succeeded
     """
-
-    # get rid of extra column
-    candidate_message.pop('inactive_election_years')
 
     # condense a few lists
     candidate_message = condense_dimension(candidate_message, 'cycles')
@@ -79,13 +116,17 @@ def lambdaHandler(event:dict, context: object) -> bool:
         bool: Did this go well?
     """
 
-    logger.debug(f'running {__file__}')
+    logger.debug(f'running {__file__}, event:')
     logger.debug(event)
 
     messages = event['Records']
 
     for message in messages:
         body = json.loads(message['body'])
-        upsert_candidate(body)
+        candidate_id = body['candidate_id']
+        # candidate_id = 'S0KY00339'
+        candidate_detail = get_candidate(candidate_id)
+        # candidacy_filing = get_canidacy_filing(candidate_id)
+        upsert_candidate(candidate_detail)
 
     return True

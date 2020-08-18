@@ -10,6 +10,10 @@ clean:
 deploy:
 	bin/deploy.sh
 
+.phony: deploy-docs
+deploy-docs:
+	mkdocs gh-deploy
+
 .phony: help
 help:
 	@echo 'pick a target to run. see Makefile:'
@@ -18,6 +22,11 @@ help:
 .phony: run
 run:
 	bin/run.sh
+
+.phony: serve
+serve:
+	@echo serving docs to http://127.0.0.1:8000
+	mkdocs serve
 
 .phony: setup
 setup:

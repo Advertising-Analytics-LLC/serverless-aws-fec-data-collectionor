@@ -6,9 +6,8 @@
 -- https://github.com/fecgov/fecfile-online/blob/master/data/migrations/V000056__sched_b_ddl_update.sql
 --
 SET search_path TO fec;
-
 CREATE TABLE IF NOT EXISTS fec.filings_schedule_b (
-    fec_file_id INT(10) NOT NULL,
+    fec_file_id INT NOT NULL,
     amended_cd VARCHAR(100) DEFAULT NULL,
     back_reference_sched_name VARCHAR(100) DEFAULT NULL,
     back_reference_tran_id_number VARCHAR(100) DEFAULT NULL,
@@ -61,5 +60,7 @@ CREATE TABLE IF NOT EXISTS fec.filings_schedule_b (
     semi_annual_refunded_bundled_amt VARCHAR(100) DEFAULT NULL,
     transaction_id_number VARCHAR(25) NOT NULL,
     PRIMARY KEY(transaction_id_number),
-    FOREIGN KEY(fec_file_id) REFERENCES filings(fec_file_id)
+    FOREIGN KEY(fec_file_id) REFERENCES fec.filings(fec_file_id),
+    FOREIGN KEY (beneficiary_candidate_fec_id) REFERENCES fec.candidate_detail(candidate_id),
+    FOREIGN KEY (filer_committee_id_number) REFERENCES fec.committee_detail(committee_id)
 ) DISTSTYLE AUTO;

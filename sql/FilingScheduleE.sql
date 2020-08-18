@@ -6,8 +6,9 @@
 
 SET search_path TO fec;
 
+
 CREATE TABLE IF NOT EXISTS fec.filings_schedule_e (
-    fec_file_id INT(10) NOT NULL,
+    fec_file_id INT NOT NULL,
     amended_cd VARCHAR(100) DEFAULT NULL,
     back_reference_sched_name VARCHAR(100) DEFAULT NULL,
     back_reference_tran_id_number VARCHAR(100) DEFAULT NULL,
@@ -68,6 +69,8 @@ CREATE TABLE IF NOT EXISTS fec.filings_schedule_e (
     support_oppose_code VARCHAR(100) DEFAULT NULL,
     transaction_id_number VARCHAR(100) NOT NULL,
     PRIMARY KEY(transaction_id_number),
-    FOREIGN KEY(fec_file_id) REFERENCES filings(fec_file_id),
-    FOREIGN KEY(candidate_id_number) REFERENCES candidate_detail(candidate_id)
+    FOREIGN KEY(fec_file_id) REFERENCES fec.filings(fec_file_id),
+    FOREIGN KEY(candidate_id_number) REFERENCES fec.candidate_detail(candidate_id),
+    FOREIGN KEY (filer_committee_id_number) REFERENCES fec.committee_detail(committee_id),
+    FOREIGN KEY (payee_cmtte_fec_id_number) REFERENCES fec.committee_detail(committee_id)
 ) DISTSTYLE AUTO;

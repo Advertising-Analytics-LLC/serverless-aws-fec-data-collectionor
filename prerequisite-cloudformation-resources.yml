@@ -7,12 +7,15 @@ Parameters:
     Type: String
   DeploymentBucketName:
     Default: serverless-deploymentbucket
+    Description: S3 bucket used to deploy serverless stack
     Type: String
   CandidateSyncQueueName:
     Default: candidate-sync-queue
+    Description: Name of Queue with Candidates from Sync lambda
     Type: String
   CommitteeSyncQueueName:
     Default: committee-sync-queue
+    Description: Name of Queue with Committee from Sync lambda
     Type: String
   NewFilingQueueName:
     Default: fec-new-filing-queue
@@ -24,12 +27,15 @@ Parameters:
     Type: String
   SupplementalDataQueueName:
     Default: fec-new-filing-supplemental-data-queue
+    Description: Name of Queue
     Type: String
   TransactionLoadingQueueName:
     Default: fec-transaction-loading-queue
+    Description: Name of Queue
     Type: String
   RSSFeedTopicName:
-    Default: fec-new-filing
+    Default: fec-new-filing-rss-fanout
+    Description: Name of SNS topic which fans out from new filing RSS feed sync
     Type: String
 
 Resources:

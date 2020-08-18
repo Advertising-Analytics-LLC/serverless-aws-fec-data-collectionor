@@ -100,7 +100,11 @@ Resources:
     Properties:
       QueueName: !Ref CandidateSyncQueueName
       RedrivePolicy:
-        deadLetterTargetArn: !Ref DeadLetterQueue
+        maxReceiveCount: 5
+        deadLetterTargetArn:
+          Fn::GetAtt:
+            - "DeadLetterQueue"
+            - "Arn"
       Tags:
       - Key: managed_by
         Value: CloudFormation

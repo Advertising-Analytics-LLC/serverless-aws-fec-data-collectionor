@@ -5,6 +5,10 @@ Parameters:
     Default: v0.0.1
     Description: Code verison, see bin/deploy.sh
     Type: String
+  DeadLetterQueueName:
+    Default: dead-letter-queue
+    Description: Name for dead-letter Queue
+    Type: String
   DeploymentBucketName:
     Default: serverless-deploymentbucket
     Description: S3 bucket used to deploy serverless stack
@@ -75,10 +79,28 @@ Resources:
       VersioningConfiguration:
          Status: Enabled
 
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref DeadLetterQueueName
+      Tags:
+      - Key: managed_by
+        Value: CloudFormation
+      - Key: Project
+        Value: FEC Data-sync
+      - Key: created_by
+        Value: sblack@rhythmictech.com
+      - Key: Name
+        Value: !Ref DeadLetterQueueName
+      - Key: Version
+        Value: !Ref Version
+
   CandidateSyncQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref CandidateSyncQueueName
+      RedrivePolicy:
+        deadLetterTargetArn: !Ref DeadLetterQueue
       Tags:
       - Key: managed_by
         Value: CloudFormation

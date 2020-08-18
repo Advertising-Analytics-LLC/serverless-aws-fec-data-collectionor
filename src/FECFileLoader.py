@@ -64,10 +64,13 @@ def upsert_schedule_e_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         if record_exists:
             # query = schema.schedule_e_update(fec_file_id, filing)
             logger.debug('exists')
+
+            return True
+
         else:
             query = schema.schedule_e_insert(fec_file_id, filing)
 
-        return db.try_query(query)
+            return db.try_query(query)
 
 
 def upsert_f1_supplemental(fec_file_id: str, filing: Dict[str, Any]) -> bool:

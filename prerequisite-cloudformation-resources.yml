@@ -100,11 +100,8 @@ Resources:
     Properties:
       QueueName: !Ref CandidateSyncQueueName
       RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
         maxReceiveCount: 5
-        deadLetterTargetArn:
-          Fn::GetAtt:
-            - "DeadLetterQueue"
-            - "Arn"
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -122,6 +119,9 @@ Resources:
     Properties:
       QueueName: !Ref CommitteeSyncQueueName
       VisibilityTimeout: 90
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -139,6 +139,9 @@ Resources:
     Properties:
       QueueName: !Ref NewFilingQueueName
       VisibilityTimeout: 90
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -156,6 +159,9 @@ Resources:
     Properties:
       QueueName: !Ref NewFilingQueueSEName
       VisibilityTimeout: 900
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -173,6 +179,9 @@ Resources:
     Properties:
       QueueName: !Ref SupplementalDataQueueName
       VisibilityTimeout: 900
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -190,6 +199,9 @@ Resources:
     Properties:
       QueueName: !Ref TransactionLoadingQueueName
       VisibilityTimeout: 900
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
       - Key: managed_by
         Value: CloudFormation

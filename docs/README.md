@@ -2,6 +2,14 @@
 Documentation for serverless-advancedanalytics-fec-data-collection
 
 ## About
+Docs for serverless functions, including:
+
+- data-flow diagrams and ERDs 
+- development steps for engineers
+- monitoring and remediations for ops
+- misc links. serverless is new, we're all learning
+
+## Data
 See the [Data](./DATA/) docs for data-flow and entity-relationship diagrams.
 
 ## Engineers

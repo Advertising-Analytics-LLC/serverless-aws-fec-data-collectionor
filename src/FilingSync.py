@@ -18,13 +18,9 @@ from src.backfill import get_next_day
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
+from src.sns import send_message_to_sns
 from typing import Any, Dict, List
 
-
-# SSM VARS
-RSS_SNS_TOPIC_ARN = os.getenv('RSS_SNS_TOPIC_ARN')
-
-client = boto3.client('sns')
 
 class EFilingRSSFeed:
     """wrapper for the FEC Electronic Filing RSS Feed
@@ -129,22 +125,6 @@ class EFilingRSSFeed:
         return items
 
 
-def send_message_to_sns(msg: str) -> Dict[str, str]:
-    """sends a single message to sns
-
-    Args:
-        msg (str): message
-    """
-
-    logger.debug(f'sending {msg} to sns')
-
-    sns_response = client.publish(
-        TopicArn=RSS_SNS_TOPIC_ARN,
-        Message=str(msg))
-
-    return sns_response
-
-
 # handler for aws lambda
 def lambdaHandler(event: dict, context: object):
     """lambdaHandler
@@ -195,10 +175,10 @@ def sync_filings_on(min_receipt_date: str) -> List[Dict[str, Any]]:
         results = response['results']
         for result in results:
             msg = {
-                'committee_id': result['committee_id'],
-                'filing_id': result['filing_id'],
-                'form_type':  result['form_type'],
-                'guid': result['guid']
+                'committee_id': str(result['committee_id']),
+                'filing_id': str(result['fec_file_id']),
+                'form_type':  str(result['form_type']),
+                'guid': str(result['fec_url'])
             }
             replies.append(send_message_to_sns(msg))
 

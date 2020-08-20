@@ -34,6 +34,15 @@ custom:
 # nested interpolation allows for stage-specific references
 functions:
 
+  GetDBStats:
+    handler: src/get_db_stats.lambdaHandler
+    reservedConcurrency: 1
+    timeout: 30
+    environment:
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+    events:
+      - schedule: rate(1 hour)
+
   CandidateSync:
     description: Polls OpenFEC API (once) for candidates that have filed recently and sends the IDs to SQS
     handler: src/CandidateSync.lambdaHandler
@@ -98,7 +107,7 @@ functions:
     description: Recieves committee Ids from SQS, queries api for committee info, updates DB
     handler: src/CommitteLoader.committeLoader
     reservedConcurrency: 1
-    timeout: 30
+    timeout: 300
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}

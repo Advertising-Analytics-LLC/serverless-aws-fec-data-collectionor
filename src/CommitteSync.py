@@ -25,7 +25,7 @@ SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
 MIN_LAST_F1_DATE = os.getenv('MIN_LAST_F1_DATE', datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d'))
 
 # BUSYNESS LOGIC
-def get_committees_since(isodate: str) -> json:
+def get_committees_since(isodate: str, max_last_f1_date='') -> json:
     """gets list of committees that have filed today
 
     Args:
@@ -35,7 +35,10 @@ def get_committees_since(isodate: str) -> json:
         json: json list containing IDs
     """
     # only get those filed today
-    get_committees_payload = {'min_last_f1_date': isodate}
+    if max_last_f1_date:
+        get_committees_payload = {'min_last_f1_date': isodate, 'max_last_f1_date': max_last_f1_date}
+    else:
+        get_committees_payload = {'min_last_f1_date': isodate}
     results_json = []
     openFec = OpenFec(API_KEY)
     response_generator = openFec.get_committees_paginator(get_committees_payload)
@@ -94,8 +97,10 @@ def lambdaBackfillHandler(event: dict, context: object) -> List[any]:
         json:
     """
 
-    from src.backfill import committee_sync_backfill_date
+    from src.backfill import committee_sync_backfill_date, get_next_day
+
     MIN_LAST_F1_DATE = committee_sync_backfill_date()
+    max_last_f1_date = get_next_day(MIN_LAST_F1_DATE)
 
     logger.info(f'Running committeeSync with date: {MIN_LAST_F1_DATE}')
     results_json = get_committees_since(MIN_LAST_F1_DATE)

@@ -5,6 +5,8 @@ FECFileLoader lambda:
 - downloads files
 - parses file
 - writes data to redshift
+
+does this for a number of different filings types
 """
 
 import boto3

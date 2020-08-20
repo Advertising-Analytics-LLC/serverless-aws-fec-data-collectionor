@@ -79,7 +79,7 @@ def lambdaBackfillHandler(event:dict, context: object) -> bool:
 
     logger.debug(f'running {__file__}')
 
-    from backfill import candidate_sync_backfill_date
+    from src.backfill import candidate_sync_backfill_date
     MIN_FIST_FILE_DATE = candidate_sync_backfill_date()
 
     candidates_list = get_candidates_since(MIN_FIST_FILE_DATE)

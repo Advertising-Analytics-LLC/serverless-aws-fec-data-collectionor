@@ -173,14 +173,20 @@ def sync_filings_on(min_receipt_date: str) -> List[Dict[str, Any]]:
     replies = []
     for response in response_generator:
         results = response['results']
-        for result in results:
-            msg = {
-                'committee_id': str(result['committee_id']),
-                'filing_id': str(result['fec_file_id']),
-                'form_type':  str(result['form_type']),
-                'guid': str(result['fec_url'])
-            }
-            replies.append(send_message_to_sns(msg))
+        try:
+            for result in results:
+                msg = {
+                    'committee_id': str(result['committee_id']),
+                    'filing_id': str(result['fec_file_id']),
+                    'form_type':  str(result['form_type']),
+                    'guid': str(result['fec_url'])
+                }
+                replies.append(send_message_to_sns(msg))
+        except KeyError as keyError:
+            logger.error(keyError)
+        except Exception as e:
+            logger.error(e)
+            raise
 
     return replies
 

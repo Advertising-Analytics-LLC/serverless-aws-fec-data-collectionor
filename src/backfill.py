@@ -60,7 +60,17 @@ def candidate_sync_backfill_date() -> str:
 
 
 def committee_sync_backfill_date() -> str:
-    query = 'select min(last_file_date) from fec.committee_detail;'
+    query = 'select min(first_file_date) from fec.committee_detail;'
     with Database() as db:
         last_date = db.query(query)[0][0]
     return get_previous_day(last_date)
+
+
+def filings_sync_backfill_date() -> str:
+    """ gets date of last filing from db """
+
+    query = 'select min(receipt_date) from fec.filings;'
+    with Database() as db:
+        query_result = db.query(query)
+        last_date = query_result[0][0]
+        return last_date

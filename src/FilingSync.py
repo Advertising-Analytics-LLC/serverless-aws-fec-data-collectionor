@@ -14,7 +14,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests import Response
 from src import logger
-from src.backfill import get_next_day
+from src.backfill import get_next_day, filings_sync_backfill_date
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -145,15 +145,6 @@ def lambdaHandler(event: dict, context: object):
     return sns_replies
 
 
-def get_filings_last_date() -> str:
-    """ gets date of last filing from db """
-
-    query = 'select min(receipt_date) from fec.filings;'
-    with Database() as db:
-        query_result = db.query(query)
-        last_date = query_result[0][0]
-        return last_date
-
 
 def sync_filings_on(min_receipt_date: str) -> List[Dict[str, Any]]:
     """ retrieves all the filings recieved on a given date """
@@ -201,7 +192,7 @@ def lambdaBackfillHandler(event: dict, context: object):
     from src.backfill import get_previous_day
 
     sns_replies = []
-    last_date = get_filings_last_date()
+    last_date = filings_sync_backfill_date()
     next_date = get_previous_day(last_date)
 
     sns_replies = sync_filings_on(next_date)

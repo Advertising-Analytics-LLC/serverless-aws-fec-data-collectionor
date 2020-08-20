@@ -15,14 +15,10 @@ from src.sqs import delete_message_from_sqs, push_message_to_sqs
 
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', '')
-# MIN_FIST_FILE_DATE = os.getenv('MIN_FIST_FILE_DATE', datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d'))
-from backfill import candidate_sync_backfill_date
-
-MIN_FIST_FILE_DATE = candidate_sync_backfill_date()
+MIN_FIST_FILE_DATE = os.getenv('MIN_FIST_FILE_DATE', datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d'))
 
 
 # business logic
-
 
 def get_candidates_since(isodate: str) -> json:
     """gets list of candidates that have filed today
@@ -62,6 +58,29 @@ def lambdaHandler(event:dict, context: object) -> bool:
     """
 
     logger.debug(f'running {__file__}')
+
+    candidates_list = get_candidates_since(MIN_FIST_FILE_DATE)
+
+    for candidate in candidates_list:
+        push_message_to_sqs(candidate)
+
+    return True
+
+def lambdaBackfillHandler(event:dict, context: object) -> bool:
+    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
+
+    Args:
+        event (dict): for event types see https://docs.aws.amazon.com/lambda/latest/dg/lambda-services.html
+        context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
+
+    Returns:
+        bool: Did this go well?
+    """
+
+    logger.debug(f'running {__file__}')
+
+    from backfill import candidate_sync_backfill_date
+    MIN_FIST_FILE_DATE = candidate_sync_backfill_date()
 
     candidates_list = get_candidates_since(MIN_FIST_FILE_DATE)
 

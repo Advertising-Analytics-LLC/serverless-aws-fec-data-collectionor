@@ -12,7 +12,6 @@ from src import logger
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.database import Database
-from src.FilingSync import send_message_to_sns
 
 
 def get_previous_day(date: datetime) -> str:
@@ -48,6 +47,7 @@ def get_next_day(date: datetime) -> str:
         date = datetime.strptime(date, date_format_str)
     days_to_subtract = 1
     datetwo = date + timedelta(days=days_to_subtract)
+
     return datetwo.strftime(date_format_str)
 
 
@@ -62,5 +62,5 @@ def candidate_sync_backfill_date() -> str:
 def committee_sync_backfill_date() -> str:
     query = 'select min(last_file_date) from fec.committee_detail;'
     with Database() as db:
-        last_date = db.query(query)
+        last_date = db.query(query)[0][0]
     return get_previous_day(last_date)

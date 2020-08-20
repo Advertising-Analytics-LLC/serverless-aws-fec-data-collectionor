@@ -81,3 +81,28 @@ def committeSync(event: dict, context: object) -> List[any]:
     response = push_committee_id_to_sqs(results_json)
     logging.debug(response)
     return response
+
+
+def lambdaBackfillHandler(event: dict, context: object) -> List[any]:
+    """Gets committees who've filed in the last day and push their IDs to SQS
+
+    Args:
+        event (dict): json object containing headers and body of request
+        context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
+
+    Returns:
+        json:
+    """
+
+    from src.backfill import committee_sync_backfill_date
+    MIN_LAST_F1_DATE = committee_sync_backfill_date()
+
+    logger.info(f'Running committeeSync with date: {MIN_LAST_F1_DATE}')
+    results_json = get_committees_since(MIN_LAST_F1_DATE)
+    if not results_json:
+        logger.warning('no results')
+        return {}
+    response = push_committee_id_to_sqs(results_json)
+    logging.debug(response)
+
+    return response

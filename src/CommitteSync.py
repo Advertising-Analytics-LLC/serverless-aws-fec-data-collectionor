@@ -22,7 +22,6 @@ from src.sqs import push_committee_id_to_sqs
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
-SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', 'committee-sync-queue')
 MIN_LAST_F1_DATE = os.getenv('MIN_LAST_F1_DATE', datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d'))
 
 # BUSYNESS LOGIC

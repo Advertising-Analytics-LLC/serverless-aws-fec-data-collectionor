@@ -62,7 +62,6 @@ def upsert_schedule_e_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
     with Database() as db:
         record_exists = db.record_exists(exists_query)
         if record_exists:
-            # query = schema.schedule_e_update(fec_file_id, filing)
             logger.debug('exists')
 
             return True

@@ -95,6 +95,18 @@ functions:
     events:
       - schedule: cron(0 0,8,16 * * ? *)
 
+  FilingBackfill:
+    description: Crawls back in time over filings
+    handler: src/FilingSync.lambdaBackfillHandler
+    reservedConcurrency: 1
+    timeout: 180
+    environment:
+      API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
+    events:
+      - schedule: rate(15 minutes)
+
   FinancialSummaryLoader:
     description: Takes new filings from SQS, queries api, writes to DB
     handler: src/FinancialSummaryLoader.lambdaHandler

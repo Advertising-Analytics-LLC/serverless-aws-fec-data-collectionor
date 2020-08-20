@@ -17,6 +17,7 @@ from src import logger
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.serialization import serialize_dates
+from src.sqs import push_committee_id_to_sqs
 
 
 # SSM VARS
@@ -26,10 +27,11 @@ MIN_LAST_F1_DATE = os.getenv('MIN_LAST_F1_DATE', datetime.strftime(datetime.now(
 
 # BUSYNESS LOGIC
 def get_committees_since(isodate: str, max_last_f1_date='') -> json:
-    """gets list of committees that have filed today
+    """gets list of committees that have filed between two dates
 
     Args:
         isodate: date in isoformat YYYY-MM-DD
+        max_last_f1_date: date in isoformat YYYY-MM-DD
 
     Returns:
         json: json list containing IDs
@@ -41,29 +43,12 @@ def get_committees_since(isodate: str, max_last_f1_date='') -> json:
         get_committees_payload = {'min_last_f1_date': isodate}
     results_json = []
     openFec = OpenFec(API_KEY)
-    response_generator = openFec.get_committees_paginator(get_committees_payload)
+    response_generator = openFec.get_route_paginator('/committees/',
+                                                    payload=get_committees_payload)
     for response in response_generator:
         results_json += response['results']
     return results_json
 
-def push_committee_id_to_sqs(message_list: List[any]) -> object:
-    """Pushes a list of SendMessageBatchRequestEntry (messages) to
-        see https://github.com/boto/botocore/blob/f1f0c6d2e445d7c3a3f8f355eaf6d692bbf3cd6a/botocore/data/sqs/2012-11-05/service-2.json#L1238
-    Args:
-        message_list (List[SendMessageBatchRequestEntry]): [description]
-
-    Returns:
-        object: [description]
-    """
-    sqs = boto3.resource('sqs')
-    queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
-    responses = []
-    for msg in message_list:
-        response = queue.send_message(
-            MessageBody=json.dumps(msg['committee_id']))
-        logger.debug(response)
-        responses.append(response)
-    return responses
 
 def committeSync(event: dict, context: object) -> List[any]:
     """Gets committees who've filed in the last day and push their IDs to SQS
@@ -103,7 +88,7 @@ def lambdaBackfillHandler(event: dict, context: object) -> List[any]:
     max_last_f1_date = get_next_day(MIN_LAST_F1_DATE)
 
     logger.info(f'Running committeeSync with date: {MIN_LAST_F1_DATE}')
-    results_json = get_committees_since(MIN_LAST_F1_DATE)
+    results_json = get_committees_since(MIN_LAST_F1_DATE, max_last_f1_date)
     if not results_json:
         logger.warning('no results')
         return {}

@@ -97,12 +97,17 @@ def parse_message(message: JSONType) -> Dict[str, str]:
     my_body = message['body']
     json_body = json.loads(my_body)
 
-    if type(json_body) == dict:
-        body_content = json.loads(json_body['Message'].replace("'", '"'))
+    try:
+        if type(json_body) == dict:
+            body_content = json.loads(json_body['Message'].replace("'", '"'))
 
-        return body_content
+            return body_content
 
-    return json_body.replace("'", '')
+        return json_body.replace("'", '')
+    except KeyError as ex:
+        logger.error('KeyError parsing message')
+        logger.error(message)
+        raise ex
 
 
 def push_message_to_sqs(message: str) -> Dict[str, str]:

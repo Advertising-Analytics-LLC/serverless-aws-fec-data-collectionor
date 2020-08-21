@@ -102,6 +102,10 @@
             </li>
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#database-statistics" class="nav-link">Database Statistics</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -134,7 +138,59 @@ The <code>docquery</code> API returns fec files which are pretty free-form</p>
 <h3 id="entity-relationship-diagarm">Entity Relationship Diagarm</h3>
 <p>This was generated using DataGrip and makes uses of the foreign keys which
 <a href="https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-defining-constraints.html">are not enforced by redshift</a></p>
-<p><img alt="" src="../fec.png" /></p></div>
+<p><img alt="" src="../fec.png" /></p>
+<h2 id="database-statistics">Database Statistics</h2>
+<p>There is an extra lambda, <code>GetDBStats</code>, that queries the database for row counts and the like.
+It then writes this information back to the DB with a date for point-in-time records.
+The lambda code is in <code>src/get_db_stats.py</code> and you can query for it's results from the database with <code>select * from fec.loading_stats;</code> to get something like this: </p>
+<table>
+<thead>
+<tr>
+<th align="left">query_time</th>
+<th align="left">candidate_detail_count</th>
+<th align="left">candidate_detail_min_first_file</th>
+<th align="left">committee_detail_count</th>
+<th align="left">committee_detail_min_first_file</th>
+<th align="left">filings_count</th>
+<th align="left">filings_min_receipt_date</th>
+<th align="left">committee_totals_count</th>
+<th align="left">filing_amendment_chain_count</th>
+<th align="left">filings_schedule_b_count</th>
+<th align="left">filings_schedule_e_count</th>
+<th align="left">form_1_supplemental_count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">2020-08-21 15:40:48.731069</td>
+<td align="left">1166</td>
+<td align="left">2016-11-06</td>
+<td align="left">880</td>
+<td align="left">1972-06-09</td>
+<td align="left">11454</td>
+<td align="left">2019-01-20</td>
+<td align="left">897</td>
+<td align="left">0</td>
+<td align="left">18600</td>
+<td align="left">1951</td>
+<td align="left">0</td>
+</tr>
+<tr>
+<td align="left">2020-08-21 15:42:21.751421</td>
+<td align="left">1166</td>
+<td align="left">2016-11-06</td>
+<td align="left">880</td>
+<td align="left">1972-06-09</td>
+<td align="left">11454</td>
+<td align="left">2019-01-20</td>
+<td align="left">897</td>
+<td align="left">0</td>
+<td align="left">18600</td>
+<td align="left">1951</td>
+<td align="left">0</td>
+</tr>
+</tbody>
+</table></div>
             </div>
         </div>
 

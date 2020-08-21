@@ -106,6 +106,10 @@
             </li>
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#testing" class="nav-link">Testing</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -129,7 +133,13 @@ Replace <code>hello</code> with the name of your function.</p>
 <h3 id="3-deploy">3. Deploy</h3>
 <p>First you will need to log into AWS through the cli.
 Then you can deploy your function with <code>sls deploy</code>.
-Happy coding!</p></div>
+Happy coding!</p>
+<h2 id="testing">Testing</h2>
+<p>This project uses pytest for testing.
+To run the tests you need the environmental variables in your shell and you will need to be logged into aws.
+Once you've done that you can run <code>pytest</code>. 
+This will call the services as they exist in AWS. 
+You can also enable log output during tests by adding <code>log_cli = True</code> to <code>pytest.ini</code>. </p></div>
             </div>
         </div>
 

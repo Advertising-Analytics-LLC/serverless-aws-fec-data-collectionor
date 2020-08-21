@@ -1,3 +1,8 @@
+#!/bin/env python3
+"""
+sns:
+- helper to work with sns
+"""
 
 import boto3
 import os

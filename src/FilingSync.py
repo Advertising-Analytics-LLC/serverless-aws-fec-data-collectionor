@@ -14,7 +14,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests import Response
 from src import logger
-from src.backfill import get_next_day, filings_sync_backfill_date
+from src.backfill import get_previous_day, filings_sync_backfill_date
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -141,12 +141,11 @@ def lambdaHandler(event: dict, context: object):
 
 
 
-def sync_filings_on(min_receipt_date: str) -> List[Dict[str, Any]]:
+def sync_filings_on(min_receipt_date: str, max_receipt_date: str) -> List[Dict[str, Any]]:
     """ retrieves all the filings recieved on a given date """
 
     API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 
-    max_receipt_date = get_next_day(min_receipt_date)
     get_filings_payload = {
         'min_receipt_date': min_receipt_date,
         'max_receipt_date': max_receipt_date,
@@ -185,12 +184,9 @@ def lambdaBackfillHandler(event: dict, context: object):
         event (dict): json object containing headers and body of request
         context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
     """
-    from src.backfill import get_previous_day
 
-    sns_replies = []
-    last_date = filings_sync_backfill_date()
-    next_date = get_previous_day(last_date)
-
-    sns_replies = sync_filings_on(next_date)
+    max_receipt_date = filings_sync_backfill_date()
+    min_receipt_date = get_previous_day(max_receipt_date)
+    sns_replies = sync_filings_on(min_receipt_date, max_receipt_date)
 
     return sns_replies

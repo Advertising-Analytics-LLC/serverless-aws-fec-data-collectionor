@@ -11,7 +11,7 @@ The services are written in python and [serverless](https://www.serverless.com/)
 ### 1. Install development packages
 These requirements can be installed with `bin/dev-setup.sh`.
 This script installs serverless and creates a local python [virtualenv](https://virtualenv.pypa.io/en/latest/) for developing the functions.
-See [bin/dev-setup.sh](bin/dev-setup.sh)
+See `bin/dev-setup.sh`.
 
 ### 2. Develop
 Edit the code and run locally with `sls invoke local -f hello`.

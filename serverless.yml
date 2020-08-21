@@ -193,19 +193,30 @@ functions:
 package:
   exclude:
     - .env
-    - .venv
-    - .vscode/**
     - .git/**
     - .gitignore
+    - .pre-commit-config.yaml
     - .pytest_cache/**
+    - .serverless/**
+    - .python-version
+    - .venv
+    - .vscode/**
     - bin/**
+    - dev-requirements.txt
+    - docs/**
+    - Makefile
+    - mkdocs.yml
     - node_modules/**
     - package.json
     - package-lock.json
     - prerequisite-cloudformation-resources.yml
+    - pytest.ini
     - README.md
     - requirements.txt
+    - serverless.yml
+    - site/**
     - sql/**
+    - tests/**
     - tmp/**
 
 # plugin to package dependencies

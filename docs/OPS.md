@@ -1,7 +1,9 @@
 # Operations
+
 Guide for maintaining this project
 
 ## Monitoring
+
 Metrics like invocations, errors, and duration are available on the [AWS Lambda App Console](https://console.aws.amazon.com/lambda/home?region=us-east-1#/applications/serverless-aws-python3-fec-datasync-dev?tab=monitoring).
 
 

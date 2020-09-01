@@ -82,6 +82,7 @@ Resources:
   DeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
+      MessageRetentionPeriod: 604800 # 7 days in seconds
       QueueName: !Ref DeadLetterQueueName
       Tags:
       - Key: managed_by

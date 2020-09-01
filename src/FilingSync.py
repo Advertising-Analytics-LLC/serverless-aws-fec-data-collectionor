@@ -14,13 +14,14 @@ import requests
 from bs4 import BeautifulSoup
 from requests import Response
 from src import logger
-from typing import List, Dict
+from src.backfill import get_previous_day, filings_sync_backfill_date
+from src.database import Database
+from src.OpenFec import OpenFec
+from src.secrets import get_param_value_by_name
+from src.sns import send_message_to_sns
+from typing import Any, Dict, List
 
-
-# SSM VARS
-RSS_SNS_TOPIC_ARN = os.getenv('RSS_SNS_TOPIC_ARN')
-
-client = boto3.client('sns')
+form_types_of_interest = ['F3P','F3','F3X']
 
 class EFilingRSSFeed:
     """wrapper for the FEC Electronic Filing RSS Feed
@@ -32,11 +33,6 @@ class EFilingRSSFeed:
         """
         self.base_url = 'https://efilingapps.fec.gov/rss/generate'
         self.query_param = '?preDefinedFilingType='
-        self.filings_of_interest = {
-            'presidential': 'F3P',
-            'congressional': 'F3',
-            'pac_and_party': 'F3X'
-        }
 
     def get_rss_by_type(self, filing_type: str, payload={}) -> str:
         """Given a request type it will return that RSS as a string
@@ -98,7 +94,6 @@ class EFilingRSSFeed:
         logger.debug(soup)
         items = soup.find_all('item')
         for desc in items:
-            # logger.debug(help(desc))
             id_list.append({
                 'committee_id': parse_for_x('(CommitteeId: )([C]?[0-9]*)', desc),
                 'filing_id': parse_for_x('(FilingId: )([0-9]*)', desc),
@@ -117,28 +112,12 @@ class EFilingRSSFeed:
         """
 
         items = []
-        for key, item in self.filings_of_interest.items():
+        for item in form_types_of_interest:
             rss = self.get_rss_by_type(item)
             rss_items = self.parse_rss(rss)
             items += rss_items
 
         return items
-
-
-def send_message_to_sns(msg: str) -> Dict[str, str]:
-    """sends a single message to sns
-
-    Args:
-        msg (str): message
-    """
-
-    logger.debug(f'sending {msg} to sns')
-
-    sns_response = client.publish(
-        TopicArn=RSS_SNS_TOPIC_ARN,
-        Message=str(msg))
-
-    return sns_response
 
 
 # handler for aws lambda
@@ -157,5 +136,57 @@ def lambdaHandler(event: dict, context: object):
     for item in items:
         ret = send_message_to_sns(item)
         sns_replies.append(ret)
+
+    return sns_replies
+
+
+
+def sync_filings_on(min_receipt_date: str, max_receipt_date: str) -> List[Dict[str, Any]]:
+    """ retrieves all the filings recieved on a given date """
+
+    API_KEY = get_param_value_by_name(os.environ['API_KEY'])
+
+    get_filings_payload = {
+        'min_receipt_date': min_receipt_date,
+        'max_receipt_date': max_receipt_date,
+        'form_type': form_types_of_interest}
+
+    openFec = OpenFec(API_KEY)
+    response_generator = openFec.get_route_paginator(
+                                '/filings/',
+                                get_filings_payload)
+
+    replies = []
+    for response in response_generator:
+        results = response['results']
+        try:
+            for result in results:
+                msg = {
+                    'committee_id': str(result['committee_id']),
+                    'filing_id': str(result['fec_file_id']),
+                    'form_type':  str(result['form_type']),
+                    'guid': str(result['fec_url'])
+                }
+                replies.append(send_message_to_sns(msg))
+        except KeyError as keyError:
+            logger.error(keyError)
+        except Exception as e:
+            logger.error(e)
+            raise
+
+    return replies
+
+
+def lambdaBackfillHandler(event: dict, context: object):
+    """lambdaBackfillHandler
+
+    Args:
+        event (dict): json object containing headers and body of request
+        context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
+    """
+
+    max_receipt_date = filings_sync_backfill_date()
+    min_receipt_date = get_previous_day(max_receipt_date)
+    sns_replies = sync_filings_on(min_receipt_date, max_receipt_date)
 
     return sns_replies

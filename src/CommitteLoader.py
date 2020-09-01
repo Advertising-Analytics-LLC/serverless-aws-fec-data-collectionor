@@ -131,7 +131,7 @@ def committeLoader(event: dict, context: object) -> bool:
     """
 
     logger.info(f'running {__file__}')
-    logger.debug(event)
+    logger.debug(json.dumps(event))
 
     messages = event['Records']
 

@@ -34,6 +34,15 @@ custom:
 # nested interpolation allows for stage-specific references
 functions:
 
+  GetDBStats:
+    handler: src/get_db_stats.lambdaHandler
+    reservedConcurrency: 1
+    timeout: 30
+    environment:
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+    events:
+      - schedule: rate(1 hour)
+
   CandidateSync:
     description: Polls OpenFEC API (once) for candidates that have filed recently and sends the IDs to SQS
     handler: src/CandidateSync.lambdaHandler
@@ -45,6 +54,18 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.candidate_sync_queue_name}
     events:
       - schedule: cron(0 4 * * ? *)
+
+  CandidateBackfill:
+    description: Backfills candidates queue
+    handler: src/CandidateSync.lambdaBackfillHandler
+    reservedConcurrency: 1
+    timeout: 90
+    environment:
+      API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.candidate_sync_queue_name}
+    events:
+      - schedule: rate(15 minutes)
 
   CandidateLoader:
     description: Triggered by SQS it recieves Messages and writes candidate data to the DB
@@ -70,11 +91,23 @@ functions:
     events:
       - schedule: cron(0 0,8,16 * * ? *)
 
+  CommitteeBackfill:
+    description: Backfills committee sync queue
+    handler: src/CommitteSync.lambdaBackfillHandler
+    reservedConcurrency: 1
+    timeout: 90
+    environment:
+      API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
+    events:
+      - schedule: rate(15 minutes)
+
   CommitteeLoader:
     description: Recieves committee Ids from SQS, queries api for committee info, updates DB
     handler: src/CommitteLoader.committeLoader
     reservedConcurrency: 1
-    timeout: 30
+    timeout: 300
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -92,6 +125,18 @@ functions:
       RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
     events:
       - schedule: cron(0 0,8,16 * * ? *)
+
+  FilingBackfill:
+    description: Crawls back in time over filings
+    handler: src/FilingSync.lambdaBackfillHandler
+    reservedConcurrency: 1
+    timeout: 180
+    environment:
+      API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
+      LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
+    events:
+      - schedule: rate(15 minutes)
 
   FinancialSummaryLoader:
     description: Takes new filings from SQS, queries api, writes to DB
@@ -148,19 +193,30 @@ functions:
 package:
   exclude:
     - .env
-    - .venv
-    - .vscode/**
     - .git/**
     - .gitignore
+    - .pre-commit-config.yaml
     - .pytest_cache/**
+    - .serverless/**
+    - .python-version
+    - .venv
+    - .vscode/**
     - bin/**
+    - dev-requirements.txt
+    - docs/**
+    - Makefile
+    - mkdocs.yml
     - node_modules/**
     - package.json
     - package-lock.json
     - prerequisite-cloudformation-resources.yml
+    - pytest.ini
     - README.md
     - requirements.txt
+    - serverless.yml
+    - site/**
     - sql/**
+    - tests/**
     - tmp/**
 
 # plugin to package dependencies

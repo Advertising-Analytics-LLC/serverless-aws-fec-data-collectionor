@@ -5,6 +5,8 @@ FECFileLoader lambda:
 - downloads files
 - parses file
 - writes data to redshift
+
+does this for a number of different filings types
 """
 
 import boto3
@@ -216,6 +218,7 @@ def insert_schedule_e_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         if record_exists:
             logger.debug(f'Record {pk} exists')
 
+
             return True
 
         else:
@@ -283,6 +286,15 @@ def insert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
 
         return False
 
+# def get_filing(fec_file_id: str, options: dict):
+#     url = 'https://docquery.fec.gov/dcdev/posted/{n}.fec'.format(n=fec_file_id)
+#     req_headers = {'User-Agent': 'Mozilla/5.0'}
+#     logger.debug(f'GET {url}')
+#     r = requests.get(url, headers=req_headers, stream=True)
+#     logger.debug(f'status {r.status_code}')
+#     for item in fecparser.iter_lines(r.iter_lines(), options=options):
+#         yield item
+
 
 def lambdaHandler(event:dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
@@ -297,7 +309,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
     """
 
     logger.debug(f'running {__file__}')
-    logger.debug(event)
+    logger.debug(json.dumps(event))
 
     messages = event['Records']
 
@@ -305,6 +317,8 @@ def lambdaHandler(event:dict, context: object) -> bool:
         message_parsed = parse_message(message)
         filing_id = message_parsed['filing_id']
 
+        # for fec_item in get_filing(filing_id,
+        #                         options={'filter_itemizations': [FILING_TYPE]}):
         for fec_item in fecfile.iter_http(filing_id,
                                 options={'filter_itemizations': [FILING_TYPE]}):
 

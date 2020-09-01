@@ -20,8 +20,7 @@ MIN_FIST_FILE_DATE = os.getenv('MIN_FIST_FILE_DATE', datetime.strftime(datetime.
 
 # business logic
 
-
-def get_candidates_since(isodate: str) -> json:
+def get_candidates_since(isodate: str, max_first_file_date='') -> json:
     """gets list of candidates that have filed today
 
     Args:
@@ -33,7 +32,11 @@ def get_candidates_since(isodate: str) -> json:
 
     logger.debug(f'Querying for Candidates who file after {isodate}')
 
-    get_candidates_payload = {'min_first_file_date': isodate}
+    if max_first_file_date:
+        get_candidates_payload = {'min_first_file_date': isodate, 'max_first_file_date': max_first_file_date}
+    else:
+        get_candidates_payload = {'min_first_file_date': isodate}
+
     openFec = OpenFec(API_KEY)
 
     response_generator = openFec.get_route_paginator(
@@ -61,6 +64,31 @@ def lambdaHandler(event:dict, context: object) -> bool:
     logger.debug(f'running {__file__}')
 
     candidates_list = get_candidates_since(MIN_FIST_FILE_DATE)
+
+    for candidate in candidates_list:
+        push_message_to_sqs(candidate)
+
+    return True
+
+def lambdaBackfillHandler(event:dict, context: object) -> bool:
+    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
+
+    Args:
+        event (dict): for event types see https://docs.aws.amazon.com/lambda/latest/dg/lambda-services.html
+        context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
+
+    Returns:
+        bool: Did this go well?
+    """
+
+    logger.debug(f'running {__file__}')
+
+    from src.backfill import candidate_sync_backfill_date, get_next_day
+
+    MIN_FIST_FILE_DATE = candidate_sync_backfill_date()
+    max_first_file_date = get_next_day(MIN_FIST_FILE_DATE)
+
+    candidates_list = get_candidates_since(MIN_FIST_FILE_DATE, max_first_file_date)
 
     for candidate in candidates_list:
         push_message_to_sqs(candidate)

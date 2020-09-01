@@ -29,7 +29,7 @@ def upsert_schedule_b_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         filing (Dict[str, Any]): Filing object
 
     Returns:
-        bool: if upsert succeeded
+        bool: if in database
     """
 
     pk = filing['transaction_id_number']
@@ -37,13 +37,14 @@ def upsert_schedule_b_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
     with Database() as db:
         record_exists = db.record_exists(exists_query)
         if record_exists:
-            query = schema.schedule_b_update(fec_file_id, filing)
+            logger.debug(f'Record {pk} exists')
+
+            return True
+
         else:
             query = schema.schedule_b_insert(fec_file_id, filing)
 
-        success = db.try_query(query)
-
-    return success
+            return db.try_query(query)
 
 
 def upsert_schedule_e_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
@@ -54,7 +55,7 @@ def upsert_schedule_e_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         filing (Dict[str, Any]): Filing object
 
     Returns:
-        bool: if upsert succeeded
+        bool: if in database
     """
 
     pk = filing['transaction_id_number']
@@ -62,8 +63,7 @@ def upsert_schedule_e_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
     with Database() as db:
         record_exists = db.record_exists(exists_query)
         if record_exists:
-            # query = schema.schedule_e_update(fec_file_id, filing)
-            logger.debug('exists')
+            logger.debug(f'Record {pk} exists')
 
             return True
 
@@ -81,14 +81,12 @@ def upsert_f1_supplemental(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         filing (Dict[str, Any]): Filing object
 
     Returns:
-        bool: if upsert succeeded
+        bool: if in database
     """
 
     exists_query = schema.f1_supplemental_exists(fec_file_id, filing)
-
     with Database() as db:
         record_exists = db.record_exists(exists_query)
-
         if record_exists:
 
             return True
@@ -108,7 +106,7 @@ def upsert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         filing (Dict[str, Any]): Filing object
 
     Returns:
-        bool: if upsert succeeded
+        bool: if in database
     """
 
     form_type = filing['form_type']
@@ -117,6 +115,7 @@ def upsert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
     if form_type.startswith('SB'):
 
         return upsert_schedule_b_filing(fec_file_id, filing)
+
 
     # Schedule E Filings
     elif form_type.startswith('SE'):

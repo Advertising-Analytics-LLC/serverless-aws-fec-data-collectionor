@@ -428,32 +428,6 @@ def schedule_b_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
 
     return query
 
-
-def schedule_b_update(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
-    """updates a record in fec.filings_schedule_b
-
-    Args:
-        fec_file_id (str): filing ID
-        filing (Dict[str, Any]): dictionary containing transaction data of filing
-
-    Returns:
-        SQL: SQL update query
-    """
-
-    filing['fec_file_id'] = fec_file_id
-    primary_key = filing['transaction_id_number']
-    values = OrderedDict(sorted(filing.items()))
-
-    query_string = 'UPDATE fec.filings_schedule_b SET ' \
-        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
-        + ' WHERE transaction_id_number={}'
-
-    query = sql.SQL(query_string)\
-        .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
-
-    return query
-
-
 #
 # Candidates
 #
@@ -568,30 +542,6 @@ def schedule_e_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
 
     return query
 
-
-def schedule_e_update(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
-    """updates a record in fec.filings_schedule_e
-
-    Args:
-        fec_file_id (str): filing ID
-        filing (Dict[str, Any]): dictionary containing transaction data of filing
-
-    Returns:
-        SQL: SQL update query
-    """
-
-    filing['fec_file_id'] = fec_file_id
-    primary_key = filing['transaction_id_number']
-    values = OrderedDict(sorted(filing.items()))
-
-    query_string = 'UPDATE fec.filings_schedule_e SET ' \
-        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
-        + ' WHERE transaction_id_number={}'
-
-    query = sql.SQL(query_string)\
-        .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
-
-    return query
 
 #
 # Form 1 Supplemental Data

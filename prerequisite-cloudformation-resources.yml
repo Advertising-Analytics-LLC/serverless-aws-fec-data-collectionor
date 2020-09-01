@@ -5,6 +5,10 @@ Parameters:
     Default: v0.0.1
     Description: Code verison, see bin/deploy.sh
     Type: String
+  DeadLetterQueueName:
+    Default: dead-letter-queue
+    Description: Name for dead-letter Queue
+    Type: String
   DeploymentBucketName:
     Default: serverless-deploymentbucket
     Description: S3 bucket used to deploy serverless stack
@@ -75,10 +79,30 @@ Resources:
       VersioningConfiguration:
          Status: Enabled
 
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 604800 # 7 days in seconds
+      QueueName: !Ref DeadLetterQueueName
+      Tags:
+      - Key: managed_by
+        Value: CloudFormation
+      - Key: Project
+        Value: FEC Data-sync
+      - Key: created_by
+        Value: sblack@rhythmictech.com
+      - Key: Name
+        Value: !Ref DeadLetterQueueName
+      - Key: Version
+        Value: !Ref Version
+
   CandidateSyncQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref CandidateSyncQueueName
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -96,6 +120,9 @@ Resources:
     Properties:
       QueueName: !Ref CommitteeSyncQueueName
       VisibilityTimeout: 90
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -113,6 +140,9 @@ Resources:
     Properties:
       QueueName: !Ref NewFilingQueueName
       VisibilityTimeout: 90
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -130,6 +160,9 @@ Resources:
     Properties:
       QueueName: !Ref NewFilingQueueSEName
       VisibilityTimeout: 900
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -147,6 +180,9 @@ Resources:
     Properties:
       QueueName: !Ref SupplementalDataQueueName
       VisibilityTimeout: 900
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -164,6 +200,9 @@ Resources:
     Properties:
       QueueName: !Ref TransactionLoadingQueueName
       VisibilityTimeout: 900
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 5
       Tags:
       - Key: managed_by
         Value: CloudFormation

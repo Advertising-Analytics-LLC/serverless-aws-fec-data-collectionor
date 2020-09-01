@@ -103,6 +103,10 @@ class Database:
             self.rollback()
             return False
 
+    def copy(self, sql, data_file):
+        self.curr.copy_expert(sql, data_file)
+        self.commit()
+
     def commit(self):
         """commits transaction
         """

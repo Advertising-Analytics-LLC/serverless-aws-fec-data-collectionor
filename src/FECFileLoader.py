@@ -263,21 +263,19 @@ def insert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         bool: if in database
     """
 
-    form_type = filing['form_type']
-
     # Schedule B Filings
-    if form_type.startswith('SB'):
+    if FILING_TYPE.startswith('SB'):
 
         return insert_schedule_b_filing(fec_file_id, filing)
 
 
     # Schedule E Filings
-    elif form_type.startswith('SE'):
+    elif FILING_TYPE.startswith('SE'):
 
         return insert_schedule_e_filing(fec_file_id, filing)
 
     # Form 1 Supplemental Data Filings
-    elif form_type.startswith('F1S'):
+    elif FILING_TYPE.startswith('F1S'):
 
         return insert_f1_supplemental(fec_file_id, filing)
 
@@ -285,15 +283,6 @@ def insert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         logger.error(f'Filing of form_type {form_type} does not match those available')
 
         return False
-
-# def get_filing(fec_file_id: str, options: dict):
-#     url = 'https://docquery.fec.gov/dcdev/posted/{n}.fec'.format(n=fec_file_id)
-#     req_headers = {'User-Agent': 'Mozilla/5.0'}
-#     logger.debug(f'GET {url}')
-#     r = requests.get(url, headers=req_headers, stream=True)
-#     logger.debug(f'status {r.status_code}')
-#     for item in fecparser.iter_lines(r.iter_lines(), options=options):
-#         yield item
 
 
 def lambdaHandler(event:dict, context: object) -> bool:
@@ -305,7 +294,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
         context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
 
     Returns:
-        bool: Did this go well?
+        bool: success
     """
 
     logger.debug(f'running {__file__}')
@@ -313,18 +302,33 @@ def lambdaHandler(event:dict, context: object) -> bool:
 
     messages = event['Records']
 
+    insert_values = []
+
     for message in messages:
         message_parsed = parse_message(message)
         filing_id = message_parsed['filing_id']
 
-        # for fec_item in get_filing(filing_id,
-        #                         options={'filter_itemizations': [FILING_TYPE]}):
         for fec_item in fecfile.iter_http(filing_id,
                                 options={'filter_itemizations': [FILING_TYPE]}):
 
-            if fec_item.data_type == 'itemization':
-                insert_filing(filing_id, fec_item.data)
+            if fec_item.data_type != 'itemization':
+                continue
 
-        delete_message_from_sqs(message)
+            data_dict = fec_item.data
+            data_dict['fec_file_id'] = filing_id
+            insert_values.append(data_dict)
+
+    temp_filename = 'temp_file.tsv'
+
+    with open(temp_filename) as fh:
+        for item in insert_values:
+            values = [val for key, val in OrderedDict(sorted(item.items()).iteritems())]
+            fh.writelines('\t'.join(values))
+
+        logger.debug(fh.read())
+
+
+    with Database() as db:
+        db.copy('COPY fec.filings_schedule_b FROM temp_file.tsv WHERE ', temp_filename)
 
     return True

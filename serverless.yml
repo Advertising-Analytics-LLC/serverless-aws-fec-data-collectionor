@@ -41,7 +41,7 @@ functions:
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
     events:
-      - schedule: rate(1 hour)
+      - schedule: rate(12 hour)
 
   CandidateSync:
     description: Polls OpenFEC API (once) for candidates that have filed recently and sends the IDs to SQS
@@ -58,7 +58,7 @@ functions:
   CandidateBackfill:
     description: Backfills candidates queue
     handler: src/CandidateSync.lambdaBackfillHandler
-    reservedConcurrency: 1
+    reservedConcurrency: 0
     timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -94,7 +94,7 @@ functions:
   CommitteeBackfill:
     description: Backfills committee sync queue
     handler: src/CommitteSync.lambdaBackfillHandler
-    reservedConcurrency: 1
+    reservedConcurrency: 0
     timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -129,7 +129,7 @@ functions:
   FilingBackfill:
     description: Crawls back in time over filings
     handler: src/FilingSync.lambdaBackfillHandler
-    reservedConcurrency: 1
+    reservedConcurrency: 0
     timeout: 180
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -167,7 +167,7 @@ functions:
     description: Gets FEC file url from SQS, downloads, parses for Schedule E filings, loads into DB
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008
-    reservedConcurrency: 1
+    reservedConcurrency: 0
     timeout: 900
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -180,7 +180,7 @@ functions:
     description: Gets FEC file url from SQS, downloads, parses for Form 1 Supplemental Data, loads into DB
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008
-    reservedConcurrency: 1
+    reservedConcurrency: 0
     timeout: 900
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}

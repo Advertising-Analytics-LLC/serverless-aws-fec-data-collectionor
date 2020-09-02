@@ -329,6 +329,6 @@ def lambdaHandler(event:dict, context: object) -> bool:
 
 
     with Database() as db:
-        db.copy('COPY fec.filings_schedule_b FROM temp_file.tsv WHERE ', temp_filename)
+        db.copy('COPY fec.filings_schedule_b FROM temp_file.tsv WHERE fec_file_id NOT in(SELECT fec_file_id FROM fec.filings_schedule_b', temp_filename)
 
     return True

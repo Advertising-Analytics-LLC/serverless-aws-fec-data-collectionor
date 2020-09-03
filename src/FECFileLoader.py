@@ -10,20 +10,24 @@ does this for a number of different filings types
 """
 
 import boto3
+import csv
 import fecfile
 import json
 import os
 import requests
+import uuid
 from collections import OrderedDict
 from typing import Any, Dict, List
 from psycopg2 import sql
 from psycopg2.sql import SQL, Literal
-from src import JSONType, logger
+from src import JSONType, logger, serialize_dates
 from src.database import Database
-from src.sqs import delete_message_from_sqs, parse_message
+from src.sqs import parse_message
 
 
 FILING_TYPE = os.environ['FILING_TYPE']
+S3_BUCKET_NAME = os.environ['S3_BUCKET_NAME']
+REDSHIFT_COPY_ROLE = os.environ['REDSHIFT_COPY_ROLE']
 
 #
 # schedule B schema
@@ -40,7 +44,7 @@ def schedule_b_exists(transaction_id_number: str) -> SQL:
     """
 
     query = sql.SQL('SELECT * FROM fec.filings_schedule_b WHERE transaction_id_number={}')\
-                .format(Literal(transaction_id_number))
+        .format(Literal(transaction_id_number))
 
     return query
 
@@ -59,21 +63,20 @@ def schedule_b_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
     filing['fec_file_id'] = fec_file_id
     values = OrderedDict(sorted(filing.items()))
 
-    query_string = 'INSERT INTO fec.filings_schedule_b ('\
-        + ', '.join([f'{key}' for key, val in values.items()])\
-        + ') '\
+    query_string = 'INSERT INTO fec.filings_schedule_b '\
         + 'VALUES ('\
         + ', '.join(['{}' for key, val in values.items()])\
         + ')'
 
     query = sql.SQL(query_string)\
-                .format(*[Literal(val) for key, val in values.items()])
+        .format(*[Literal(val) for key, val in values.items()])
 
     return query
 
 #
 # schedule E schema
 #
+
 
 def schedule_e_exists(transaction_id_number: str) -> SQL:
     """returns a query to check if a transaction id has a record
@@ -86,7 +89,7 @@ def schedule_e_exists(transaction_id_number: str) -> SQL:
     """
 
     query = sql.SQL('SELECT * FROM fec.filings_schedule_e WHERE transaction_id_number={}')\
-                .format(Literal(transaction_id_number))
+        .format(Literal(transaction_id_number))
 
     return query
 
@@ -113,7 +116,7 @@ def schedule_e_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
         + ')'
 
     query = sql.SQL(query_string)\
-                .format(*[Literal(val) for key, val in values.items()])
+        .format(*[Literal(val) for key, val in values.items()])
 
     return query
 
@@ -166,7 +169,7 @@ def f1_supplemental_insert(fec_file_id: str, filing: Dict[str, Any]) -> SQL:
         + ')'
 
     query = sql.SQL(query_string)\
-                .format(*[Literal(val) for key, val in values.items()])
+        .format(*[Literal(val) for key, val in values.items()])
 
     return query
 
@@ -218,7 +221,6 @@ def insert_schedule_e_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         if record_exists:
             logger.debug(f'Record {pk} exists')
 
-
             return True
 
         else:
@@ -251,7 +253,6 @@ def insert_f1_supplemental(fec_file_id: str, filing: Dict[str, Any]) -> bool:
             return db.try_query(query)
 
 
-
 def insert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
     """inserts a single filing
 
@@ -268,7 +269,6 @@ def insert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
 
         return insert_schedule_b_filing(fec_file_id, filing)
 
-
     # Schedule E Filings
     elif FILING_TYPE.startswith('SE'):
 
@@ -280,12 +280,13 @@ def insert_filing(fec_file_id: str, filing: Dict[str, Any]) -> bool:
         return insert_f1_supplemental(fec_file_id, filing)
 
     else:
-        logger.error(f'Filing of form_type {form_type} does not match those available')
+        logger.error(
+            f'Filing of form_type {form_type} does not match those available')
 
         return False
 
 
-def lambdaHandler(event:dict, context: object) -> bool:
+def lambdaHandler(event: dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
         takes events that have fec file IDs, gets the filing from docquery and writes to the DB
 
@@ -303,13 +304,14 @@ def lambdaHandler(event:dict, context: object) -> bool:
     messages = event['Records']
 
     insert_values = []
+    transaction_id_list = []
 
     for message in messages:
         message_parsed = parse_message(message)
         filing_id = message_parsed['filing_id']
 
         for fec_item in fecfile.iter_http(filing_id,
-                                options={'filter_itemizations': [FILING_TYPE]}):
+                                          options={'filter_itemizations': [FILING_TYPE]}):
 
             if fec_item.data_type != 'itemization':
                 continue
@@ -317,18 +319,28 @@ def lambdaHandler(event:dict, context: object) -> bool:
             data_dict = fec_item.data
             data_dict['fec_file_id'] = filing_id
             insert_values.append(data_dict)
+            transaction_id_list.append(data_dict['transaction_id_number'])
 
-    temp_filename = 'temp_file.tsv'
+    temp_filename = f'{uuid.uuid4()}.json'
 
-    with open(temp_filename) as fh:
-        for item in insert_values:
-            values = [val for key, val in OrderedDict(sorted(item.items()).iteritems())]
-            fh.writelines('\t'.join(values))
+    with open(temp_filename, 'w+') as fh:
+        for val in insert_values:
+            json.dump(val, fh, default=serialize_dates)
+            fh.write('\n')
 
-        logger.debug(fh.read())
-
+    with open(temp_filename, 'rb') as fh:
+        s3 = boto3.client('s3')
+        s3.upload_fileobj(fh, S3_BUCKET_NAME, temp_filename)
+        os.remove(temp_filename)
 
     with Database() as db:
-        db.copy('COPY fec.filings_schedule_b FROM temp_file.tsv WHERE fec_file_id NOT in(SELECT fec_file_id FROM fec.filings_schedule_b', temp_filename)
+        db.query(
+            sql.SQL('DELETE FROM fec.filings_schedule_b WHERE transaction_id_number IN ({})'
+                .format(', '.join([f'\'{str(val)}\'' for val in transaction_id_list]))))
+
+        db.query(f'COPY fec.filings_schedule_b FROM \'s3://{S3_BUCKET_NAME}/{temp_filename}\' IAM_ROLE \'{REDSHIFT_COPY_ROLE}\' FORMAT AS JSON \'auto\';')
+
+    s3 = boto3.client('s3')
+    s3.delete_object(Bucket=S3_BUCKET_NAME, Key=temp_filename)
 
     return True

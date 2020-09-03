@@ -13,10 +13,9 @@ import logging
 import os
 from datetime import datetime, timedelta
 from typing import List, Dict
-from src import logger
+from src import logger, serialize_dates
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
-from src.serialization import serialize_dates
 from src.sqs import push_committee_id_to_sqs
 
 

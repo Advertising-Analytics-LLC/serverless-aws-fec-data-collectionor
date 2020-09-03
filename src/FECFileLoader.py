@@ -10,11 +10,9 @@ does this for a number of different filings types
 """
 
 import boto3
-import csv
 import fecfile
 import json
 import os
-import requests
 import uuid
 from collections import OrderedDict
 from typing import Any, Dict, List

@@ -39,6 +39,24 @@ def pull_message_from_sqs() -> Dict[str, Any]:
     return {}
 
 
+def push_committee_id_to_sqs(message_list: List[any]) -> object:
+    """Pushes a list of SendMessageBatchRequestEntry (messages) to
+        see https://github.com/boto/botocore/blob/f1f0c6d2e445d7c3a3f8f355eaf6d692bbf3cd6a/botocore/data/sqs/2012-11-05/service-2.json#L1238
+    Args:
+        message_list (List[SendMessageBatchRequestEntry]): [description]
+
+    Returns:
+        object: [description]
+    """
+    responses = []
+    for msg in message_list:
+        response = queue.send_message(
+            MessageBody=json.dumps(msg['committee_id']))
+        logger.debug(response)
+        responses.append(response)
+    return responses
+
+
 def delete_message_from_sqs(message: JSONType) -> bool:
     """deletes a message from SQS
 
@@ -79,12 +97,17 @@ def parse_message(message: JSONType) -> Dict[str, str]:
     my_body = message['body']
     json_body = json.loads(my_body)
 
-    if type(json_body) == dict:
-        body_content = json.loads(json_body['Message'].replace("'", '"'))
+    try:
+        if type(json_body) == dict:
+            body_content = json.loads(json_body['Message'].replace("'", '"'))
 
-        return body_content
+            return body_content
 
-    return json_body.replace("'", '')
+        return json_body.replace("'", '')
+    except KeyError as ex:
+        logger.error('KeyError parsing message')
+        logger.error(message)
+        raise ex
 
 
 def push_message_to_sqs(message: str) -> Dict[str, str]:

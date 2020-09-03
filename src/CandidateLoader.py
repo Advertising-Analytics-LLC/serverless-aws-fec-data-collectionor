@@ -117,7 +117,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
     """
 
     logger.debug(f'running {__file__}, event:')
-    logger.debug(event)
+    logger.debug(json.dumps(event))
 
     messages = event['Records']
 

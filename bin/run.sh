@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/bash -x
 
 shopt -s expand_aliases
 alias slif="serverless invoke --function"
 
-slif CommitteeSync
-slif CommitteeLoader
-slif RSSSubscriber
-slif FilingWriter
+for func in CommitteeSync CandidateSync FilingSync
+do
+    slif $func
+done

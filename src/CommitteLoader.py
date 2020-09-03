@@ -13,11 +13,10 @@ import os
 from datetime import datetime, timedelta
 from time import time
 from typing import List, Dict, Any
-from src import logger, JSONType, schema
+from src import logger, JSONType, schema, serialize_dates
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
-from src.serialization import serialize_dates
 from src.sqs import delete_message_from_sqs, parse_message
 
 
@@ -131,7 +130,7 @@ def committeLoader(event: dict, context: object) -> bool:
     """
 
     logger.info(f'running {__file__}')
-    logger.debug(event)
+    logger.debug(json.dumps(event))
 
     messages = event['Records']
 

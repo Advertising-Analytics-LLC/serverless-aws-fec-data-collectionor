@@ -80,3 +80,4 @@ def filings_backfill_success(success_date: str):
     query = f'delete from fec.backfill where fec_file_date = \'{success_date}\''
     with Database() as db:
         query_result = db.query(query)
+        db.commit()

@@ -27,13 +27,14 @@ FILING_TYPE = os.environ['FILING_TYPE']
 S3_BUCKET_NAME = os.environ['S3_BUCKET_NAME']
 REDSHIFT_COPY_ROLE = os.environ['REDSHIFT_COPY_ROLE']
 
+session = boto3.Session()
+s3 = session.client('s3')
 
 filing_table_mapping = {
     'SB': 'filings_schedule_b',
     'SE': 'filings_schedule_e',
     'F1S': 'form_1_supplemental'
 }
-
 
 def lambdaHandler(event: dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
@@ -58,16 +59,15 @@ def lambdaHandler(event: dict, context: object) -> bool:
     # no PK for F1S so use fec_file_id
     fec_file_ids = []
     temp_filename = f'{uuid.uuid4()}.json'
-    temp_filedir = '/tmp'
+    temp_filedir = '/tmp/'
     temp_filepath = temp_filedir + temp_filename
     database_table = filing_table_mapping[FILING_TYPE]
 
     for message in messages:
         message_parsed = parse_message(message)
-        filing_id = message_parsed['filing_id']
+        filing_id = message_parsed['filing_id'].replace('FEC-', '')
 
-        for fec_item in fecfile.iter_http(filing_id,
-                                          options={'filter_itemizations': [FILING_TYPE]}):
+        for fec_item in fecfile.iter_http(filing_id, options={'filter_itemizations': [FILING_TYPE]}):
 
             if fec_item.data_type != 'itemization':
                 continue
@@ -90,7 +90,6 @@ def lambdaHandler(event: dict, context: object) -> bool:
             fh.write('\n')
 
     with open(temp_filepath, 'rb') as fh:
-        s3 = boto3.client('s3')
         s3.upload_fileobj(fh, S3_BUCKET_NAME, temp_filename)
 
     with Database() as db:
@@ -107,7 +106,6 @@ def lambdaHandler(event: dict, context: object) -> bool:
         db.query(f'COPY fec.{database_table} FROM \'s3://{S3_BUCKET_NAME}/{temp_filename}\' IAM_ROLE \'{REDSHIFT_COPY_ROLE}\' FORMAT AS JSON \'auto\';')
         db.commit()
 
-    s3 = boto3.client('s3')
     s3.delete_object(Bucket=S3_BUCKET_NAME, Key=temp_filename)
 
     return True

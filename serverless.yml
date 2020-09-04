@@ -293,6 +293,7 @@ provider:
         - s3:PutObject
       Resource:
         - "${self:custom.${self:provider.stage}.copy_from_bucket_arn}"
+        - "${self:custom.${self:provider.stage}.copy_from_bucket_arn}/*"
   tags:
     serverless_managed: true
     serverless_name: ${self:service}

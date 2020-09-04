@@ -19,6 +19,7 @@ custom:
     candidate_sync_queue_name: ${cf:fec-datasync-resources.CandidateSyncQueueName}
     copy_from_bucket_arn: ${cf:fec-datasync-resources.CopyFromBucketArn}
     copy_from_bucket_name: ${cf:fec-datasync-resources.CopyFromBucketName}
+    REDSHIFT_COPY_ROLE: arn:aws:iam::648881544937:role/copyFromRedshiftRole
     rss_schedule_e_queue_arn: ${cf:fec-datasync-resources.NewFilingQueueSEArn}
     rss_schedule_e_queue_name: ${cf:fec-datasync-resources.NewFilingQueueSEName}
     rss_sns_topic_arn: ${cf:fec-datasync-resources.RSSFeedTopicArn}
@@ -161,7 +162,7 @@ functions:
     environment:
       FILING_TYPE: 'SB'
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
-      REDSHIFT_COPY_ROLE: arn:aws:iam::648881544937:role/copyFromRedshiftRole
+      REDSHIFT_COPY_ROLE: ${self:custom.${self:provider.stage}.REDSHIFT_COPY_ROLE}
       S3_BUCKET_NAME: ${self:custom.${self:provider.stage}.copy_from_bucket_name}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.transaction_loding_queue_name}
     events:
@@ -175,6 +176,7 @@ functions:
     timeout: 900
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      REDSHIFT_COPY_ROLE: ${self:custom.${self:provider.stage}.REDSHIFT_COPY_ROLE}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.rss_schedule_e_queue_name}
       FILING_TYPE: 'SE'
     events:
@@ -188,6 +190,7 @@ functions:
     timeout: 900
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
+      REDSHIFT_COPY_ROLE: ${self:custom.${self:provider.stage}.REDSHIFT_COPY_ROLE}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.supplemental_data_queue_name}
       FILING_TYPE: 'F1S'
     events:

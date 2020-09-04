@@ -58,6 +58,8 @@ def lambdaHandler(event: dict, context: object) -> bool:
     # no PK for F1S so use fec_file_id
     fec_file_ids = []
     temp_filename = f'{uuid.uuid4()}.json'
+    temp_filedir = '/tmp'
+    temp_filepath = temp_filedir + temp_filename
     database_table = filing_table_mapping[FILING_TYPE]
 
     for message in messages:
@@ -82,15 +84,14 @@ def lambdaHandler(event: dict, context: object) -> bool:
     if len(insert_values) == 0:
         return True
 
-    with open(temp_filename, 'w+') as fh:
+    with open(temp_filepath, 'w+') as fh:
         for val in insert_values:
             json.dump(val, fh, default=serialize_dates)
             fh.write('\n')
 
-    with open(temp_filename, 'rb') as fh:
+    with open(temp_filepath, 'rb') as fh:
         s3 = boto3.client('s3')
         s3.upload_fileobj(fh, S3_BUCKET_NAME, temp_filename)
-        os.remove(temp_filename)
 
     with Database() as db:
         if FILING_TYPE != 'F1S':

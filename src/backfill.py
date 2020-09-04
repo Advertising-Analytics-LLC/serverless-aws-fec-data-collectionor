@@ -69,8 +69,14 @@ def committee_sync_backfill_date() -> str:
 def filings_sync_backfill_date() -> str:
     """ gets date of last filing from db """
 
-    query = 'select min(receipt_date) from fec.filings;'
+    query = 'select max(fec_file_date) from fec.backfill;'
     with Database() as db:
         query_result = db.query(query)
         last_date = query_result[0][0]
         return last_date
+
+def filings_backfill_success(success_date: str):
+    """ delete that date from DB"""
+    query = f'delete from fec.backfill where fec_file_date = \'{success_date}\''
+    with Database() as db:
+        query_result = db.query(query)

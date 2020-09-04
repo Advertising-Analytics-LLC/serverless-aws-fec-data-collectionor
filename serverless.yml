@@ -131,7 +131,7 @@ functions:
   FilingBackfill:
     description: Crawls back in time over filings
     handler: src/FilingSync.lambdaBackfillHandler
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 180
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -143,7 +143,7 @@ functions:
   FinancialSummaryLoader:
     description: Takes new filings from SQS, queries api, writes to DB
     handler: src/FinancialSummaryLoader.lambdaHandler
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -171,7 +171,7 @@ functions:
     description: Gets FEC file url from SQS, downloads, parses for Schedule E filings, loads into DB
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 900
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -184,7 +184,7 @@ functions:
     description: Gets FEC file url from SQS, downloads, parses for Form 1 Supplemental Data, loads into DB
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 900
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}

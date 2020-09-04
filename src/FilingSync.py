@@ -14,7 +14,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests import Response
 from src import logger
-from src.backfill import get_previous_day, filings_sync_backfill_date
+from src.backfill import get_previous_day, filings_sync_backfill_date, filings_backfill_success
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -188,5 +188,5 @@ def lambdaBackfillHandler(event: dict, context: object):
     max_receipt_date = filings_sync_backfill_date()
     min_receipt_date = get_previous_day(max_receipt_date)
     sns_replies = sync_filings_on(min_receipt_date, max_receipt_date)
-
+    filings_backfill_success(max_receipt_date)
     return sns_replies

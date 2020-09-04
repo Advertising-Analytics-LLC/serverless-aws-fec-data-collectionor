@@ -145,7 +145,7 @@ functions:
     description: Takes new filings from SQS, queries api, writes to DB
     handler: src/FinancialSummaryLoader.lambdaHandler
     reservedConcurrency: 1
-    timeout: 90
+    timeout: 900
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -177,6 +177,7 @@ functions:
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       REDSHIFT_COPY_ROLE: ${self:custom.${self:provider.stage}.REDSHIFT_COPY_ROLE}
+      S3_BUCKET_NAME: ${self:custom.${self:provider.stage}.copy_from_bucket_name}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.rss_schedule_e_queue_name}
       FILING_TYPE: 'SE'
     events:
@@ -191,6 +192,7 @@ functions:
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       REDSHIFT_COPY_ROLE: ${self:custom.${self:provider.stage}.REDSHIFT_COPY_ROLE}
+      S3_BUCKET_NAME: ${self:custom.${self:provider.stage}.copy_from_bucket_name}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.supplemental_data_queue_name}
       FILING_TYPE: 'F1S'
     events:

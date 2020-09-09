@@ -61,6 +61,7 @@ def lambdaHandler(event: dict, context: object) -> bool:
     temp_filename = f'{uuid.uuid4()}.json'
     temp_filedir = '/tmp/'
     temp_filepath = temp_filedir + temp_filename
+    map(os.remove, os.listdir(temp_filepath))
     database_table = filing_table_mapping[FILING_TYPE]
 
     for message in messages:

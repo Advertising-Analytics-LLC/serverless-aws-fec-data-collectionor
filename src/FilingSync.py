@@ -186,6 +186,8 @@ def lambdaBackfillHandler(event: dict, context: object):
     """
 
     max_receipt_date = filings_sync_backfill_date()
+    if not max_receipt_date:
+        raise Exception('No date recieved from backfill table. Exiting.')
     min_receipt_date = get_previous_day(max_receipt_date)
     sns_replies = sync_filings_on(min_receipt_date, max_receipt_date)
     filings_backfill_success(max_receipt_date)

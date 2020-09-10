@@ -165,7 +165,7 @@ def sync_filings_on(min_receipt_date: str, max_receipt_date: str) -> List[Dict[s
                     'committee_id': str(result['committee_id']),
                     'filing_id': str(result['fec_file_id']),
                     'form_type':  str(result['form_type']),
-                    'guid': str(result['fec_url'])
+                    'guid': str(result.get('fec_url', ''))
                 }
                 replies.append(send_message_to_sns(msg))
         except KeyError as keyError:

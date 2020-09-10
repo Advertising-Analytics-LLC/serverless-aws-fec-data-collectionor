@@ -37,6 +37,9 @@ Parameters:
     Default: fec-financialsummary-queue
     Description: Name of Queue for new filings, processed for Financial Summary
     Type: String
+  FilingRedriveCount:
+    Default: 15
+    Type: Number
   FilingSEQueueName:
     Default: fec-se-queue
     Description: Queue for new filings, consumed by loader for Schedule E FEC filings
@@ -198,7 +201,7 @@ Resources:
       VisibilityTimeout: 900
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
-        maxReceiveCount: 5
+        maxReceiveCount: !Ref FilingRedriveCount
       Tags:
       - Key: Name
         Value: !Ref FinancialSummaryQueueName
@@ -212,7 +215,7 @@ Resources:
       VisibilityTimeout: 900
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
-        maxReceiveCount: 5
+        maxReceiveCount: !Ref FilingRedriveCount
       Tags:
       - Key: Name
         Value: !Ref FilingSEQueueName
@@ -226,7 +229,7 @@ Resources:
       VisibilityTimeout: 900
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
-        maxReceiveCount: 5
+        maxReceiveCount: !Ref FilingRedriveCount
       Tags:
       - Key: Name
         Value: !Ref FilingF1SQueueName
@@ -240,7 +243,7 @@ Resources:
       VisibilityTimeout: 900
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
-        maxReceiveCount: 5
+        maxReceiveCount: !Ref FilingRedriveCount
       Tags:
       - Key: Name
         Value: !Ref FilingSBQueueName

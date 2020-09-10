@@ -123,7 +123,8 @@ def upsert_filing(filing: JSONType) -> bool:
 
     pk = filing['fec_file_id']
     amendment_chain = filing.pop('amendment_chain')
-    upsert_amendment_chain(pk, amendment_chain)
+    if amendment_chain:
+        upsert_amendment_chain(pk, amendment_chain)
 
     filing_exists_query = schema.fec_file_exists(pk)
     with Database() as db:

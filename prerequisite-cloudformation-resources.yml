@@ -183,16 +183,10 @@ Resources:
 # Filing data stream
 ########################################
 
-  FilingDeadLetterQueue:
+  FinancialSummaryDLQueue:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: !Ref DeadLetterQueueMessageRetentionPeriod
-      QueueName: !Ref FilingDeadLetterQueueName
-      Tags:
-      - Key: Name
-        Value: !Ref FilingDeadLetterQueueName
-      - Key: Version
-        Value: !Ref Version
 
   FinancialSummaryQueue:
     Type: AWS::SQS::Queue
@@ -200,7 +194,7 @@ Resources:
       QueueName: !Ref FinancialSummaryQueueName
       VisibilityTimeout: 900
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FinancialSummaryDLQueue.Arn
         maxReceiveCount: !Ref FilingRedriveCount
       Tags:
       - Key: Name
@@ -208,13 +202,18 @@ Resources:
       - Key: Version
         Value: !Ref Version
 
+  FilingSEDLQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: !Ref DeadLetterQueueMessageRetentionPeriod
+
   FilingSEQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref FilingSEQueueName
       VisibilityTimeout: 900
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FilingSEDLQueue.Arn
         maxReceiveCount: !Ref FilingRedriveCount
       Tags:
       - Key: Name
@@ -222,13 +221,18 @@ Resources:
       - Key: Version
         Value: !Ref Version
 
+  FilingF1SDLQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: !Ref DeadLetterQueueMessageRetentionPeriod
+
   FilingF1SQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref FilingF1SQueueName
       VisibilityTimeout: 900
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FilingF1SDLQueue.Arn
         maxReceiveCount: !Ref FilingRedriveCount
       Tags:
       - Key: Name
@@ -236,13 +240,18 @@ Resources:
       - Key: Version
         Value: !Ref Version
 
+  FilingSBDLQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: !Ref DeadLetterQueueMessageRetentionPeriod
+
   FilingSBQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref FilingSBQueueName
       VisibilityTimeout: 900
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FilingSBDLQueue.Arn
         maxReceiveCount: !Ref FilingRedriveCount
       Tags:
       - Key: Name

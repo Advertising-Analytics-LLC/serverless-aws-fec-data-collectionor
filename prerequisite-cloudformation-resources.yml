@@ -5,13 +5,21 @@ Parameters:
     Default: v0.0.1
     Description: Code verison, see bin/deploy.sh
     Type: String
+  DeadLetterQueueMessageRetentionPeriod:
+    Default: 604800 # 7 days in seconds
+    Type: Number
   CopyFromBucketName:
     Default: copy-from
     Description: Name for bucket that will be used with COPY FROM command to inert data to redshift
     Type: String
-  DeadLetterQueueName:
-    Default: dead-letter-queue
-    Description: Name for dead-letter Queue
+  FilingDeadLetterQueueName:
+    Default: filing-dead-letter-queue
+    Type: String
+  CommitteeDeadLetterQueueName:
+    Default: committee-dead-letter-queue
+    Type: String
+  CandidateDeadLetterQueueName:
+    Default: candidate-dead-letter-queue
     Type: String
   DeploymentBucketName:
     Default: serverless-deploymentbucket
@@ -118,11 +126,11 @@ Resources:
       VersioningConfiguration:
          Status: Enabled
 
-  DeadLetterQueue:
+  CommitteeDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
-      MessageRetentionPeriod: 604800 # 7 days in seconds
-      QueueName: !Ref DeadLetterQueueName
+      MessageRetentionPeriod: !Ref DeadLetterQueueMessageRetentionPeriod
+      QueueName: !Ref CommitteeDeadLetterQueueName
       Tags:
       - Key: managed_by
         Value: CloudFormation
@@ -131,7 +139,41 @@ Resources:
       - Key: created_by
         Value: sblack@rhythmictech.com
       - Key: Name
-        Value: !Ref DeadLetterQueueName
+        Value: !Ref CommitteeDeadLetterQueueName
+      - Key: Version
+        Value: !Ref Version
+
+  FilingDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: !Ref DeadLetterQueueMessageRetentionPeriod
+      QueueName: !Ref FilingDeadLetterQueueName
+      Tags:
+      - Key: managed_by
+        Value: CloudFormation
+      - Key: Project
+        Value: FEC Data-sync
+      - Key: created_by
+        Value: sblack@rhythmictech.com
+      - Key: Name
+        Value: !Ref FilingDeadLetterQueueName
+      - Key: Version
+        Value: !Ref Version
+
+  CandidateDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: !Ref DeadLetterQueueMessageRetentionPeriod
+      QueueName: !Ref CandidateDeadLetterQueueName
+      Tags:
+      - Key: managed_by
+        Value: CloudFormation
+      - Key: Project
+        Value: FEC Data-sync
+      - Key: created_by
+        Value: sblack@rhythmictech.com
+      - Key: Name
+        Value: !Ref CandidateDeadLetterQueueName
       - Key: Version
         Value: !Ref Version
 
@@ -140,7 +182,7 @@ Resources:
     Properties:
       QueueName: !Ref CandidateSyncQueueName
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt CandidateDeadLetterQueue.Arn
         maxReceiveCount: 5
       Tags:
       - Key: managed_by
@@ -160,7 +202,7 @@ Resources:
       QueueName: !Ref CommitteeSyncQueueName
       VisibilityTimeout: 300
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt CommitteeDeadLetterQueue.Arn
         maxReceiveCount: 5
       Tags:
       - Key: managed_by
@@ -180,7 +222,7 @@ Resources:
       QueueName: !Ref NewFilingQueueName
       VisibilityTimeout: 90
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
         maxReceiveCount: 5
       Tags:
       - Key: managed_by
@@ -200,7 +242,7 @@ Resources:
       QueueName: !Ref NewFilingQueueSEName
       VisibilityTimeout: 900
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
         maxReceiveCount: 5
       Tags:
       - Key: managed_by
@@ -220,7 +262,7 @@ Resources:
       QueueName: !Ref SupplementalDataQueueName
       VisibilityTimeout: 900
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
         maxReceiveCount: 5
       Tags:
       - Key: managed_by
@@ -240,7 +282,7 @@ Resources:
       QueueName: !Ref TransactionLoadingQueueName
       VisibilityTimeout: 900
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FilingDeadLetterQueue.Arn
         maxReceiveCount: 5
       Tags:
       - Key: managed_by

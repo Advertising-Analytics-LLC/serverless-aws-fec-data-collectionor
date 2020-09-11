@@ -324,9 +324,15 @@ def fec_file_exists(fec_file_id: str) -> SQL:
 
 def insert_fec_filing(filing: JSONType) -> SQL:
     values = OrderedDict(sorted(filing.items()))
-    query = sql.SQL('''
-    INSERT INTO fec.filings VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});
-    ''').format(*[Literal(val) for key, val in values.items()])
+    query = 'INSERT INTO fec.filings'
+    + ', '.join([f'{key}' for key, val in values.items()])\
+        + ') '\
+        + 'VALUES ('\
+        + ', '.join(['{}' for key, val in values.items()])\
+        + ')'
+    query = sql.SQL(query_string)\
+        .format(*[Literal(val) for key, val in values.items()])
+
     return query
 
 
@@ -362,9 +368,10 @@ def insert_committee_total(committee_total: JSONType) -> SQL:
         + ')'
 
     query = sql.SQL(query_string)\
-                .format(*[Literal(val) for key, val in values.items()])
+        .format(*[Literal(val) for key, val in values.items()])
 
     return query
+
 
 def update_committee_total(committee_total: JSONType) -> SQL:
 
@@ -386,6 +393,7 @@ def update_committee_total(committee_total: JSONType) -> SQL:
 # Candidates
 #
 
+
 def candidate_exists(candidate_id: str) -> SQL:
     """returns a query to check if a candidate id has a record
 
@@ -397,7 +405,7 @@ def candidate_exists(candidate_id: str) -> SQL:
     """
 
     query = sql.SQL('SELECT * FROM fec.candidate_detail WHERE candidate_id={}')\
-                .format(Literal(candidate_id))
+        .format(Literal(candidate_id))
 
     return query
 
@@ -422,7 +430,7 @@ def candidate_insert(candidate: Dict[str, str]) -> SQL:
         + ')'
 
     query = sql.SQL(query_string)\
-                .format(*[Literal(val) for key, val in values.items()])
+        .format(*[Literal(val) for key, val in values.items()])
 
     return query
 

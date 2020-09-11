@@ -86,7 +86,7 @@ def lambdaHandler(event: dict, context: object) -> bool:
             insert_values.append(data_dict)
 
 
-            # transaction_id is primary key for F1S
+            # transaction_id is primary key for SE and SB
             if FILING_TYPE != 'F1S':
 
                 # handle missing transaction_ids seperately
@@ -97,6 +97,7 @@ def lambdaHandler(event: dict, context: object) -> bool:
                     raise TransactionIdMissingException(msg)
 
                 transaction_id_list.append(transaction_id)
+
             else:
                 fec_file_ids.append(filing_id)
 

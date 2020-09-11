@@ -50,7 +50,7 @@ functions:
   CandidateSync:
     description: Polls OpenFEC API (once) for candidates that have filed recently and sends the IDs to SQS
     handler: src/CandidateSync.lambdaHandler
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -62,7 +62,7 @@ functions:
   CandidateBackfill:
     description: Backfills candidates queue
     handler: src/CandidateSync.lambdaBackfillHandler
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -74,7 +74,7 @@ functions:
   CandidateLoader:
     description: Triggered by SQS it recieves Messages and writes candidate data to the DB
     handler: src/CandidateLoader.lambdaHandler
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -86,7 +86,7 @@ functions:
   CommitteeSync:
     description: Polls OpenFEC API (once) for committees that have filed recently and sends the IDs to SQS
     handler: src/CommitteSync.committeSync
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -98,7 +98,7 @@ functions:
   CommitteeBackfill:
     description: Backfills committee sync queue
     handler: src/CommitteSync.lambdaBackfillHandler
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -110,7 +110,7 @@ functions:
   CommitteeLoader:
     description: Recieves committee Ids from SQS, queries api for committee info, updates DB
     handler: src/CommitteLoader.committeLoader
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 300
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}

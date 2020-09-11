@@ -36,6 +36,10 @@ filing_table_mapping = {
     'F1S': 'form_1_supplemental'
 }
 
+class TransactionIdMissingException(Exception):
+    """ transaction ID is missing """
+    pass
+
 def lambdaHandler(event: dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
         takes events that have fec file IDs, gets the filing from docquery and writes to the DB
@@ -76,8 +80,17 @@ def lambdaHandler(event: dict, context: object) -> bool:
             data_dict = fec_item.data
             data_dict['fec_file_id'] = filing_id
             insert_values.append(data_dict)
+
+            # handle missing transaction_ids seperately
+            try:
+                transaction_id = data_dict['transaction_id_number']
+            except Exception as e:
+                logger.error(e)
+                raise TransactionIdMissingException(e)
+
+            # transaction_id is primary key for F1S
             if FILING_TYPE != 'F1S':
-                transaction_id_list.append(data_dict['transaction_id_number'])
+                transaction_id_list.append(transaction_id)
             else:
                 fec_file_ids.append(filing_id)
 

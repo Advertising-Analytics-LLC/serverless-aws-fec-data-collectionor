@@ -29,6 +29,39 @@ API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 
 # schema/db functions
 
+# comittee totals
+
+def committee_total_exists(committee_id: str, cycle: int) -> SQL:
+    query = SQL('SELECT * FROM fec.committee_totals WHERE committee_id={committee_id} AND cycle={cycle}')\
+        .format(committee_id=Literal(committee_id), cycle=Literal(cycle))
+    return query
+
+
+def insert_committee_total(committee_total: JSONType) -> SQL:
+    table = 'fec.committee_totals'
+    query = get_insert_query(table, committee_total)
+    return query
+
+
+def update_committee_total(committee_total: JSONType) -> SQL:
+
+    committee_id = committee_total.pop('committee_id')
+    cycle = committee_total.pop('cycle')
+
+    values = OrderedDict(sorted(committee_total.items()))
+    query_string = 'UPDATE fec.committee_totals SET ' \
+        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
+        + ' WHERE committee_id={}'\
+        + ' AND cycle={}'
+
+    query = SQL(query_string)\
+        .format(*[Literal(val) for key, val in values.items()], Literal(committee_id), Literal(cycle))
+
+    return query
+
+#
+# fec file
+
 def fec_file_exists(fec_file_id: str) -> SQL:
     query = SQL('SELECT * FROM fec.filings WHERE fec_file_id={fec_file_id}')\
         .format(fec_file_id=Literal(fec_file_id))

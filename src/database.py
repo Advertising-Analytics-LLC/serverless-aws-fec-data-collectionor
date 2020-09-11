@@ -137,7 +137,7 @@ class Database:
         return False
 
 
-def get_insert_query(database_table: str, values_dict: dict) -> SQL:
+def get_insert_query(database_table: str, values_dict: dict) -> psycopg2.sql:
     """[summary]
 
     Args:

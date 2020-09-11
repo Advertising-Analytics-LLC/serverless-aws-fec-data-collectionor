@@ -11,6 +11,7 @@ import boto3
 import json
 import os
 from copy import deepcopy
+from datetime import datetime
 from requests import Response
 from time import asctime, gmtime, time
 from typing import Any, Dict, List
@@ -69,11 +70,12 @@ def get_totals(committee_id: str, filters: Dict[str, Any]) -> Dict[str, Any]:
     return totals
 
 
-def get_filings_and_totals(committee_id: str) -> List[Dict[str, Any]]:
+def get_filings_and_totals(committee_id: str, cycle: str) -> List[Dict[str, Any]]:
     """gets filings and totals for committee
 
     Args:
         committee_id (str): ID of committee. eg C01234567
+        cycle (str): YYYY for cycle, ie 2020
 
     Returns:
         List[Dict[str, Any]]: List of responses
@@ -81,7 +83,7 @@ def get_filings_and_totals(committee_id: str) -> List[Dict[str, Any]]:
 
     filters = {
         'committee_id': committee_id,
-        'cycle': '2020', #fallback_cycle if cycle_out_of_range else cycle, # TODO: ?
+        'cycle': cycle,
         'per_page': 1,
         'sort_hide_null': True,
         'most_recent': True,
@@ -202,7 +204,9 @@ def lambdaHandler(event:dict, context: object) -> bool:
         message_parsed = parse_message(message)
         committee_id = message_parsed['committee_id']
 
-        filings, totals = get_filings_and_totals(committee_id)
+        # Get for current cycle
+        current_cycle_year = datetime.today().strftime('%Y')
+        filings, totals = get_filings_and_totals(committee_id, current_cycle_year)
 
         # filing is list of lists, flatten it
         filings_flat = [item for sublist in filings for item in sublist]

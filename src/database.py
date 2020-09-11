@@ -67,7 +67,7 @@ class Database:
         try:
             value = self.curr.fetchall()
         except ProgrammingError as err:
-            logger.info(f'Query had no results, message: {err}')
+            logger.debug(f'Query had no results, message: {err}')
             return None
 
         return value

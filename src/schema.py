@@ -324,14 +324,13 @@ def fec_file_exists(fec_file_id: str) -> SQL:
 
 def insert_fec_filing(filing: JSONType) -> SQL:
     values = OrderedDict(sorted(filing.items()))
-    query = 'INSERT INTO fec.filings'
-    + ', '.join([f'{key}' for key, val in values.items()])\
-        + ') '\
-        + 'VALUES ('\
-        + ', '.join(['{}' for key, val in values.items()])\
-        + ')'
+
+    query_string = 'INSERT INTO fec.filings ('\
+        + ', '.join([f'{key}' for key, val in values.items()]) + ') '\
+        + 'VALUES (' + ', '.join(['{}' for key, val in values.items()]) + ')'
+
     query = sql.SQL(query_string)\
-        .format(*[Literal(val) for key, val in values.items()])
+               .format(*[Literal(val) for key, val in values.items()])
 
     return query
 

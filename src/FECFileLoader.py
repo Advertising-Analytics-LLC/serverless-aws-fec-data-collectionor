@@ -39,11 +39,9 @@ filing_table_mapping = {
 class TransactionIdMissingException(Exception):
     """ transaction ID is misling
     Attributes:
-        expression -- input expression in which the error occurred
         message -- explanation of the error
     """
-    def __init__(self, message, error):
-        self.error = error
+    def __init__(self, message):
         self.message = message
 
 def lambdaHandler(event: dict, context: object) -> bool:
@@ -92,13 +90,11 @@ def lambdaHandler(event: dict, context: object) -> bool:
             if FILING_TYPE != 'F1S':
 
                 # handle missing transaction_ids seperately
-                try:
+                if 'transaction_id_number' in data_dict:
                     transaction_id = data_dict['transaction_id_number']
-
-                except Exception as e:
-                    msg = f'Transaction ID Missing, {data_dict} error: {e}'
-                    logger.error(msg)
-                    raise TransactionIdMissingException(msg, e)
+                else:
+                    msg = f'Transaction ID Missing, {data_dict}'
+                    raise TransactionIdMissingException(msg)
 
                 transaction_id_list.append(transaction_id)
             else:

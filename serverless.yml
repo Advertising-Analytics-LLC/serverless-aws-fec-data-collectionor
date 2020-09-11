@@ -15,7 +15,7 @@ custom:
     API_KEY: /global/openfec-api/api_key
     cloudwatch_dashboard: ${file(cloudwatch.json)}
     deploymentBucketName: ${cf:fec-datasync-resources.DeploymentBucketName} #serverless-deploymentbucket-us-east-1-648881544937
-    LOG_LEVEL: INFO
+    LOG_LEVEL: DEBUG
     candidate_sync_queue_arn: ${cf:fec-datasync-resources.CandidateSyncQueueArn}
     candidate_sync_queue_name: ${cf:fec-datasync-resources.CandidateSyncQueueName}
     copy_from_bucket_arn: ${cf:fec-datasync-resources.CopyFromBucketArn}

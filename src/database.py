@@ -135,3 +135,25 @@ class Database:
             logger.debug(f'Record exists for {query.as_string(self.curr)}')
             return True
         return False
+
+
+def get_insert_query(database_table: str, values_dict: dict) -> SQL:
+    """[summary]
+
+    Args:
+        database_table (str): [description]
+        values_dict (dict): [description]
+
+    Returns:
+        SQL: [description]
+    """
+    values = OrderedDict(sorted(values_dict.items()))
+
+    query_string = f'INSERT INTO {database_table} ('\
+        + ', '.join([f'{key}' for key, val in values.items()]) + ') '\
+        + 'VALUES (' + ', '.join(['{}' for key, val in values.items()]) + ')'
+
+    query = sql.SQL(query_string)\
+               .format(*[Literal(val) for key, val in values.items()])
+
+    return query

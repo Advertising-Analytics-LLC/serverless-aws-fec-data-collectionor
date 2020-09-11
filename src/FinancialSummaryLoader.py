@@ -12,11 +12,13 @@ import json
 import os
 from copy import deepcopy
 from datetime import datetime
+from collections import OrderedDict
+from psycopg2.sql import SQL, Literal
 from requests import Response
 from time import asctime, gmtime, time
 from typing import Any, Dict, List
-from src import JSONType, logger, schema
-from src.database import Database
+from src import JSONType, logger
+from src.database import Database, get_insert_query
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.sqs import delete_message_from_sqs, parse_message
@@ -24,6 +26,32 @@ from src.sqs import delete_message_from_sqs, parse_message
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
+
+# schema/db functions
+
+def fec_file_exists(fec_file_id: str) -> SQL:
+    query = SQL('SELECT * FROM fec.filings WHERE fec_file_id={fec_file_id}')\
+        .format(fec_file_id=Literal(fec_file_id))
+    return query
+
+
+def insert_fec_filing(filing: JSONType) -> SQL:
+    table = 'fec.filings'
+    query = get_insert_query(table, filing)
+    return query
+
+
+def amendment_chain_exists(fec_file_id: str, amendment_id: str) -> SQL:
+    query = SQL('SELECT * FROM fec.filing_amendment_chain WHERE fec_file_id={} AND amendment_id={}')\
+        .format(Literal(fec_file_id), Literal(amendment_id))
+    return query
+
+
+def insert_amendment_chain(fec_file_id: str, amendment_id: str, amendment_number: int) -> SQL:
+    query = SQL('INSERT INTO fec.filing_amendment_chain(fec_file_id, amendment_id, amendment_number) VALUES ({}, {}, {})')\
+        .format(Literal(fec_file_id), Literal(amendment_id), Literal(amendment_number))
+    return query
+
 
 # BUSYNESS LOGIC
 
@@ -105,10 +133,10 @@ def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
 
     amendment_number = 0
     for amendment in amendment_chain:
-        amendment_chain_exists_query = schema.amendment_chain_exists(filing_id, amendment)
+        amendment_chain_exists_query = amendment_chain_exists(filing_id, amendment)
         with Database() as db:
             if not db.record_exists(amendment_chain_exists_query):
-                query = schema.insert_amendment_chain(filing_id, amendment, amendment_number)
+                query = insert_amendment_chain(filing_id, amendment, amendment_number)
                 db.query(query)
             amendment_number += 1
 
@@ -128,14 +156,14 @@ def upsert_filing(filing: JSONType) -> bool:
     if amendment_chain:
         upsert_amendment_chain(pk, amendment_chain)
 
-    filing_exists_query = schema.fec_file_exists(pk)
+    filing_exists_query = fec_file_exists(pk)
     with Database() as db:
         if db.record_exists(filing_exists_query):
             logger.warning(f'Financial Summary with fec_file_id {pk} already exists')
             return True
 
         else:
-            query = schema.insert_fec_filing(filing)
+            query = insert_fec_filing(filing)
 
         return db.try_query(query)
 
@@ -162,12 +190,12 @@ def upsert_committee_total(commitee_total: JSONType) -> bool:
     pk1 = commitee_total['committee_id']
     pk2 = commitee_total['cycle']
 
-    total_exists_query = schema.committee_total_exists(pk1, pk2)
+    total_exists_query = committee_total_exists(pk1, pk2)
     with Database() as db:
         if db.record_exists(total_exists_query):
-            query = schema.update_committee_total(commitee_total)
+            query = update_committee_total(commitee_total)
         else:
-            query = schema.insert_committee_total(commitee_total)
+            query = insert_committee_total(commitee_total)
 
         success = db.try_query(query)
         return success

@@ -147,7 +147,7 @@
             "type": "log",
             "x": 0,
             "y": 33,
-            "width": 18,
+            "width": 24,
             "height": 6,
             "properties": {
                 "query": "SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-GetDBStats' | fields @timestamp, @message\n| sort @timestamp desc\n| filter @message like 'select'",
@@ -155,6 +155,39 @@
                 "stacked": false,
                 "view": "table",
                 "title": "DB Stats"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 39,
+            "width": 24,
+            "height": 6,
+            "properties": {
+                "view": "timeSeries",
+                "stacked": false,
+                "metrics": [
+                    [ "AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "candidate-dead-letter-queue" ],
+                    [ "...", "candidate-sync-queue" ],
+                    [ "...", "committee-dead-letter-queue" ],
+                    [ "...", "committee-sync-queue" ],
+                    [ "...", "fec-datasync-resources-FilingF1SDLQueue-6KS74XVIGDU0" ],
+                    [ "...", "fec-datasync-resources-FilingSBDLQueue-SA7F6Q1JG2PR" ],
+                    [ "...", "fec-datasync-resources-FilingSEDLQueue-171C68TG5U42I" ],
+                    [ "...", "fec-datasync-resources-FinancialSummaryDLQueue-6DOO5LC0QXR6" ],
+                    [ "...", "fec-f1s-queue" ],
+                    [ "...", "fec-financialsummary-queue" ],
+                    [ "...", "fec-new-filing-queue" ],
+                    [ "...", "fec-new-filing-se-queue" ],
+                    [ "...", "fec-new-filing-supplemental-data-queue" ],
+                    [ "...", "fec-sb-queue" ],
+                    [ "...", "fec-se-queue" ],
+                    [ "...", "fec-transaction-loading-queue" ],
+                    [ "...", "dead-letter-queue" ],
+                    [ "...", "filing-dead-letter-queue" ]
+                ],
+                "region": "us-east-1",
+                "title": "SQS Messages"
             }
         }
     ]

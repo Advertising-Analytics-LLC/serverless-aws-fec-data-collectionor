@@ -1,0 +1,161 @@
+{
+    "widgets": [
+        {
+            "type": "metric",
+            "x": 6,
+            "y": 0,
+            "width": 18,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Errors", { "id": "errors", "stat": "Sum", "color": "#d13212" } ],
+                    [ ".", "Invocations", { "id": "invocations", "stat": "Sum", "visible": false } ],
+                    [ { "expression": "100 - 100 * errors / MAX([errors, invocations])", "label": "Success rate (%)", "id": "availability", "yAxis": "right" } ]
+                ],
+                "region": "us-east-1",
+                "title": "Error count and success rate (%)",
+                "yAxis": {
+                    "right": {
+                        "max": 100
+                    }
+                }
+            }
+        },
+        {
+            "type": "metric",
+            "x": 16,
+            "y": 21,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Throttles", { "stat": "Sum" } ]
+                ],
+                "region": "us-east-1"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Invocations", { "stat": "Sum" } ]
+                ],
+                "region": "us-east-1"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 21,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Duration", { "stat": "Minimum" } ],
+                    [ "...", { "stat": "Average" } ],
+                    [ "...", { "stat": "Maximum" } ]
+                ],
+                "region": "us-east-1"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 8,
+            "y": 21,
+            "width": 8,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "ConcurrentExecutions", { "stat": "Maximum", "label": "ConcurrentExecutions Maximum" } ]
+                ],
+                "region": "us-east-1"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 15,
+            "width": 24,
+            "height": 6,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Invocations", "FunctionName", "serverless-aws-python3-fec-datasync-dev-CandidateBackfill", { "stat": "Sum", "label": "CandidateBackfillLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-CandidateLoader", { "stat": "Sum", "label": "CandidateLoaderLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-CandidateSync", { "stat": "Sum", "label": "CandidateSyncLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-CommitteeBackfill", { "stat": "Sum", "label": "CommitteeBackfillLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-CommitteeLoader", { "stat": "Sum", "label": "CommitteeLoaderLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-CommitteeSync", { "stat": "Sum", "label": "CommitteeSyncLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FECFileLoaderSB", { "stat": "Sum", "label": "FECFileLoaderSBLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FECFileLoaderSE", { "stat": "Sum", "label": "FECFileLoaderSELambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FECFileLoaderSupp", { "stat": "Sum", "label": "FECFileLoaderSuppLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FilingBackfill", { "stat": "Sum", "label": "FilingBackfillLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FilingSync", { "stat": "Sum", "label": "FilingSyncLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FinancialSummaryLoader", { "stat": "Sum", "label": "FinancialSummaryLoaderLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-GetDBStats", { "stat": "Sum", "label": "GetDBStatsLambdaFunction" } ],
+                    [ { "expression": "SUM(METRICS())", "label": "Total Invocations", "yAxis": "right" } ]
+                ],
+                "region": "us-east-1",
+                "title": "Invocations"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 6,
+            "width": 24,
+            "height": 9,
+            "properties": {
+                "metrics": [
+                    [ "AWS/Lambda", "Errors", "FunctionName", "serverless-aws-python3-fec-datasync-dev-CandidateBackfill", { "stat": "Sum", "label": "CandidateBackfillLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-CandidateLoader", { "stat": "Sum", "label": "CandidateLoaderLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-CandidateSync", { "stat": "Sum", "label": "CandidateSyncLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-CommitteeBackfill", { "stat": "Sum", "label": "CommitteeBackfillLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-CommitteeLoader", { "stat": "Sum", "label": "CommitteeLoaderLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-CommitteeSync", { "stat": "Sum", "label": "CommitteeSyncLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FECFileLoaderSB", { "stat": "Sum", "label": "FECFileLoaderSBLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FECFileLoaderSE", { "stat": "Sum", "label": "FECFileLoaderSELambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FECFileLoaderSupp", { "stat": "Sum", "label": "FECFileLoaderSuppLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FilingBackfill", { "stat": "Sum", "label": "FilingBackfillLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FilingSync", { "stat": "Sum", "label": "FilingSyncLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-FinancialSummaryLoader", { "stat": "Sum", "label": "FinancialSummaryLoaderLambdaFunction" } ],
+                    [ "...", "serverless-aws-python3-fec-datasync-dev-GetDBStats", { "stat": "Sum", "label": "GetDBStatsLambdaFunction" } ],
+                    [ { "expression": "SUM(METRICS())", "label": "Total Errors", "yAxis": "right" } ]
+                ],
+                "region": "us-east-1",
+                "title": "Errors"
+            }
+        },
+        {
+            "type": "log",
+            "x": 0,
+            "y": 27,
+            "width": 24,
+            "height": 6,
+            "properties": {
+                "query": "SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-CandidateBackfill' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-GetDBStats' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-CandidateLoader' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-CandidateSync' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-CommitteeBackfill' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-CommitteeLoader' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-CommitteeSync' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-FECFileLoaderSB' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-FECFileLoaderSE' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-FECFileLoaderSupp' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-FilingBackfill' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-FilingSync' | SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-FinancialSummaryLoader' | fields @timestamp, @message\n| sort @timestamp desc\n| filter @message like 'ERROR'",
+                "region": "us-east-1",
+                "stacked": false,
+                "view": "table",
+                "title": "Errors"
+            }
+        },
+        {
+            "type": "log",
+            "x": 0,
+            "y": 33,
+            "width": 18,
+            "height": 6,
+            "properties": {
+                "query": "SOURCE '/aws/lambda/serverless-aws-python3-fec-datasync-dev-GetDBStats' | fields @timestamp, @message\n| sort @timestamp desc\n| filter @message like 'select'",
+                "region": "us-east-1",
+                "stacked": false,
+                "view": "table",
+                "title": "DB Stats"
+            }
+        }
+    ]
+}

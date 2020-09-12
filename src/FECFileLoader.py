@@ -62,9 +62,6 @@ def lambdaHandler(event: dict, context: object) -> bool:
     messages = event['Records']
 
     insert_values = []
-    # PK for SE and SB is transaction_id
-    transaction_id_list = []
-    # no PK for F1S so use fec_file_id
     fec_file_ids = []
     temp_filename = f'{uuid.uuid4()}.json'
     temp_filedir = '/tmp/'
@@ -84,22 +81,7 @@ def lambdaHandler(event: dict, context: object) -> bool:
             data_dict = fec_item.data
             data_dict['fec_file_id'] = filing_id
             insert_values.append(data_dict)
-
-
-            # transaction_id is primary key for SE and SB
-            if FILING_TYPE != 'F1S':
-
-                # handle missing transaction_ids seperately
-                if 'transaction_id_number' in data_dict:
-                    transaction_id = data_dict['transaction_id_number']
-                else:
-                    msg = f'Transaction ID Missing, {data_dict}'
-                    raise TransactionIdMissingException(msg)
-
-                transaction_id_list.append(transaction_id)
-
-            else:
-                fec_file_ids.append(filing_id)
+            fec_file_ids.append(filing_id)
 
     # If there was no applicable data return
     if len(insert_values) == 0:
@@ -109,20 +91,12 @@ def lambdaHandler(event: dict, context: object) -> bool:
         for val in insert_values:
             json.dump(val, fh, default=serialize_dates)
             fh.write('\n')
-
-    with open(temp_filepath, 'rb') as fh:
         s3.upload_fileobj(fh, S3_BUCKET_NAME, temp_filename)
 
     with Database() as db:
-        if FILING_TYPE != 'F1S':
-            db.query(
-                sql.SQL(f'DELETE FROM fec.{database_table} WHERE transaction_id_number IN'+' ({})'
-                    .format(', '.join([f'\'{str(val)}\'' for val in transaction_id_list]))))
-        else:
-            db.query(
-                sql.SQL(f'DELETE FROM fec.{database_table} WHERE fec_file_id IN ' + '({})'
-                   .format(', '.join([f'\'{str(val)}\'' for val in fec_file_ids]))))
-
+        db.query(
+            sql.SQL(f'DELETE FROM fec.{database_table} WHERE fec_file_id IN ' + '({})'
+               .format(', '.join([f'\'{str(val)}\'' for val in fec_file_ids]))))
 
         db.query(f'COPY fec.{database_table} FROM \'s3://{S3_BUCKET_NAME}/{temp_filename}\' IAM_ROLE \'{REDSHIFT_COPY_ROLE}\' FORMAT AS JSON \'auto\';')
         db.commit()

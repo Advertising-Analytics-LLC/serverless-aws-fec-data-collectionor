@@ -322,3 +322,6 @@ resources:
         DashboardName: ${self:service}-dashboard
 #  - ${file(cfn_resources/deploymentBucket.yml)}
 #  - ${file(cfn_resources/sqsQueue.yml)}
+
+outputs:
+  MonitoringDashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:name=${self:service}-dashboard

@@ -201,16 +201,6 @@ def upsert_filing(filing: JSONType) -> bool:
         return db.try_query(query)
 
 
-def upsert_filings(filings_list: JSONType):
-    """loops over filing records and upserts into db
-
-    Args:
-        filings_list (JSONType): list of filings as json/dict
-    """
-    for filing in filings_list:
-        upsert_filing(filing)
-
-
 def upsert_committee_total(commitee_total: JSONType) -> bool:
     """upserts single commitee total given as dict/json
 
@@ -232,16 +222,6 @@ def upsert_committee_total(commitee_total: JSONType) -> bool:
 
         success = db.try_query(query)
         return success
-
-
-def upsert_committee_totals(commitee_total_list: JSONType):
-    """loops over list of committee totals records
-
-    Args:
-        commitee_total_list (JSONType): record as list of json/dicts
-    """
-    for committee_total in commitee_total_list:
-        upsert_committee_total(committee_total)
 
 
 def lambdaHandler(event:dict, context: object) -> bool:
@@ -271,11 +251,13 @@ def lambdaHandler(event:dict, context: object) -> bool:
 
         # filing is list of lists, flatten it
         filings_flat = [item for sublist in filings for item in sublist]
-        upsert_filings(filings_flat)
+        for filing in filings_flat:
+            upsert_filing(filing)
 
         # filing is list of lists, flatten it
         totals_flat = [item for sublist in totals for item in sublist]
-        upsert_committee_totals(totals_flat)
+        for committee_total in totals_flat:
+            upsert_committee_total(committee_total)
 
         delete_message_from_sqs(message)
 

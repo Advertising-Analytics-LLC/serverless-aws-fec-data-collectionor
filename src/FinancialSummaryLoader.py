@@ -158,15 +158,15 @@ def upsert_filing(filing: JSONType) -> bool:
         bool: success
     """
 
-    pk = filing['fec_file_id']
+    fec_file_id = filing['fec_file_id']
     amendment_chain = filing.pop('amendment_chain')
     if amendment_chain:
-        upsert_amendment_chain(pk, amendment_chain)
+        upsert_amendment_chain(fec_file_id, amendment_chain)
 
-    filing_exists_query = fec_file_exists(pk)
+    filing_exists_query = fec_file_exists(fec_file_id)
     with Database() as db:
         if db.record_exists(filing_exists_query):
-            logger.warning(f'Financial Summary with fec_file_id {pk} already exists')
+            logger.warning(f'Financial Summary with fec_file_id {fec_file_id} already exists')
             return True
 
         else:
@@ -238,6 +238,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
             'most_recent': True,
             'form_category': 'REPORT'
         }
+
         filings = get_filings(deepcopy(filters))
         totals = get_totals(committee_id, deepcopy(filters))
 

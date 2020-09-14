@@ -201,7 +201,7 @@ def upsert_committee_total(commitee_total: JSONType) -> bool:
 def get_current_cycle_year() -> str:
     """  The cycle begins with an odd year and is named for its ending, even year """
     current_year = datetime.today().strftime('%Y')
-    is_even_year = int(current_year.year) % 2 == 0
+    is_even_year = int(current_year) % 2 == 0
     if is_even_year:
         return current_year
     return str(int(current_year) + 1)
@@ -232,7 +232,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
         current_cycle_year = get_current_cycle_year()
         filters = {
             'committee_id': committee_id,
-            'cycle': cycle,
+            'cycle': current_cycle_year,
             'per_page': 1,
             'sort_hide_null': True,
             'most_recent': True,

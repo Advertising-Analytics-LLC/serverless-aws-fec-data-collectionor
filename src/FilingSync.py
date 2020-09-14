@@ -94,13 +94,15 @@ class EFilingRSSFeed:
         logger.debug(soup)
         items = soup.find_all('item')
         for desc in items:
-            id_list.append({
+            new_filing_record = {
                 'committee_id': parse_for_x('(CommitteeId: )([C]?[0-9]*)', desc),
                 'filing_id': parse_for_x('(FilingId: )([0-9]*)', desc),
                 'form_type':  parse_for_x('(FormType: )([F3XNP]*)', desc),
                 'guid': desc.guid.text if desc.guid else desc.link
-            })
-        logger.debug(id_list)
+            }
+            if not new_filing_record['filing_id']:
+                raise Exception(f'No fec file ID for record {desc}')
+            id_list.append(new_filing_record)
 
         return id_list
 

@@ -72,6 +72,9 @@ def lambdaHandler(event: dict, context: object) -> bool:
     for message in messages:
         message_parsed = parse_message(message)
         filing_id = message_parsed['filing_id'].replace('FEC-', '')
+        fec_file_ids.append(filing_id)
+        if not filing_id:
+            raise Exception(f'Missing filing ID for filing record {message_parsed}')
 
         for fec_item in fecfile.iter_http(filing_id, options={'filter_itemizations': [FILING_TYPE]}):
 
@@ -81,8 +84,8 @@ def lambdaHandler(event: dict, context: object) -> bool:
             data_dict = fec_item.data
             data_dict['fec_file_id'] = filing_id
             insert_values.append(data_dict)
-            fec_file_ids.append(filing_id)
 
+    logger.debug(f'Number of values to COPY {len(insert_values)}')
     # If there was no applicable data return
     if len(insert_values) == 0:
         return True

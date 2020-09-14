@@ -130,32 +130,6 @@ def get_totals(committee_id: str, filters: Dict[str, Any]) -> Dict[str, Any]:
 
     return totals
 
-
-def get_filings_and_totals(committee_id: str, cycle: str) -> List[Dict[str, Any]]:
-    """gets filings and totals for committee
-
-    Args:
-        committee_id (str): ID of committee. eg C01234567
-        cycle (str): YYYY for cycle, ie 2020
-
-    Returns:
-        List[Dict[str, Any]]: List of responses
-    """
-
-    filters = {
-        'committee_id': committee_id,
-        'cycle': cycle,
-        'per_page': 1,
-        'sort_hide_null': True,
-        'most_recent': True,
-        'form_category': 'REPORT'
-    }
-    filings = get_filings(deepcopy(filters))
-    totals = get_totals(committee_id, deepcopy(filters))
-
-    return filings, totals
-
-
 def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
     """upserts amendment chain linker table
 
@@ -224,6 +198,15 @@ def upsert_committee_total(commitee_total: JSONType) -> bool:
         return success
 
 
+def get_current_cycle_year() -> str:
+    """  The cycle begins with an odd year and is named for its ending, even year """
+    current_year = datetime.today().strftime('%Y')
+    is_even_year = int(current_year.year) % 2 == 0
+    if is_even_year:
+        return current_year
+    return str(int(current_year) + 1)
+
+
 def lambdaHandler(event:dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
 
@@ -246,19 +229,28 @@ def lambdaHandler(event:dict, context: object) -> bool:
         committee_id = message_parsed['committee_id']
 
         # Get for current cycle
-        current_cycle_year = datetime.today().strftime('%Y')
-        filings, totals = get_filings_and_totals(committee_id, current_cycle_year)
+        current_cycle_year = get_current_cycle_year()
+        filters = {
+            'committee_id': committee_id,
+            'cycle': cycle,
+            'per_page': 1,
+            'sort_hide_null': True,
+            'most_recent': True,
+            'form_category': 'REPORT'
+        }
+        filings = get_filings(deepcopy(filters))
+        totals = get_totals(committee_id, deepcopy(filters))
 
+        # handle fec.filings
         # filing is list of lists, flatten it
         filings_flat = [item for sublist in filings for item in sublist]
         for filing in filings_flat:
             upsert_filing(filing)
 
-        # filing is list of lists, flatten it
+        # handle fec.committee_totals
+        # totals is list of lists, flatten it
         totals_flat = [item for sublist in totals for item in sublist]
         for committee_total in totals_flat:
             upsert_committee_total(committee_total)
-
-        delete_message_from_sqs(message)
 
     return True

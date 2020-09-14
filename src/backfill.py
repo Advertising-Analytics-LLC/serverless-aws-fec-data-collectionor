@@ -56,6 +56,8 @@ def candidate_sync_backfill_date() -> str:
     with Database() as db:
         results = db.query(query)
         last_date = results[0][0]
+    if not last_date:
+        raise Exception('No dates left in backfill table. Exiting.')
     return get_previous_day(last_date)
 
 
@@ -63,6 +65,8 @@ def committee_sync_backfill_date() -> str:
     query = 'select max(fec_file_date) from fec.backfill;'
     with Database() as db:
         last_date = db.query(query)[0][0]
+    if not last_date:
+        raise Exception('No dates left in backfill table. Exiting.')
     return get_previous_day(last_date)
 
 
@@ -73,7 +77,9 @@ def filings_sync_backfill_date() -> str:
     with Database() as db:
         query_result = db.query(query)
         last_date = query_result[0][0]
-        return last_date
+    if not last_date:
+        raise Exception('No dates left in backfill table. Exiting.')
+    return last_date
 
 def filings_backfill_success(success_date: str):
     """ delete that date from DB"""

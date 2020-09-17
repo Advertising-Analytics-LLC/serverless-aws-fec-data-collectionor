@@ -159,6 +159,11 @@ def upsert_filing(filing: JSONType) -> bool:
     """
 
     fec_file_id = filing['fec_file_id']
+
+    if not fec_file_id or fec_file_id is 'None':
+        logger.warning(f'fec_file_id missing, filing: {filing}')
+        return False
+
     amendment_chain = filing.pop('amendment_chain')
     if amendment_chain:
         upsert_amendment_chain(fec_file_id, amendment_chain)

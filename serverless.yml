@@ -4,7 +4,7 @@
 
 service: serverless-aws-python3-fec-datasync
 app: fec-datasync
-frameworkVersion: ">=1.73.0 <2.0.0"
+frameworkVersion: ">=2.0.0 <3.0.0"
 
 # Custom variables
 custom:

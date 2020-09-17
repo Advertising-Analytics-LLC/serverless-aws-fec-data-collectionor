@@ -15,6 +15,7 @@ import json
 import os
 import uuid
 from collections import OrderedDict
+from copy import deepcopy
 from typing import Any, Dict, List
 from psycopg2 import sql
 from psycopg2.sql import SQL, Literal
@@ -44,6 +45,21 @@ class TransactionIdMissingException(Exception):
     def __init__(self, message):
         self.message = message
 
+
+def parse_event_record(eventrecord) -> (dict, int):
+    message_parsed = parse_message(eventrecord)
+    filing_id = message_parsed['filing_id'].replace('FEC-', '')
+
+    if not filing_id or filing_id == 'None':
+        raise Exception(f'Missing filing ID for filing record {message_parsed}')
+
+    logger.debug(f'filing_id:{filing_id}:{id(filing_id)}')
+    filing_id = int(filing_id)
+    return message_parsed, filing_id
+
+def get_fec_items():
+    pass
+
 def lambdaHandler(event: dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
         takes events that have fec file IDs, gets the filing from docquery and writes to the DB
@@ -70,19 +86,17 @@ def lambdaHandler(event: dict, context: object) -> bool:
     database_table = filing_table_mapping[FILING_TYPE]
 
     for message in messages:
-        message_parsed = parse_message(message)
-        filing_id = message_parsed['filing_id'].replace('FEC-', '')
-        fec_file_ids.append(filing_id)
-        if not filing_id:
-            raise Exception(f'Missing filing ID for filing record {message_parsed}')
+
+        message_parsed, filing_id = parse_event_record(message)
 
         for fec_item in fecfile.iter_http(filing_id, options={'filter_itemizations': [FILING_TYPE]}):
 
             if fec_item.data_type != 'itemization':
                 continue
 
+            fec_file_ids.append(filing_id)
             data_dict = fec_item.data
-            data_dict['fec_file_id'] = filing_id
+            data_dict['fec_file_id'] = deepcopy(filing_id)
             insert_values.append(data_dict)
 
     logger.debug(f'Number of values to COPY {len(insert_values)}')

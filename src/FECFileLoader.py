@@ -51,7 +51,7 @@ def parse_event_record(eventrecord) -> (dict, int):
     filing_id = message_parsed['filing_id'].replace('FEC-', '')
 
     if not filing_id or filing_id == 'None':
-        raise Exception(f'Missing filing ID for filing record {message_parsed}')
+        raise TransactionIdMissingException(f'Missing filing ID for filing record {message_parsed}')
 
     logger.debug(f'filing_id:{filing_id}:{id(filing_id)}')
     filing_id = int(filing_id)
@@ -87,7 +87,11 @@ def lambdaHandler(event: dict, context: object) -> bool:
 
     for message in messages:
 
-        message_parsed, filing_id = parse_event_record(message)
+        try:
+            message_parsed, filing_id = parse_event_record(message)
+        except TransactionIdMissingException as te:
+            logger.warning(te)
+            continue
 
         for fec_item in fecfile.iter_http(filing_id, options={'filter_itemizations': [FILING_TYPE]}):
 

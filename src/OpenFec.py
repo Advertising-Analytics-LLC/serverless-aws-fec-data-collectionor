@@ -72,13 +72,14 @@ class OpenFec:
         if response.status_code == 404:
             raise Exception(f'404 from {url}, response: {response}')
 
-        logger.debug(response.json())
         if self._over_rate_limit(response):
             sleep_for_seconds = self.throttle * throttle_multiplier ** 2
             logger.info(f'Sleeping for {sleep_for_seconds} seconds')
             sleep(sleep_for_seconds)
             throttle_multiplier += 1
             response = self._get_request(url, payload, throttle_multiplier)
+
+        logger.debug(response.json())
 
         return response
 

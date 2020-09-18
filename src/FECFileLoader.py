@@ -122,6 +122,6 @@ def lambdaHandler(event: dict, context: object) -> bool:
         db.query(f'COPY fec.{database_table} FROM \'s3://{S3_BUCKET_NAME}/{temp_filename}\' IAM_ROLE \'{REDSHIFT_COPY_ROLE}\' FORMAT AS JSON \'auto\';')
         db.commit()
 
-    s3.delete_object(Bucket=S3_BUCKET_NAME, Key=temp_filename)
+    # s3.delete_object(Bucket=S3_BUCKET_NAME, Key=temp_filename)
 
     return True

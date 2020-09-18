@@ -249,7 +249,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
             filings = get_filings(deepcopy(filters))
             totals = get_totals(committee_id, deepcopy(filters))
         except NotFound404Exception as e:
-            logger.warning(f'404 not found, query: {filters}')
+            logger.warning(f'{e} query filters: {filters}')
             continue
 
         # handle fec.filings

@@ -19,7 +19,7 @@ from time import asctime, gmtime, time
 from typing import Any, Dict, List
 from src import JSONType, logger
 from src.database import Database, get_insert_query
-from src.OpenFec import OpenFec
+from src.OpenFec import OpenFec, NotFound404Exception
 from src.secrets import get_param_value_by_name
 from src.sqs import delete_message_from_sqs, parse_message
 
@@ -165,6 +165,7 @@ def upsert_filing(filing: JSONType) -> bool:
         return False
 
     amendment_chain = filing.pop('amendment_chain')
+    logger.debug(amendment_chain)
     if amendment_chain:
         upsert_amendment_chain(fec_file_id, amendment_chain)
 
@@ -244,8 +245,12 @@ def lambdaHandler(event:dict, context: object) -> bool:
             'form_category': 'REPORT'
         }
 
-        filings = get_filings(deepcopy(filters))
-        totals = get_totals(committee_id, deepcopy(filters))
+        try:
+            filings = get_filings(deepcopy(filters))
+            totals = get_totals(committee_id, deepcopy(filters))
+        except NotFound404Exception as e:
+            logger.warning(f'404 not found, query: {filters}')
+            continue
 
         # handle fec.filings
         # filing is list of lists, flatten it

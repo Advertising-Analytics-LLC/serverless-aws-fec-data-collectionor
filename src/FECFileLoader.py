@@ -53,7 +53,6 @@ def parse_event_record(eventrecord) -> (dict, int):
     if not filing_id or filing_id == 'None':
         raise TransactionIdMissingException(f'Missing filing ID for filing record {message_parsed}')
 
-    logger.debug(f'filing_id:{filing_id}:{id(filing_id)}')
     filing_id = int(filing_id)
     return message_parsed, filing_id
 

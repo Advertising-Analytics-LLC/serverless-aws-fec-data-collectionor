@@ -165,7 +165,6 @@ def upsert_filing(filing: JSONType) -> bool:
         return False
 
     amendment_chain = filing.pop('amendment_chain')
-    logger.debug(amendment_chain)
     if amendment_chain:
         upsert_amendment_chain(fec_file_id, amendment_chain)
 

@@ -56,8 +56,6 @@ def parse_event_record(eventrecord) -> (dict, int):
     filing_id = int(filing_id)
     return message_parsed, filing_id
 
-def get_fec_items():
-    pass
 
 def lambdaHandler(event: dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
@@ -101,6 +99,7 @@ def lambdaHandler(event: dict, context: object) -> bool:
             data_dict = fec_item.data
             data_dict['fec_file_id'] = deepcopy(filing_id)
             insert_values.append(data_dict)
+            logger.debug(f'filing_id:{filing_id} data:{data_dict}')
 
     logger.debug(f'Number of values to COPY {len(insert_values)}')
     # If there was no applicable data return

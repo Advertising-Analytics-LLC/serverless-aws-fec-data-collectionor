@@ -45,7 +45,7 @@ functions:
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
     events:
-      - schedule: rate(240 minutes)
+      - schedule: rate(15 minutes)
 
   CandidateSync:
     description: Polls OpenFEC API (once) for candidates that have filed recently and sends the IDs to SQS

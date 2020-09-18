@@ -15,19 +15,24 @@ from typing import List
 
 
 #
-# queries correspond to table fec.loading_stats
+# queries correspond to columns in table fec.loading_stats
 queries = [
-    'select count (*) from fec.candidate_detail;',
-    'select min(first_file_date) from fec.candidate_detail;',
-    'select count (*) from fec.committee_detail;',
-    'select min(first_file_date) from fec.committee_detail;',
-    'select count (*) from fec.filings;',
-    'select min(receipt_date) from fec.filings;',
+    'select count(*) from fec.candidate_detail;',
+    'select count(DISTINCT candidate_id) from fec.candidate_detail;',
+    'select count(*) from fec.committee_detail;',
+    'select count(DISTINCT committee_id) from fec.committee_detail;',
+    'select count(*) from fec.filings;',
+    'select count(DISTINCT fec_file_id) from fec.filings;',
     'select count(*) from fec.committee_totals;',
+    'select count(*) from (select DISTINCT cycle, committee_id from fec.committee_totals);',
     'select count(*) from fec.filing_amendment_chain;',
+    'select count(DISTINCT fec_file_id) from fec.filing_amendment_chain;',
     'select count(*) from fec.filings_schedule_b;',
+    'select count(DISTINCT fec_file_id) from fec.filings_schedule_b;',
     'select count(*) from fec.filings_schedule_e;',
+    'select count(DISTINCT fec_file_id) from fec.filings_schedule_e;',
     'select count(*) from fec.form_1_supplemental;'
+    'select count(DISTINCT fec_file_id) from fec.form_1_supplemental;'
 ]
 
 def db_stats_insert(values: List[str]) -> str:

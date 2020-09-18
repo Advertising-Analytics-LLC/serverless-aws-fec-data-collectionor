@@ -104,6 +104,7 @@ def lambdaHandler(event: dict, context: object) -> bool:
     logger.debug(f'Number of values to COPY {len(insert_values)}')
     # If there was no applicable data return
     if len(insert_values) == 0:
+        logger.info('No relevent FEC items. Exiting.')
         return True
 
     with open(temp_filepath, 'w+') as fh:

@@ -144,7 +144,7 @@ def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
         with Database() as db:
             if not db.record_exists(amendment_chain_exists_query):
                 query = insert_amendment_chain(filing_id, amendment, amendment_number)
-                db.query(query)
+                db.try_query(query)
             amendment_number += 1
 
 

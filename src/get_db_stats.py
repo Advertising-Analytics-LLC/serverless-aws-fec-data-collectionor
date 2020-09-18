@@ -31,7 +31,7 @@ queries = [
     'select count(DISTINCT fec_file_id) from fec.filings_schedule_b;',
     'select count(*) from fec.filings_schedule_e;',
     'select count(DISTINCT fec_file_id) from fec.filings_schedule_e;',
-    'select count(*) from fec.form_1_supplemental;'
+    'select count(*) from fec.form_1_supplemental;',
     'select count(DISTINCT fec_file_id) from fec.form_1_supplemental;'
 ]
 

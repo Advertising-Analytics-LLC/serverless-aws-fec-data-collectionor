@@ -144,9 +144,13 @@ def lambdaHandler(event: dict, context: object) -> bool:
         copy_rowcount = re.search(r'[,]{1}\s([0-9]*).*', copy_notice_msg).group(1)
 
         logger.debug(copy_notice_msg)
-        assert int(copy_rowcount) == len(insert_values)
 
-        db.commit()
+        if int(copy_rowcount) == len(insert_values):
+            # success
+            db.commit()
+        else:
+            db.rollback()
+            raise Exception('Number of records in dataset differs from number inserted to DB')
 
     # s3.delete_object(Bucket=S3_BUCKET_NAME, Key=temp_filename)
 

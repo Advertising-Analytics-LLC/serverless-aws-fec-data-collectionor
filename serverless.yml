@@ -8,6 +8,7 @@ frameworkVersion: ">=2.0.0 <3.0.0"
 
 # Custom variables
 custom:
+  backfill: 0
   Version: ${cf:fec-datasync-resources.Version}
   pythonRequirements:
     dockerizePip: false
@@ -62,7 +63,7 @@ functions:
   CandidateBackfill:
     description: Backfills candidates queue
     handler: src/CandidateSync.lambdaBackfillHandler
-    reservedConcurrency: 1
+    reservedConcurrency: ${self:custom.backfill}
     timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -98,7 +99,7 @@ functions:
   CommitteeBackfill:
     description: Backfills committee sync queue
     handler: src/CommitteSync.lambdaBackfillHandler
-    reservedConcurrency: 1
+    reservedConcurrency: ${self:custom.backfill}
     timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -133,7 +134,7 @@ functions:
   FilingBackfill:
     description: Crawls back in time over filings
     handler: src/FilingSync.lambdaBackfillHandler
-    reservedConcurrency: 1
+    reservedConcurrency: ${self:custom.backfill}
     timeout: 180
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}

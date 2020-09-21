@@ -14,6 +14,8 @@ import fecfile
 import json
 import os
 import uuid
+import re
+import time
 from collections import OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, List
@@ -57,6 +59,16 @@ def parse_event_record(eventrecord) -> (dict, int):
     return message_parsed, filing_id
 
 
+def clean_tmp_dir(temp_filedir='/tmp/'):
+    """ removes old files from tmp dir """
+    max_age = time.time() - (15 * 60)
+    for f in os.listdir(temp_filedir):
+        if os.path.isfile(f):
+            filepath = os.path.join(temp_filedir, f)
+            if os.stat(filepath).st_mtime < max_age:
+                os.remove(filepath)
+
+
 def lambdaHandler(event: dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
         takes events that have fec file IDs, gets the filing from docquery and writes to the DB
@@ -75,12 +87,13 @@ def lambdaHandler(event: dict, context: object) -> bool:
     messages = event['Records']
 
     insert_values = []
-    fec_file_ids = []
+    fec_file_ids = set()
     temp_filename = f'{uuid.uuid4()}.json'
     temp_filedir = '/tmp/'
     temp_filepath = temp_filedir + temp_filename
-    map(os.remove, os.listdir(temp_filedir))
     database_table = filing_table_mapping[FILING_TYPE]
+
+    clean_tmp_dir()
 
     for message in messages:
 
@@ -95,30 +108,44 @@ def lambdaHandler(event: dict, context: object) -> bool:
             if fec_item.data_type != 'itemization':
                 continue
 
-            fec_file_ids.append(filing_id)
+            fec_file_ids.add(filing_id)
             data_dict = fec_item.data
-            data_dict['fec_file_id'] = deepcopy(filing_id)
+            data_dict['fec_file_id'] = filing_id
             insert_values.append(data_dict)
-            logger.debug(f'filing_id:{filing_id} data:{data_dict}')
 
-    logger.debug(f'Number of values to COPY {len(insert_values)}')
     # If there was no applicable data return
     if len(insert_values) == 0:
         logger.info('No relevent FEC items. Exiting.')
         return True
 
+    logger.debug(f'Number itemizations: {len(insert_values)}, Number FEC Filings: {len(fec_file_ids)}')
+
+    # write to file
     with open(temp_filepath, 'w+') as fh:
         for val in insert_values:
+            # logger.debug(val)
             json.dump(val, fh, default=serialize_dates)
             fh.write('\n')
+
+    # upload to S3
+    with open(temp_filepath, 'rb+') as fh:
+        logger.debug(f'uploading {temp_filename}')
         s3.upload_fileobj(fh, S3_BUCKET_NAME, temp_filename)
 
+    # delete old records and copy new ones to DB
     with Database() as db:
         db.query(
             sql.SQL(f'DELETE FROM fec.{database_table} WHERE fec_file_id IN ' + '({})'
                .format(', '.join([f'\'{str(val)}\'' for val in fec_file_ids]))))
 
         db.query(f'COPY fec.{database_table} FROM \'s3://{S3_BUCKET_NAME}/{temp_filename}\' IAM_ROLE \'{REDSHIFT_COPY_ROLE}\' FORMAT AS JSON \'auto\';')
+
+        copy_notice_msg = db.conn.notices[0]
+        copy_rowcount = re.search(r'[,]{1}\s([0-9]*).*', copy_notice_msg).group(1)
+
+        logger.debug(copy_notice_msg)
+        assert int(copy_rowcount) == len(insert_values)
+
         db.commit()
 
     # s3.delete_object(Bucket=S3_BUCKET_NAME, Key=temp_filename)

@@ -220,7 +220,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
         context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
 
     Returns:
-        bool: Did this go well?
+        bool: Success
     """
 
     logger.debug(f'running {__file__}')

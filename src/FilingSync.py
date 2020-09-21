@@ -21,7 +21,9 @@ from src.secrets import get_param_value_by_name
 from src.sns import send_message_to_sns
 from typing import Any, Dict, List
 
+
 form_types_of_interest = ['F3P','F3','F3X']
+
 
 class EFilingRSSFeed:
     """wrapper for the FEC Electronic Filing RSS Feed

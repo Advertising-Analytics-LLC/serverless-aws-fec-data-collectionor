@@ -53,13 +53,12 @@ class Database:
         Returns:
             Any: result or None
         """
-        logger.debug(f'Executing query {query}')
+        logger.debug(f'Executing query {self.curr.mogrify(query)}')
         self.curr.execute(query)
+        # logger.debug(f'Query message: {self.conn.notices}')
         try:
             value = self.curr.fetchall()
         except ProgrammingError as err:
-            logger.debug(err)
-            logger.debug(self.conn.notices)
             logger.debug(f'Query had no results, message: {err}')
             return None
 
@@ -75,7 +74,7 @@ class Database:
             bool: query success
         """
         try:
-            self._query(query)
+            self.query(query)
             self.commit()
             return True
         except Exception as e:
@@ -101,9 +100,9 @@ class Database:
         Returns:
             bool: True if exists else False
         """
-        value = self._query(query)
+        value = self.query(query)
         if value:
-            logger.debug(f'Record exists for {query.as_string(self.curr)}')
+            logger.debug(f'Record exists for {self.curr.mogrify(query)}')
             return True
         return False
 

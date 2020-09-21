@@ -123,7 +123,6 @@ def lambdaHandler(event: dict, context: object) -> bool:
     # write to file
     with open(temp_filepath, 'w+') as fh:
         for val in insert_values:
-            # logger.debug(val)
             json.dump(val, fh, default=serialize_dates)
             fh.write('\n')
 
@@ -134,7 +133,7 @@ def lambdaHandler(event: dict, context: object) -> bool:
 
     # delete old records and copy new ones to DB
     with Database() as db:
-        db.query(
+        rows_deleted = db.query_rowcount(
             sql.SQL(f'DELETE FROM fec.{database_table} WHERE fec_file_id IN ' + '({})'
                .format(', '.join([f'\'{str(val)}\'' for val in fec_file_ids]))))
 
@@ -145,10 +144,14 @@ def lambdaHandler(event: dict, context: object) -> bool:
 
         logger.debug(copy_notice_msg)
 
-        if int(copy_rowcount) == len(insert_values):
+        copied_correct_number_of_rows = int(copy_rowcount) == len(insert_values)
+        copied_more_than_deleted = rows_deleted <= int(copy_rowcount)
+
+        if copied_correct_number_of_rows and copied_more_than_deleted:
             # success
             db.commit()
         else:
+            logger.error(f'Expected # rows: {len(insert_values)}, # copied: {copy_rowcount}, # deleted: {rows_deleted}')
             db.rollback()
             raise Exception('Number of records in dataset differs from number inserted to DB')
 

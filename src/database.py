@@ -43,6 +43,12 @@ class Database:
         self.curr.close()
         self.conn.close()
 
+    def query_rowcount(self, query):
+        """ queries DB and returns the number of rows affected """
+        logger.debug(f'Executing query {self.curr.mogrify(query)}')
+        self.curr.execute(query)
+        return self.curr.rowcount
+
     def query(self, query: sql.SQL) -> Any:
         """Query the database and fetch a result.
         If there are no results to fetch the ProgrammingError is caught and None is returned.
@@ -55,7 +61,8 @@ class Database:
         """
         logger.debug(f'Executing query {self.curr.mogrify(query)}')
         self.curr.execute(query)
-        # logger.debug(f'Query message: {self.conn.notices}')
+        logger.debug(f'Query message: {self.conn.notices}')
+        logger.debug(f'Rows Affected: {self.curr.rowcount}')
         try:
             value = self.curr.fetchall()
         except ProgrammingError as err:

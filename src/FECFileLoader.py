@@ -126,6 +126,8 @@ def lambdaHandler(event: dict, context: object) -> bool:
     if len(insert_values) == 0:
         logger.info('No relevent FEC items. Exiting.')
         return True
+    else:
+        logger.info(f'Found fec_file_ids: {",".join(map(str, fec_file_ids))}')
 
     logger.debug(f'Number itemizations: {len(insert_values)}, Number FEC Filings: {len(fec_file_ids)}')
 

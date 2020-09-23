@@ -48,15 +48,6 @@ class TransactionIdMissingException(Exception):
         self.message = message
 
 
-class DataRegressException(Exception):
-    """ The incorrect number of rows was inserted or deleted
-    Attributes:
-        message -- explanation of the error
-    """
-    def __init__(self, message):
-        self.message = message
-
-
 def parse_event_record(eventrecord) -> (dict, int):
     message_parsed = parse_message(eventrecord)
     filing_id = message_parsed['filing_id'].replace('FEC-', '')
@@ -152,18 +143,12 @@ def lambdaHandler(event: dict, context: object) -> bool:
 
         copy_notice_msg = db.conn.notices[0]
         copy_rowcount = re.search(r'[,]{1}\s([0-9]*).*', copy_notice_msg).group(1)
-
         logger.debug(copy_notice_msg)
 
-        copied_correct_number_of_rows = int(copy_rowcount) == len(insert_values)
-        copied_more_than_deleted = rows_deleted <= int(copy_rowcount)
-
-        if copied_correct_number_of_rows and copied_more_than_deleted:
-            # success
-            db.commit()
-        else:
+        if rows_deleted >= int(copy_rowcount):
             logger.warning(f'Expected # rows: {len(insert_values)}, # copied: {copy_rowcount}, # deleted: {rows_deleted}, fec_file_ids: {",".join(map(str, fec_file_ids))}')
-            db.commit()
+
+        db.commit()
 
     s3.delete_object(Bucket=S3_BUCKET_NAME, Key=temp_filename)
 

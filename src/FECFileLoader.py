@@ -162,9 +162,9 @@ def lambdaHandler(event: dict, context: object) -> bool:
             # success
             db.commit()
         else:
-            db.rollback()
-            raise DataRegressException(f'Expected # rows: {len(insert_values)}, # copied: {copy_rowcount}, # deleted: {rows_deleted}, fec_file_ids: {",".join(map(str, fec_file_ids))}')
+            logger.warning(f'Expected # rows: {len(insert_values)}, # copied: {copy_rowcount}, # deleted: {rows_deleted}, fec_file_ids: {",".join(map(str, fec_file_ids))}')
+            db.commit()
 
-    # s3.delete_object(Bucket=S3_BUCKET_NAME, Key=temp_filename)
+    s3.delete_object(Bucket=S3_BUCKET_NAME, Key=temp_filename)
 
     return True

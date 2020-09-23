@@ -162,9 +162,8 @@ def lambdaHandler(event: dict, context: object) -> bool:
             # success
             db.commit()
         else:
-            logger.error(f'Expected # rows: {len(insert_values)}, # copied: {copy_rowcount}, # deleted: {rows_deleted}, fec_file_ids: {",".join(map(str, fec_file_ids))}')
             db.rollback()
-            raise DataRegressException('Number of records in dataset differs from number inserted to DB')
+            raise DataRegressException(f'Expected # rows: {len(insert_values)}, # copied: {copy_rowcount}, # deleted: {rows_deleted}, fec_file_ids: {",".join(map(str, fec_file_ids))}')
 
     # s3.delete_object(Bucket=S3_BUCKET_NAME, Key=temp_filename)
 

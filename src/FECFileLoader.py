@@ -145,7 +145,7 @@ def lambdaHandler(event: dict, context: object) -> bool:
         copy_rowcount = re.search(r'[,]{1}\s([0-9]*).*', copy_notice_msg).group(1)
         logger.debug(copy_notice_msg)
 
-        if rows_deleted >= int(copy_rowcount):
+        if rows_deleted > int(copy_rowcount):
             logger.warning(f'Expected # rows: {len(insert_values)}, # copied: {copy_rowcount}, # deleted: {rows_deleted}, fec_file_ids: {",".join(map(str, fec_file_ids))}')
 
         db.commit()

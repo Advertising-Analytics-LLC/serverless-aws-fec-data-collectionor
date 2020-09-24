@@ -79,8 +79,8 @@ class OpenFec:
         if response.status_code == 404:
             raise NotFound404Exception(f'404 from {url}, response: {response}')
 
-        if response.status_code == 502:
-            logger.debug(f'Recieved status_code {response.status_code}')
+        if response.status_code != 200:
+            logger.debug(f'NON200 {response.status_code}')
             logger.debug(response.headers)
             logger.debug(response.text)
 

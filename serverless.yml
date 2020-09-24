@@ -46,7 +46,7 @@ functions:
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
     events:
-      - schedule: rate(15 minutes)
+      - schedule: rate(60 minutes)
 
   CandidateSync:
     description: Polls OpenFEC API (once) for candidates that have filed recently and sends the IDs to SQS
@@ -70,7 +70,7 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.candidate_sync_queue_name}
     events:
-      - schedule: rate(5 minutes)
+      - schedule: rate(15 minutes)
 
   CandidateLoader:
     description: Triggered by SQS it recieves Messages and writes candidate data to the DB
@@ -94,7 +94,7 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.committeesync_sqs_name}
     events:
-      - schedule: cron(0 0,8,16 * * ? *)
+      - schedule: cron(0 0 * * ? *)
 
   CommitteeBackfill:
     description: Backfills committee sync queue
@@ -106,7 +106,7 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.committeesync_sqs_name}
     events:
-      - schedule: rate(5 minutes)
+      - schedule: rate(15 minutes)
 
   CommitteeLoader:
     description: Recieves committee Ids from SQS, queries api for committee info, updates DB
@@ -129,7 +129,7 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
     events:
-      - schedule: cron(0 0,8,16 * * ? *)
+      - schedule: cron(0 0 * * ? *)
 
   FilingBackfill:
     description: Crawls back in time over filings
@@ -142,7 +142,7 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
     events:
-      - schedule: rate(2 minutes)
+      - schedule: rate(15 minutes)
 
   FinancialSummaryLoader:
     description: Takes new filings from SQS, queries api, writes to DB

@@ -38,7 +38,7 @@ Parameters:
     Description: Name of Queue for new filings, processed for Financial Summary
     Type: String
   FilingRedriveCount:
-    Default: 15
+    Default: 5
     Type: Number
   FilingSEQueueName:
     Default: fec-se-queue

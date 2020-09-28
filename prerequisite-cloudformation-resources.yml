@@ -6,7 +6,7 @@ Parameters:
     Description: Code verison, see bin/deploy.sh
     Type: String
   DeadLetterQueueMessageRetentionPeriod:
-    Default: 604800 # 7 days in seconds
+    Default: 1209600 # 604800 # 7 days in seconds
     Type: Number
   CopyFromBucketName:
     Default: copy-from

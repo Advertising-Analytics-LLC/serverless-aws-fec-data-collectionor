@@ -4,32 +4,35 @@
 
 service: serverless-aws-python3-fec-datasync
 app: fec-datasync
-frameworkVersion: ">=1.73.0 <2.0.0"
+frameworkVersion: ">=2.0.0 <3.0.0"
 
 # Custom variables
 custom:
+  backfill: 0
   Version: ${cf:fec-datasync-resources.Version}
   pythonRequirements:
     dockerizePip: false
   dev:
     API_KEY: /global/openfec-api/api_key
+    cloudwatch_dashboard: ${file(cloudwatch.json)}
     deploymentBucketName: ${cf:fec-datasync-resources.DeploymentBucketName} #serverless-deploymentbucket-us-east-1-648881544937
     LOG_LEVEL: DEBUG
     candidate_sync_queue_arn: ${cf:fec-datasync-resources.CandidateSyncQueueArn}
     candidate_sync_queue_name: ${cf:fec-datasync-resources.CandidateSyncQueueName}
     copy_from_bucket_arn: ${cf:fec-datasync-resources.CopyFromBucketArn}
     copy_from_bucket_name: ${cf:fec-datasync-resources.CopyFromBucketName}
-    rss_schedule_e_queue_arn: ${cf:fec-datasync-resources.NewFilingQueueSEArn}
-    rss_schedule_e_queue_name: ${cf:fec-datasync-resources.NewFilingQueueSEName}
+    REDSHIFT_COPY_ROLE: arn:aws:iam::648881544937:role/copyFromRedshiftRole
+    filing_se_sqs_arn: ${cf:fec-datasync-resources.FilingSEQueueArn}
+    filing_se_sqs_name: ${cf:fec-datasync-resources.FilingSEQueueName}
     rss_sns_topic_arn: ${cf:fec-datasync-resources.RSSFeedTopicArn}
-    rss_sqs_queue_arn: ${cf:fec-datasync-resources.NewFilingQueueArn}
-    rss_sqs_queue_name: ${cf:fec-datasync-resources.NewFilingQueueName}
-    transaction_loding_queue_arn: ${cf:fec-datasync-resources.TransactionLoadingQueueArn}
-    transaction_loding_queue_name: ${cf:fec-datasync-resources.TransactionLoadingQueueName}
-    SQS_QUEUE_NAME: ${cf:fec-datasync-resources.CommitteeSyncQueueName}
-    SQS_QUEUE_ARN: ${cf:fec-datasync-resources.CommitteeSyncQueueArn}
-    supplemental_data_queue_name: ${cf:fec-datasync-resources.SupplementalDataQueueName}
-    supplemental_data_queue_arn: ${cf:fec-datasync-resources.SupplementalDataQueueArn}
+    financial_summary_sqs_arn: ${cf:fec-datasync-resources.FinancialSummaryQueueArn}
+    financial_summary_sqs_name: ${cf:fec-datasync-resources.FinancialSummaryQueueName}
+    filing_sb_sqs_arn: ${cf:fec-datasync-resources.FilingSBQueueArn}
+    filing_sb_sqs_name: ${cf:fec-datasync-resources.FilingSBQueueName}
+    committeesync_sqs_name: ${cf:fec-datasync-resources.CommitteeSyncQueueName}
+    committeesync_sqs_arn: ${cf:fec-datasync-resources.CommitteeSyncQueueArn}
+    filing_f1s_sqs_name: ${cf:fec-datasync-resources.FilingF1SQueueName}
+    filing_f1s_sqs_arn: ${cf:fec-datasync-resources.FilingF1SQueueArn}
 
 
 # The lambda function(s) defined in this serverless config
@@ -43,12 +46,12 @@ functions:
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
     events:
-      - schedule: rate(240 minutes)
+      - schedule: rate(60 minutes)
 
   CandidateSync:
     description: Polls OpenFEC API (once) for candidates that have filed recently and sends the IDs to SQS
     handler: src/CandidateSync.lambdaHandler
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -60,7 +63,7 @@ functions:
   CandidateBackfill:
     description: Backfills candidates queue
     handler: src/CandidateSync.lambdaBackfillHandler
-    reservedConcurrency: 0
+    reservedConcurrency: ${self:custom.backfill}
     timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -72,7 +75,7 @@ functions:
   CandidateLoader:
     description: Triggered by SQS it recieves Messages and writes candidate data to the DB
     handler: src/CandidateLoader.lambdaHandler
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -84,38 +87,38 @@ functions:
   CommitteeSync:
     description: Polls OpenFEC API (once) for committees that have filed recently and sends the IDs to SQS
     handler: src/CommitteSync.committeSync
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
-      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.committeesync_sqs_name}
     events:
-      - schedule: cron(0 0,8,16 * * ? *)
+      - schedule: cron(0 0 * * ? *)
 
   CommitteeBackfill:
     description: Backfills committee sync queue
     handler: src/CommitteSync.lambdaBackfillHandler
-    reservedConcurrency: 0
+    reservedConcurrency: ${self:custom.backfill}
     timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
-      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.committeesync_sqs_name}
     events:
       - schedule: rate(15 minutes)
 
   CommitteeLoader:
     description: Recieves committee Ids from SQS, queries api for committee info, updates DB
     handler: src/CommitteLoader.committeLoader
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 300
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
-      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.SQS_QUEUE_NAME}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.committeesync_sqs_name}
     events:
-      - sqs: "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
+      - sqs: "${self:custom.${self:provider.stage}.committeesync_sqs_arn}"
 
   FilingSync:
     description: Scrapes FEC RSS feed for recent filings, pushes the new filings to SNS and SQS
@@ -126,13 +129,14 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
     events:
-      - schedule: cron(0 0,8,16 * * ? *)
+      - schedule: cron(0 0 * * ? *)
 
   FilingBackfill:
     description: Crawls back in time over filings
     handler: src/FilingSync.lambdaBackfillHandler
-    reservedConcurrency: 0
-    timeout: 180
+    # reservedConcurrency: ${self:custom.backfill}
+    reservedConcurrency: 1
+    timeout: 120
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -143,14 +147,14 @@ functions:
   FinancialSummaryLoader:
     description: Takes new filings from SQS, queries api, writes to DB
     handler: src/FinancialSummaryLoader.lambdaHandler
-    reservedConcurrency: 0
-    timeout: 90
+    reservedConcurrency: 1
+    timeout: 900
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
-      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.rss_sqs_queue_name}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.financial_summary_sqs_name}
     events:
-      - sqs: "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
+      - sqs: "${self:custom.${self:provider.stage}.financial_summary_sqs_arn}"
 
   FECFileLoaderSB:
     description: Gets FEC file url from SQS, downloads, parses for Schedule B filings, loads into DB
@@ -161,37 +165,41 @@ functions:
     environment:
       FILING_TYPE: 'SB'
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
-      REDSHIFT_COPY_ROLE: arn:aws:iam::648881544937:role/copyFromRedshiftRole
+      REDSHIFT_COPY_ROLE: ${self:custom.${self:provider.stage}.REDSHIFT_COPY_ROLE}
       S3_BUCKET_NAME: ${self:custom.${self:provider.stage}.copy_from_bucket_name}
-      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.transaction_loding_queue_name}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.filing_sb_sqs_name}
     events:
-      - sqs: "${self:custom.${self:provider.stage}.transaction_loding_queue_arn}"
+      - sqs: "${self:custom.${self:provider.stage}.filing_sb_sqs_arn}"
 
   FECFileLoaderSE:
     description: Gets FEC file url from SQS, downloads, parses for Schedule E filings, loads into DB
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 900
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
-      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.rss_schedule_e_queue_name}
+      REDSHIFT_COPY_ROLE: ${self:custom.${self:provider.stage}.REDSHIFT_COPY_ROLE}
+      S3_BUCKET_NAME: ${self:custom.${self:provider.stage}.copy_from_bucket_name}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.filing_se_sqs_name}
       FILING_TYPE: 'SE'
     events:
-      - sqs: "${self:custom.${self:provider.stage}.rss_schedule_e_queue_arn}"
+      - sqs: "${self:custom.${self:provider.stage}.filing_se_sqs_arn}"
 
   FECFileLoaderSupp:
     description: Gets FEC file url from SQS, downloads, parses for Form 1 Supplemental Data, loads into DB
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008
-    reservedConcurrency: 0
+    reservedConcurrency: 1
     timeout: 900
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
-      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.supplemental_data_queue_name}
+      REDSHIFT_COPY_ROLE: ${self:custom.${self:provider.stage}.REDSHIFT_COPY_ROLE}
+      S3_BUCKET_NAME: ${self:custom.${self:provider.stage}.copy_from_bucket_name}
+      SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.filing_f1s_sqs_name}
       FILING_TYPE: 'F1S'
     events:
-      - sqs: "${self:custom.${self:provider.stage}.supplemental_data_queue_arn}"
+      - sqs: "${self:custom.${self:provider.stage}.filing_f1s_sqs_arn}"
 
 # packaging instructuions, and ignore list
 package:
@@ -272,11 +280,11 @@ provider:
         - sqs:SendMessage
       Resource:
         - "${self:custom.${self:provider.stage}.candidate_sync_queue_arn}"
-        - "${self:custom.${self:provider.stage}.transaction_loding_queue_arn}"
-        - "${self:custom.${self:provider.stage}.rss_sqs_queue_arn}"
-        - "${self:custom.${self:provider.stage}.rss_schedule_e_queue_arn}"
-        - "${self:custom.${self:provider.stage}.SQS_QUEUE_ARN}"
-        - "${self:custom.${self:provider.stage}.supplemental_data_queue_arn}"
+        - "${self:custom.${self:provider.stage}.filing_sb_sqs_arn}"
+        - "${self:custom.${self:provider.stage}.financial_summary_sqs_arn}"
+        - "${self:custom.${self:provider.stage}.filing_se_sqs_arn}"
+        - "${self:custom.${self:provider.stage}.committeesync_sqs_arn}"
+        - "${self:custom.${self:provider.stage}.filing_f1s_sqs_arn}"
     - Effect: "Allow"
       Action:
         - sns:Publish
@@ -290,6 +298,7 @@ provider:
         - s3:PutObject
       Resource:
         - "${self:custom.${self:provider.stage}.copy_from_bucket_arn}"
+        - "${self:custom.${self:provider.stage}.copy_from_bucket_arn}/*"
   tags:
     serverless_managed: true
     serverless_name: ${self:service}
@@ -306,6 +315,15 @@ provider:
 
 # TODO: integrate serverless and cfn rsc deploys?
 # you can add CloudFormation resource templates here
-# resources:
+resources:
+  Resources:
+    Dashboard:
+      Type: AWS::CloudWatch::Dashboard
+      Properties:
+        DashboardBody: ${file(my-dashboard-body.js):myDashboardBody}
+        DashboardName: ${self:service}-dashboard
 #  - ${file(cfn_resources/deploymentBucket.yml)}
 #  - ${file(cfn_resources/sqsQueue.yml)}
+
+outputs:
+  MonitoringDashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:name=${self:service}-dashboard

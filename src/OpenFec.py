@@ -12,6 +12,13 @@ from src import JSONType, logger
 from time import sleep
 from typing import Generator
 
+
+class NotFound404Exception(Exception):
+    """ URL return 404 """
+    def __init__(self, message):
+        self.message = message
+
+
 class OpenFec:
     """Lightweight wrapper over the openFEC api - https://api.open.fec.gov/developers/
     """
@@ -70,9 +77,15 @@ class OpenFec:
         response = requests.get(url, params=payload)
 
         if response.status_code == 404:
-            raise Exception(f'404 from {url}, response: {response}')
+            raise NotFound404Exception(f'404 from {url}, response: {response}')
+
+        if response.status_code != 200:
+            logger.debug(f'NON200 {response.status_code}')
+            logger.debug(response.headers)
+            logger.debug(response.text)
 
         logger.debug(response.json())
+
         if self._over_rate_limit(response):
             sleep_for_seconds = self.throttle * throttle_multiplier ** 2
             logger.info(f'Sleeping for {sleep_for_seconds} seconds')

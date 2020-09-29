@@ -4,6 +4,7 @@
 get_db_stats:
     quick and dirty database stats
     created to monitor the progress of our data-loading
+    sends stats to stdout at level INFO
 """
 
 from datetime import datetime, timedelta
@@ -13,35 +14,25 @@ from src.database import Database
 from typing import List
 
 
-db_ddl = """
-CREATE TABLE IF NOT EXISTS fec.loading_stats (
-    query_time DATE NOT NULL,
-    candidate_detail_count INT,
-    candidate_detail_min_first_file DATE,
-    committee_detail_count INT,
-    committee_detail_min_first_file DATE,
-    filings_count INT,
-    filings_min_receipt_date DATE,
-    committee_totals_count INT,
-    filing_amendment_chain_count INT,
-    filings_schedule_b_count INT,
-    filings_schedule_e_count INT,
-    form_1_supplemental_count INT
-)
-"""
-
+#
+# queries correspond to columns in table fec.loading_stats
 queries = [
-    'select count (*) from fec.candidate_detail;',
-    'select min(first_file_date) from fec.candidate_detail;',
-    'select count (*) from fec.committee_detail;',
-    'select min(first_file_date) from fec.committee_detail;',
-    'select count (*) from fec.filings;',
-    'select min(receipt_date) from fec.filings;',
+    'select count(*) from fec.candidate_detail;',
+    'select count(DISTINCT candidate_id) from fec.candidate_detail;',
+    'select count(*) from fec.committee_detail;',
+    'select count(DISTINCT committee_id) from fec.committee_detail;',
+    'select count(*) from fec.filings;',
+    'select count(DISTINCT fec_file_id) from fec.filings;',
     'select count(*) from fec.committee_totals;',
+    'select count(*) from (select DISTINCT cycle, committee_id from fec.committee_totals);',
     'select count(*) from fec.filing_amendment_chain;',
+    'select count(DISTINCT fec_file_id) from fec.filing_amendment_chain;',
     'select count(*) from fec.filings_schedule_b;',
+    'select count(DISTINCT fec_file_id) from fec.filings_schedule_b;',
     'select count(*) from fec.filings_schedule_e;',
-    'select count(*) from fec.form_1_supplemental;'
+    'select count(DISTINCT fec_file_id) from fec.filings_schedule_e;',
+    'select count(*) from fec.form_1_supplemental;',
+    'select count(DISTINCT fec_file_id) from fec.form_1_supplemental;'
 ]
 
 def db_stats_insert(values: List[str]) -> str:
@@ -56,12 +47,14 @@ def lambdaHandler(event, context):
 
     results = ["'now'"]
 
+    # query db with each query
     with Database() as db:
         for query in queries:
-            logger.info(query)
             result = db.query(query)
-            results.append(result[0][0])
-            logger.debug(result)
+            result = result[0][0]
+            results.append(result)
+            logger.info(f'\n{query}\t\t\t{result}')
 
+        # write stats back to DB
         insert_command = db_stats_insert(results)
         return db.try_query(insert_command)

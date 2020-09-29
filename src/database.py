@@ -6,7 +6,9 @@ Database:
 
 import psycopg2
 import sys
+from collections import OrderedDict
 from psycopg2 import sql, ProgrammingError
+from psycopg2.sql import SQL, Literal
 from src import JSONType, logger, schema
 from src.secrets import get_param_value_by_name
 from typing import List, Any
@@ -21,8 +23,7 @@ USERNAME = get_param_value_by_name('/global/fec-schema/username')
 
 
 class Database:
-    """redshift wrapper to handle data serialization
-    """
+    """redshift wrapper to handle data serialization"""
 
     def __init__(self):
         """creates connection to redshift database and performs operations
@@ -31,28 +32,24 @@ class Database:
         self.conn = psycopg2.connect(dbname=DATABASE, user=USERNAME, password=PASSWORD, host=HOSTNAME, port=PORT)
 
     def __enter__(self):
-        """for use as context manager (pythons with statement)
-
-        Returns:
-            self: returns itself
-        """
+        """for use as context manager (pythons with statement)"""
         self.curr = self.conn.cursor()
 
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        """for use as context manager (pythons with statement)
-
-        Args:
-            exc_type ([type]): [description]
-            exc_value ([type]): [description]
-            exc_traceback ([type]): [description]
-        """
+        """for use as context manager (pythons with statement)"""
 
         self.curr.close()
         self.conn.close()
 
-    def _query(self, query: sql.SQL) -> Any:
+    def query_rowcount(self, query):
+        """ queries DB and returns the number of rows affected """
+        logger.debug(f'Executing query {self.curr.mogrify(query)}')
+        self.curr.execute(query)
+        return self.curr.rowcount
+
+    def query(self, query: sql.SQL) -> Any:
         """Query the database and fetch a result.
         If there are no results to fetch the ProgrammingError is caught and None is returned.
 
@@ -62,27 +59,17 @@ class Database:
         Returns:
             Any: result or None
         """
-        logger.debug(f'Executing query {query}')
+        logger.debug(f'Executing query {self.curr.mogrify(query)}')
         self.curr.execute(query)
+        logger.debug(f'Query message: {self.conn.notices}')
+        logger.debug(f'Rows Affected: {self.curr.rowcount}')
         try:
             value = self.curr.fetchall()
         except ProgrammingError as err:
-            logger.info(f'Query had no results, message: {err}')
+            logger.debug(f'Query had no results, message: {err}')
             return None
 
         return value
-
-    def query(self, query: sql.SQL) -> Any:
-        """exec and commit a single query
-
-        Args:
-            query (sql.SQL): SQL query
-
-        Returns:
-            Any: the result of fetchall
-        """
-        return_value = self._query(query)
-        return return_value
 
     def try_query(self, query: sql.SQL) -> bool:
         """query in a try block. returns bool representing success
@@ -94,7 +81,7 @@ class Database:
             bool: query success
         """
         try:
-            self._query(query)
+            self.query(query)
             self.commit()
             return True
         except Exception as e:
@@ -103,22 +90,12 @@ class Database:
             self.rollback()
             return False
 
-    def copy(self, sql, data_file):
-        self.curr.copy_expert(sql, data_file)
-        self.commit()
-
-    def copy_from(self, sql, data_file, sep=','):
-        self.curr.copy_from(data_file, sql, sep=sep)
-        self.commit()
-
     def commit(self):
-        """commits transaction
-        """
+        """commits transaction"""
         self.conn.commit()
 
     def rollback(self):
-        """rolls back transaction
-        """
+        """rolls back transaction"""
         self.conn.rollback()
 
     def record_exists(self, query: sql.SQL) -> bool:
@@ -130,8 +107,22 @@ class Database:
         Returns:
             bool: True if exists else False
         """
-        value = self._query(query)
+        value = self.query(query)
         if value:
-            logger.debug(f'Record exists for {query.as_string(self.curr)}')
+            logger.debug(f'Record exists for {self.curr.mogrify(query)}')
             return True
         return False
+
+
+def get_insert_query(database_table: str, values_dict: dict) -> psycopg2.sql:
+    """ returns an insert query given a DB table and a dictionary of col:vals """
+    values = OrderedDict(sorted(values_dict.items()))
+
+    query_string = f'INSERT INTO {database_table} ('\
+        + ', '.join([f'{key}' for key, val in values.items()]) + ') '\
+        + 'VALUES (' + ', '.join(['{}' for key, val in values.items()]) + ')'
+
+    query = sql.SQL(query_string)\
+               .format(*[Literal(val) for key, val in values.items()])
+
+    return query

@@ -14,14 +14,16 @@ import requests
 from bs4 import BeautifulSoup
 from requests import Response
 from src import logger
-from src.backfill import get_previous_day, filings_sync_backfill_date
+from src.backfill import get_previous_day, filings_sync_backfill_date, filings_backfill_success
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.sns import send_message_to_sns
 from typing import Any, Dict, List
 
+
 form_types_of_interest = ['F3P','F3','F3X']
+
 
 class EFilingRSSFeed:
     """wrapper for the FEC Electronic Filing RSS Feed
@@ -93,14 +95,22 @@ class EFilingRSSFeed:
         soup = BeautifulSoup(rss)
         logger.debug(soup)
         items = soup.find_all('item')
+
         for desc in items:
-            id_list.append({
+            filing_id = parse_for_x('(FilingId: )([0-9]*)', desc)
+
+            if not filing_id or filing_id is 'None':
+                logger.warning(f'No fec file ID for record {desc}')
+                continue
+
+            new_filing_record = {
                 'committee_id': parse_for_x('(CommitteeId: )([C]?[0-9]*)', desc),
-                'filing_id': parse_for_x('(FilingId: )([0-9]*)', desc),
+                'filing_id': filing_id,
                 'form_type':  parse_for_x('(FormType: )([F3XNP]*)', desc),
                 'guid': desc.guid.text if desc.guid else desc.link
-            })
-        logger.debug(id_list)
+            }
+
+            id_list.append(new_filing_record)
 
         return id_list
 
@@ -165,7 +175,7 @@ def sync_filings_on(min_receipt_date: str, max_receipt_date: str) -> List[Dict[s
                     'committee_id': str(result['committee_id']),
                     'filing_id': str(result['fec_file_id']),
                     'form_type':  str(result['form_type']),
-                    'guid': str(result['fec_url'])
+                    'guid': str(result.get('fec_url', ''))
                 }
                 replies.append(send_message_to_sns(msg))
         except KeyError as keyError:
@@ -186,7 +196,9 @@ def lambdaBackfillHandler(event: dict, context: object):
     """
 
     max_receipt_date = filings_sync_backfill_date()
+    if not max_receipt_date:
+        raise Exception('No date recieved from backfill table. Exiting.')
     min_receipt_date = get_previous_day(max_receipt_date)
     sns_replies = sync_filings_on(min_receipt_date, max_receipt_date)
-
+    filings_backfill_success(max_receipt_date)
     return sns_replies

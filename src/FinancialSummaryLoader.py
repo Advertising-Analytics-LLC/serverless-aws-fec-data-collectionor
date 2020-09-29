@@ -11,18 +11,80 @@ import boto3
 import json
 import os
 from copy import deepcopy
+from datetime import datetime
+from collections import OrderedDict
+from psycopg2.sql import SQL, Literal
 from requests import Response
 from time import asctime, gmtime, time
 from typing import Any, Dict, List
-from src import JSONType, logger, schema
-from src.database import Database
-from src.OpenFec import OpenFec
+from src import JSONType, logger
+from src.database import Database, get_insert_query
+from src.OpenFec import OpenFec, NotFound404Exception
 from src.secrets import get_param_value_by_name
 from src.sqs import delete_message_from_sqs, parse_message
 
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
+
+# schema/db functions
+
+# comittee totals
+
+def committee_total_exists(committee_id: str, cycle: int) -> SQL:
+    query = SQL('SELECT * FROM fec.committee_totals WHERE committee_id={committee_id} AND cycle={cycle}')\
+        .format(committee_id=Literal(committee_id), cycle=Literal(cycle))
+    return query
+
+
+def insert_committee_total(committee_total: JSONType) -> SQL:
+    table = 'fec.committee_totals'
+    query = get_insert_query(table, committee_total)
+    return query
+
+
+def update_committee_total(committee_total: JSONType) -> SQL:
+
+    committee_id = committee_total.pop('committee_id')
+    cycle = committee_total.pop('cycle')
+
+    values = OrderedDict(sorted(committee_total.items()))
+    query_string = 'UPDATE fec.committee_totals SET ' \
+        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
+        + ' WHERE committee_id={}'\
+        + ' AND cycle={}'
+
+    query = SQL(query_string)\
+        .format(*[Literal(val) for key, val in values.items()], Literal(committee_id), Literal(cycle))
+
+    return query
+
+#
+# fec file
+
+def fec_file_exists(fec_file_id: str) -> SQL:
+    query = SQL('SELECT * FROM fec.filings WHERE fec_file_id={fec_file_id}')\
+        .format(fec_file_id=Literal(fec_file_id))
+    return query
+
+
+def insert_fec_filing(filing: JSONType) -> SQL:
+    table = 'fec.filings'
+    query = get_insert_query(table, filing)
+    return query
+
+
+def amendment_chain_exists(fec_file_id: str, amendment_id: str) -> SQL:
+    query = SQL('SELECT * FROM fec.filing_amendment_chain WHERE fec_file_id={} AND amendment_id={}')\
+        .format(Literal(fec_file_id), Literal(amendment_id))
+    return query
+
+
+def insert_amendment_chain(fec_file_id: str, amendment_id: str, amendment_number: int) -> SQL:
+    query = SQL('INSERT INTO fec.filing_amendment_chain(fec_file_id, amendment_id, amendment_number) VALUES ({}, {}, {})')\
+        .format(Literal(fec_file_id), Literal(amendment_id), Literal(amendment_number))
+    return query
+
 
 # BUSYNESS LOGIC
 
@@ -68,31 +130,6 @@ def get_totals(committee_id: str, filters: Dict[str, Any]) -> Dict[str, Any]:
 
     return totals
 
-
-def get_filings_and_totals(committee_id: str) -> List[Dict[str, Any]]:
-    """gets filings and totals for committee
-
-    Args:
-        committee_id (str): ID of committee. eg C01234567
-
-    Returns:
-        List[Dict[str, Any]]: List of responses
-    """
-
-    filters = {
-        'committee_id': committee_id,
-        'cycle': '2020', #fallback_cycle if cycle_out_of_range else cycle, # TODO: ?
-        'per_page': 1,
-        'sort_hide_null': True,
-        'most_recent': True,
-        'form_category': 'REPORT'
-    }
-    filings = get_filings(deepcopy(filters))
-    totals = get_totals(committee_id, deepcopy(filters))
-
-    return filings, totals
-
-
 def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
     """upserts amendment chain linker table
 
@@ -103,11 +140,11 @@ def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
 
     amendment_number = 0
     for amendment in amendment_chain:
-        amendment_chain_exists_query = schema.amendment_chain_exists(filing_id, amendment)
+        amendment_chain_exists_query = amendment_chain_exists(filing_id, amendment)
         with Database() as db:
             if not db.record_exists(amendment_chain_exists_query):
-                query = schema.insert_amendment_chain(filing_id, amendment, amendment_number)
-                db.query(query)
+                query = insert_amendment_chain(filing_id, amendment, amendment_number)
+                db.try_query(query)
             amendment_number += 1
 
 
@@ -121,30 +158,26 @@ def upsert_filing(filing: JSONType) -> bool:
         bool: success
     """
 
-    pk = filing['fec_file_id']
-    amendment_chain = filing.pop('amendment_chain')
-    upsert_amendment_chain(pk, amendment_chain)
+    fec_file_id = filing['fec_file_id']
 
-    filing_exists_query = schema.fec_file_exists(pk)
+    if not fec_file_id or fec_file_id is 'None':
+        logger.warning(f'fec_file_id missing, filing: {filing}')
+        return False
+
+    amendment_chain = filing.pop('amendment_chain')
+    if amendment_chain:
+        upsert_amendment_chain(fec_file_id, amendment_chain)
+
+    filing_exists_query = fec_file_exists(fec_file_id)
     with Database() as db:
         if db.record_exists(filing_exists_query):
-            logger.error(f'Financial Summary with fec_file_id {pk} already exists')
+            logger.warning(f'Financial Summary with fec_file_id {fec_file_id} already exists')
             return True
 
         else:
-            query = schema.insert_fec_filing(filing)
+            query = insert_fec_filing(filing)
 
         return db.try_query(query)
-
-
-def upsert_filings(filings_list: JSONType):
-    """loops over filing records and upserts into db
-
-    Args:
-        filings_list (JSONType): list of filings as json/dict
-    """
-    for filing in filings_list:
-        upsert_filing(filing)
 
 
 def upsert_committee_total(commitee_total: JSONType) -> bool:
@@ -159,25 +192,24 @@ def upsert_committee_total(commitee_total: JSONType) -> bool:
     pk1 = commitee_total['committee_id']
     pk2 = commitee_total['cycle']
 
-    total_exists_query = schema.committee_total_exists(pk1, pk2)
+    total_exists_query = committee_total_exists(pk1, pk2)
     with Database() as db:
         if db.record_exists(total_exists_query):
-            query = schema.update_committee_total(commitee_total)
+            query = update_committee_total(commitee_total)
         else:
-            query = schema.insert_committee_total(commitee_total)
+            query = insert_committee_total(commitee_total)
 
         success = db.try_query(query)
         return success
 
 
-def upsert_committee_totals(commitee_total_list: JSONType):
-    """loops over list of committee totals records
-
-    Args:
-        commitee_total_list (JSONType): record as list of json/dicts
-    """
-    for committee_total in commitee_total_list:
-        upsert_committee_total(committee_total)
+def get_current_cycle_year() -> str:
+    """  The cycle begins with an odd year and is named for its ending, even year """
+    current_year = datetime.today().strftime('%Y')
+    is_even_year = int(current_year) % 2 == 0
+    if is_even_year:
+        return current_year
+    return str(int(current_year) + 1)
 
 
 def lambdaHandler(event:dict, context: object) -> bool:
@@ -188,7 +220,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
         context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
 
     Returns:
-        bool: Did this go well?
+        bool: Success
     """
 
     logger.debug(f'running {__file__}')
@@ -201,16 +233,34 @@ def lambdaHandler(event:dict, context: object) -> bool:
         message_parsed = parse_message(message)
         committee_id = message_parsed['committee_id']
 
-        filings, totals = get_filings_and_totals(committee_id)
+        # Get for current cycle
+        current_cycle_year = get_current_cycle_year()
+        filters = {
+            'committee_id': committee_id,
+            'cycle': current_cycle_year,
+            'per_page': 1,
+            'sort_hide_null': True,
+            'most_recent': True,
+            'form_category': 'REPORT'
+        }
 
+        try:
+            filings = get_filings(deepcopy(filters))
+            totals = get_totals(committee_id, deepcopy(filters))
+        except NotFound404Exception as e:
+            logger.warning(f'{e} query filters: {filters}')
+            continue
+
+        # handle fec.filings
         # filing is list of lists, flatten it
         filings_flat = [item for sublist in filings for item in sublist]
-        upsert_filings(filings_flat)
+        for filing in filings_flat:
+            upsert_filing(filing)
 
-        # filing is list of lists, flatten it
+        # handle fec.committee_totals
+        # totals is list of lists, flatten it
         totals_flat = [item for sublist in totals for item in sublist]
-        upsert_committee_totals(totals_flat)
-
-        delete_message_from_sqs(message)
+        for committee_total in totals_flat:
+            upsert_committee_total(committee_total)
 
     return True

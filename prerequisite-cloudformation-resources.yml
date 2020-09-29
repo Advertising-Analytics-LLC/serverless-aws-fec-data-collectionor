@@ -5,13 +5,21 @@ Parameters:
     Default: v0.0.1
     Description: Code verison, see bin/deploy.sh
     Type: String
+  DeadLetterQueueMessageRetentionPeriod:
+    Default: 1209600 # 604800 # 7 days in seconds
+    Type: Number
   CopyFromBucketName:
     Default: copy-from
     Description: Name for bucket that will be used with COPY FROM command to inert data to redshift
     Type: String
-  DeadLetterQueueName:
-    Default: dead-letter-queue
-    Description: Name for dead-letter Queue
+  FilingDeadLetterQueueName:
+    Default: filing-dead-letter-queue
+    Type: String
+  CommitteeDeadLetterQueueName:
+    Default: committee-dead-letter-queue
+    Type: String
+  CandidateDeadLetterQueueName:
+    Default: candidate-dead-letter-queue
     Type: String
   DeploymentBucketName:
     Default: serverless-deploymentbucket
@@ -25,20 +33,23 @@ Parameters:
     Default: committee-sync-queue
     Description: Name of Queue with Committee from Sync lambda
     Type: String
-  NewFilingQueueName:
-    Default: fec-new-filing-queue
+  FinancialSummaryQueueName:
+    Default: fec-financialsummary-queue
     Description: Name of Queue for new filings, processed for Financial Summary
     Type: String
-  NewFilingQueueSEName:
-    Default: fec-new-filing-se-queue
+  FilingRedriveCount:
+    Default: 5
+    Type: Number
+  FilingSEQueueName:
+    Default: fec-se-queue
     Description: Queue for new filings, consumed by loader for Schedule E FEC filings
     Type: String
-  SupplementalDataQueueName:
-    Default: fec-new-filing-supplemental-data-queue
+  FilingF1SQueueName:
+    Default: fec-f1s-queue
     Description: Name of Queue for new filings to be processed for supplemental FEC filings
     Type: String
-  TransactionLoadingQueueName:
-    Default: fec-transaction-loading-queue
+  FilingSBQueueName:
+    Default: fec-sb-queue
     Description: Queue for new filings, consumed by loader for Schedule B FEC filings
     Type: String
   RSSFeedTopicName:
@@ -47,6 +58,10 @@ Parameters:
     Type: String
 
 Resources:
+
+########################################
+# S3 Buckets
+########################################
 
   DeploymentBucket:
     Type: AWS::S3::Bucket
@@ -69,12 +84,6 @@ Resources:
          IgnorePublicAcls: true
          RestrictPublicBuckets: true
       Tags:
-      - Key: managed_by
-        Value: CloudFormation
-      - Key: Project
-        Value: FEC Data-sync
-      - Key: created_by
-        Value: sblack@rhythmictech.com
       - Key: Name
         Value:
           Ref: DeploymentBucketName
@@ -104,12 +113,6 @@ Resources:
          IgnorePublicAcls: true
          RestrictPublicBuckets: true
       Tags:
-      - Key: managed_by
-        Value: CloudFormation
-      - Key: Project
-        Value: FEC Data-sync
-      - Key: created_by
-        Value: sblack@rhythmictech.com
       - Key: Name
         Value:
           Ref: CopyFromBucketName
@@ -118,20 +121,19 @@ Resources:
       VersioningConfiguration:
          Status: Enabled
 
-  DeadLetterQueue:
+########################################
+# Candidate data stream
+########################################
+
+  CandidateDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
-      MessageRetentionPeriod: 604800 # 7 days in seconds
-      QueueName: !Ref DeadLetterQueueName
+      MessageRetentionPeriod:
+        Ref: DeadLetterQueueMessageRetentionPeriod
+      QueueName: !Ref CandidateDeadLetterQueueName
       Tags:
-      - Key: managed_by
-        Value: CloudFormation
-      - Key: Project
-        Value: FEC Data-sync
-      - Key: created_by
-        Value: sblack@rhythmictech.com
       - Key: Name
-        Value: !Ref DeadLetterQueueName
+        Value: !Ref CandidateDeadLetterQueueName
       - Key: Version
         Value: !Ref Version
 
@@ -140,17 +142,26 @@ Resources:
     Properties:
       QueueName: !Ref CandidateSyncQueueName
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt CandidateDeadLetterQueue.Arn
         maxReceiveCount: 5
       Tags:
-      - Key: managed_by
-        Value: CloudFormation
-      - Key: Project
-        Value: FEC Data-sync
-      - Key: created_by
-        Value: sblack@rhythmictech.com
       - Key: Name
         Value: !Ref CandidateSyncQueueName
+      - Key: Version
+        Value: !Ref Version
+
+########################################
+# Committee data stream
+########################################
+
+  CommitteeDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      QueueName: !Ref CommitteeDeadLetterQueueName
+      Tags:
+      - Key: Name
+        Value: !Ref CommitteeDeadLetterQueueName
       - Key: Version
         Value: !Ref Version
 
@@ -160,97 +171,95 @@ Resources:
       QueueName: !Ref CommitteeSyncQueueName
       VisibilityTimeout: 300
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt CommitteeDeadLetterQueue.Arn
         maxReceiveCount: 5
       Tags:
-      - Key: managed_by
-        Value: CloudFormation
-      - Key: Project
-        Value: FEC Data-sync
-      - Key: created_by
-        Value: sblack@rhythmictech.com
       - Key: Name
         Value: !Ref CommitteeSyncQueueName
       - Key: Version
         Value: !Ref Version
 
-  NewFilingQueue:
+########################################
+# Filing data stream
+########################################
+
+  FinancialSummaryDLQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Ref NewFilingQueueName
-      VisibilityTimeout: 90
+      MessageRetentionPeriod: 1209600
+
+  FinancialSummaryQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref FinancialSummaryQueueName
+      VisibilityTimeout: 900
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FinancialSummaryDLQueue.Arn
         maxReceiveCount: 5
+        # maxReceiveCount: !Ref FilingRedriveCount
       Tags:
-      - Key: managed_by
-        Value: CloudFormation
-      - Key: Project
-        Value: FEC Data-sync
-      - Key: created_by
-        Value: sblack@rhythmictech.com
       - Key: Name
-        Value: !Ref NewFilingQueueName
+        Value: !Ref FinancialSummaryQueueName
       - Key: Version
         Value: !Ref Version
 
-  NewFilingQueueSE:
+  FilingSEDLQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Ref NewFilingQueueSEName
+      MessageRetentionPeriod: 1209600
+
+  FilingSEQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref FilingSEQueueName
       VisibilityTimeout: 900
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FilingSEDLQueue.Arn
+        # maxReceiveCount: !Ref FilingRedriveCount
         maxReceiveCount: 5
       Tags:
-      - Key: managed_by
-        Value: CloudFormation
-      - Key: Project
-        Value: FEC Data-sync
-      - Key: created_by
-        Value: sblack@rhythmictech.com
       - Key: Name
-        Value: !Ref NewFilingQueueSEName
+        Value: !Ref FilingSEQueueName
       - Key: Version
         Value: !Ref Version
 
-  SupplementalDataQueue:
+  FilingF1SDLQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Ref SupplementalDataQueueName
+      MessageRetentionPeriod: 1209600
+
+  FilingF1SQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref FilingF1SQueueName
       VisibilityTimeout: 900
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FilingF1SDLQueue.Arn
+        # maxReceiveCount: !Ref FilingRedriveCount
         maxReceiveCount: 5
       Tags:
-      - Key: managed_by
-        Value: CloudFormation
-      - Key: Project
-        Value: FEC Data-sync
-      - Key: created_by
-        Value: sblack@rhythmictech.com
       - Key: Name
-        Value: !Ref SupplementalDataQueueName
+        Value: !Ref FilingF1SQueueName
       - Key: Version
         Value: !Ref Version
 
-  TransactionLoadingQueue:
+  FilingSBDLQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Ref TransactionLoadingQueueName
+      MessageRetentionPeriod: 1209600
+
+  FilingSBQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref FilingSBQueueName
       VisibilityTimeout: 900
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt FilingSBDLQueue.Arn
+        # maxReceiveCount: !Ref FilingRedriveCount
         maxReceiveCount: 5
       Tags:
-      - Key: managed_by
-        Value: CloudFormation
-      - Key: Project
-        Value: FEC Data-sync
-      - Key: created_by
-        Value: sblack@rhythmictech.com
       - Key: Name
-        Value: !Ref TransactionLoadingQueueName
+        Value: !Ref FilingSBQueueName
       - Key: Version
         Value: !Ref Version
 
@@ -259,21 +268,15 @@ Resources:
     Properties:
       DisplayName: !Ref RSSFeedTopicName
       Subscription:
-        - Endpoint: !GetAtt NewFilingQueueSE.Arn
+        - Endpoint: !GetAtt FilingSEQueue.Arn
           Protocol: "sqs"
-        - Endpoint: !GetAtt NewFilingQueue.Arn
+        - Endpoint: !GetAtt FinancialSummaryQueue.Arn
           Protocol: "sqs"
-        - Endpoint: !GetAtt SupplementalDataQueue.Arn
+        - Endpoint: !GetAtt FilingF1SQueue.Arn
           Protocol: "sqs"
-        - Endpoint: !GetAtt TransactionLoadingQueue.Arn
+        - Endpoint: !GetAtt FilingSBQueue.Arn
           Protocol: "sqs"
       Tags:
-      - Key: managed_by
-        Value: CloudFormation
-      - Key: Project
-        Value: FEC Data-sync
-      - Key: created_by
-        Value: sblack@rhythmictech.com
       - Key: Name
         Value: !Ref RSSFeedTopicName
       - Key: Version
@@ -283,17 +286,17 @@ Resources:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
-        - !Ref NewFilingQueue
-        - !Ref NewFilingQueueSE
-        - !Ref TransactionLoadingQueue
-        - !Ref SupplementalDataQueue
+        - !Ref FinancialSummaryQueue
+        - !Ref FilingSEQueue
+        - !Ref FilingSBQueue
+        - !Ref FilingF1SQueue
       PolicyDocument:
         Statement:
           - Action:
             - sqs:SendMessage
             Effect: Allow
             Principal: "*"
-            Resource: !GetAtt NewFilingQueue.Arn
+            Resource: !GetAtt FinancialSummaryQueue.Arn
             Condition:
              ArnEquals:
               aws:SourceArn: !Ref RSSFeedTopic
@@ -301,7 +304,7 @@ Resources:
             - sqs:SendMessage
             Effect: Allow
             Principal: "*"
-            Resource: !GetAtt TransactionLoadingQueue.Arn
+            Resource: !GetAtt FilingSBQueue.Arn
             Condition:
              ArnEquals:
               aws:SourceArn: !Ref RSSFeedTopic
@@ -309,7 +312,7 @@ Resources:
             - sqs:SendMessage
             Effect: Allow
             Principal: "*"
-            Resource: !GetAtt NewFilingQueueSE.Arn
+            Resource: !GetAtt FilingSEQueue.Arn
             Condition:
              ArnEquals:
               aws:SourceArn: !Ref RSSFeedTopic
@@ -317,7 +320,7 @@ Resources:
             - sqs:SendMessage
             Effect: Allow
             Principal: "*"
-            Resource: !GetAtt SupplementalDataQueue.Arn
+            Resource: !GetAtt FilingF1SQueue.Arn
             Condition:
              ArnEquals:
               aws:SourceArn: !Ref RSSFeedTopic
@@ -352,33 +355,29 @@ Outputs:
     Description: Name of Bucket which Serverless CloudFormation is deployed to
     Value: !Ref DeploymentBucket
 
-  NewFilingQueueArn:
-    Description: Arn of Queue for new Schedule B RSS filings
-    Value: !GetAtt NewFilingQueue.Arn
+  FinancialSummaryQueueArn:
+    Value: !GetAtt FinancialSummaryQueue.Arn
 
-  NewFilingQueueName:
-    Description: Name of Queue for new Schedule B RSS filings
-    Value: !GetAtt NewFilingQueue.QueueName
+  FinancialSummaryQueueName:
+    Value: !GetAtt FinancialSummaryQueue.QueueName
 
-  NewFilingQueueSEArn:
-    Description: Arn of Queue for new Schedule E RSS filings
-    Value: !GetAtt NewFilingQueueSE.Arn
+  FilingSEQueueArn:
+    Value: !GetAtt FilingSEQueue.Arn
 
-  NewFilingQueueSEName:
-    Description: Name of Queue for new Schedule E RSS filings
-    Value: !GetAtt NewFilingQueueSE.QueueName
+  FilingSEQueueName:
+    Value: !GetAtt FilingSEQueue.QueueName
 
-  SupplementalDataQueueArn:
-    Value: !GetAtt SupplementalDataQueue.Arn
+  FilingF1SQueueArn:
+    Value: !GetAtt FilingF1SQueue.Arn
 
-  SupplementalDataQueueName:
-    Value: !GetAtt SupplementalDataQueue.QueueName
+  FilingF1SQueueName:
+    Value: !GetAtt FilingF1SQueue.QueueName
 
-  TransactionLoadingQueueArn:
-    Value: !GetAtt TransactionLoadingQueue.Arn
+  FilingSBQueueArn:
+    Value: !GetAtt FilingSBQueue.Arn
 
-  TransactionLoadingQueueName:
-    Value: !GetAtt TransactionLoadingQueue.QueueName
+  FilingSBQueueName:
+    Value: !GetAtt FilingSBQueue.QueueName
 
   RSSFeedTopicArn:
     Description: Arn of SNS Topic for new new RSS filings

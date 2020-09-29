@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/rhythmictech/serverless-aws-python3-openfec-starter#readme",
   "dependencies": {
-    "serverless": "^1.80.0",
     "serverless-python-requirements": "^5.1.0"
   }
 }

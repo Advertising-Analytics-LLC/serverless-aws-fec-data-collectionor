@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS fec.filings_schedule_b (
     beneficiary_candidate_state VARCHAR(100) DEFAULT NULL,
     beneficiary_candidate_suffix VARCHAR(100) DEFAULT NULL,
     beneficiary_committee_fec_id VARCHAR(100) DEFAULT NULL,
-    beneficiary_committee_name VARCHAR(100) DEFAULT NULL,
+    beneficiary_committee_name VARCHAR(200) DEFAULT NULL,
     category_code VARCHAR(100) DEFAULT NULL,
     communication_date VARCHAR(100) DEFAULT NULL,
     conduit_city VARCHAR(100) DEFAULT NULL,

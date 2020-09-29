@@ -300,12 +300,9 @@ provider:
         - "${self:custom.${self:provider.stage}.copy_from_bucket_arn}/*"
     - Effect: "Allow"
       Action:
-        - dynamodb:GetItem
-        - dynamodb:UpdateItem
-        - dynamodb:PutItem
-        - dynamodb:DeleteItem
+        - "dynamodb:*"
       Resource:
-        - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/fec-item-table"
+        - "*"
   tags:
     serverless_managed: true
     serverless_name: ${self:service}

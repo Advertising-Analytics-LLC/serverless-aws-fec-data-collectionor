@@ -162,6 +162,6 @@ def lambdaHandler(event: dict, context: object) -> bool:
             db.rollback()
             raise e
 
-    table.delete()
+    fec_item_table.delete()
 
     return True

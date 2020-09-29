@@ -329,19 +329,6 @@ resources:
       Properties:
         DashboardBody: ${file(my-dashboard-body.js):myDashboardBody}
         DashboardName: ${self:service}-dashboard
-    FECItemTable:
-      Type: 'AWS::DynamoDB::Table'
-      Properties:
-        AttributeDefinitions:
-          - AttributeName: fec_file_id
-            AttributeType: N
-        KeySchema:
-          - AttributeName: fec_file_id
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        TableName: fec-item-table
 #  - ${file(cfn_resources/deploymentBucket.yml)}
 #  - ${file(cfn_resources/sqsQueue.yml)}
 

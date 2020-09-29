@@ -14,7 +14,7 @@ with open(event_file) as fh:
 context = {}
 
 def test_lambdaHandler():
-    os.environ['SQS_QUEUE_NAME'] = 'fec-transaction-loading-queue'
+    os.environ['SQS_QUEUE_NAME'] = 'fec-sb-queue'
     os.environ['FILING_TYPE'] = 'SB'
     from src.FECFileLoader import lambdaHandler
     result = lambdaHandler(event, context)

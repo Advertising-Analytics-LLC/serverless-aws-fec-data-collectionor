@@ -14,7 +14,6 @@ custom:
     dockerizePip: false
   dev:
     API_KEY: /global/openfec-api/api_key
-    cloudwatch_dashboard: ${file(cloudwatch.json)}
     deploymentBucketName: ${cf:fec-datasync-resources.DeploymentBucketName} #serverless-deploymentbucket-us-east-1-648881544937
     LOG_LEVEL: DEBUG
     candidate_sync_queue_arn: ${cf:fec-datasync-resources.CandidateSyncQueueArn}
@@ -299,6 +298,14 @@ provider:
       Resource:
         - "${self:custom.${self:provider.stage}.copy_from_bucket_arn}"
         - "${self:custom.${self:provider.stage}.copy_from_bucket_arn}/*"
+    - Effect: "Allow"
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+      Resource:
+        - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/fec-item-table"
   tags:
     serverless_managed: true
     serverless_name: ${self:service}
@@ -322,6 +329,19 @@ resources:
       Properties:
         DashboardBody: ${file(my-dashboard-body.js):myDashboardBody}
         DashboardName: ${self:service}-dashboard
+    FECItemTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: fec_file_id
+            AttributeType: N
+        KeySchema:
+          - AttributeName: fec_file_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: fec-item-table
 #  - ${file(cfn_resources/deploymentBucket.yml)}
 #  - ${file(cfn_resources/sqsQueue.yml)}
 

@@ -18,6 +18,7 @@ import re
 import time
 from collections import OrderedDict
 from copy import deepcopy
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 from psycopg2 import sql
 from psycopg2.sql import SQL, Literal
@@ -27,11 +28,9 @@ from src.sqs import parse_message
 
 
 FILING_TYPE = os.environ['FILING_TYPE']
-S3_BUCKET_NAME = os.environ['S3_BUCKET_NAME']
 REDSHIFT_COPY_ROLE = os.environ['REDSHIFT_COPY_ROLE']
 
-session = boto3.Session()
-s3 = session.client('s3')
+dynamodb = boto3.resource('dynamodb')
 
 filing_table_mapping = {
     'SB': 'filings_schedule_b',
@@ -39,11 +38,13 @@ filing_table_mapping = {
     'F1S': 'form_1_supplemental'
 }
 
+
 class TransactionIdMissingException(Exception):
     """ transaction ID is misling
     Attributes:
         message -- explanation of the error
     """
+
     def __init__(self, message):
         self.message = message
 
@@ -53,20 +54,31 @@ def parse_event_record(eventrecord) -> (dict, int):
     filing_id = message_parsed['filing_id'].replace('FEC-', '')
 
     if not filing_id or filing_id == 'None':
-        raise TransactionIdMissingException(f'Missing filing ID for filing record {message_parsed}')
+        raise TransactionIdMissingException(
+            f'Missing filing ID for filing record {message_parsed}')
 
     filing_id = int(filing_id)
     return message_parsed, filing_id
 
 
-def clean_tmp_dir(temp_filedir='/tmp/'):
-    """ removes old files from tmp dir """
-    max_age = time.time() - (15 * 60)
-    for f in os.listdir(temp_filedir):
-        if os.path.isfile(f):
-            filepath = os.path.join(temp_filedir, f)
-            if os.stat(filepath).st_mtime < max_age:
-                os.remove(filepath)
+def create_dynamo_table(table_name_prefix):
+    """ creates dynamodb table, waits for existance, returns table """
+    datetime_now_string = datetime.isoformat(
+        datetime.now(timezone.utc))[:-6].replace(':', '')
+    table_name = f'{table_name_prefix}-{datetime_now_string}'
+    table = dynamodb.create_table(
+        TableName=table_name,
+        KeySchema=[
+            {'AttributeName': 'fec_file_id', 'KeyType': 'HASH'},
+            {'AttributeName': 'transaction_id_number', 'KeyType': 'RANGE'}],
+        AttributeDefinitions=[
+            {'AttributeName': 'transaction_id_number', 'AttributeType': 'S'},
+            {'AttributeName': 'fec_file_id', 'AttributeType': 'S'}],
+        ProvisionedThroughput={'ReadCapacityUnits': 1, 'WriteCapacityUnits': 1})
+
+    table.meta.client.get_waiter('table_exists').wait(TableName=table_name)
+
+    return table
 
 
 def lambdaHandler(event: dict, context: object) -> bool:
@@ -88,12 +100,7 @@ def lambdaHandler(event: dict, context: object) -> bool:
 
     insert_values = []
     fec_file_ids = set()
-    temp_filename = f'{uuid.uuid4()}.json'
-    temp_filedir = '/tmp/'
-    temp_filepath = temp_filedir + temp_filename
     database_table = filing_table_mapping[FILING_TYPE]
-
-    clean_tmp_dir()
 
     for message in messages:
 
@@ -120,36 +127,44 @@ def lambdaHandler(event: dict, context: object) -> bool:
     else:
         logger.info(f'Found fec_file_ids: {",".join(map(str, fec_file_ids))}')
 
-    logger.debug(f'Number itemizations: {len(insert_values)}, Number FEC Filings: {len(fec_file_ids)}')
+    logger.debug(
+        f'Number itemizations: {len(insert_values)}, Number FEC Filings: {len(fec_file_ids)}')
 
-    # write to file
-    with open(temp_filepath, 'w+') as fh:
+    fec_item_table = create_dynamo_table(database_table)
+
+    # write to dynamo
+    with fec_item_table.batch_writer() as writer:
         for val in insert_values:
-            json.dump(val, fh, default=serialize_dates)
-            fh.write('\n')
-
-    # upload to S3
-    with open(temp_filepath, 'rb+') as fh:
-        logger.debug(f'uploading {temp_filename}')
-        s3.upload_fileobj(fh, S3_BUCKET_NAME, temp_filename)
+            itm = {k: str(serialize_dates(v)) for k, v in val.items() if v}
+            logger.debug(itm)
+            writer.put_item(
+                Item=itm
+            )
 
     # delete old records and copy new ones to DB
     with Database() as db:
-        rows_deleted = db.query_rowcount(
-            sql.SQL(f'DELETE FROM fec.{database_table} WHERE fec_file_id IN ' + '({})'
-               .format(', '.join([f'\'{str(val)}\'' for val in fec_file_ids]))))
+        try:
+            rows_deleted = db.query_rowcount(
+                sql.SQL(f'DELETE FROM fec.{database_table} WHERE fec_file_id IN ' + '({})'
+                        .format(', '.join([f'\'{str(val)}\'' for val in fec_file_ids]))))
 
-        db.query(f'COPY fec.{database_table} FROM \'s3://{S3_BUCKET_NAME}/{temp_filename}\' IAM_ROLE \'{REDSHIFT_COPY_ROLE}\' FORMAT AS JSON \'auto\';')
+            db.query(
+                f'COPY fec.{database_table} FROM \'dynamodb://{fec_item_table.table_name}\' IAM_ROLE \'{REDSHIFT_COPY_ROLE}\' readratio 100;')
 
-        copy_notice_msg = db.conn.notices[0]
-        copy_rowcount = re.search(r'[,]{1}\s([0-9]*).*', copy_notice_msg).group(1)
-        logger.debug(copy_notice_msg)
+            copy_notice_msg = db.conn.notices[0]
+            copy_rowcount = re.search(
+                r'[,]{1}\s([0-9]*).*', copy_notice_msg).group(1)
+            logger.debug(copy_notice_msg)
 
-        if rows_deleted > int(copy_rowcount):
-            logger.warning(f'Expected # rows: {len(insert_values)}, # copied: {copy_rowcount}, # deleted: {rows_deleted}, fec_file_ids: {",".join(map(str, fec_file_ids))}')
+            if rows_deleted > int(copy_rowcount):
+                logger.warning(
+                    f'Expected # rows: {len(insert_values)}, # copied: {copy_rowcount}, # deleted: {rows_deleted}, fec_file_ids: {",".join(map(str, fec_file_ids))}')
 
-        db.commit()
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            raise e
 
-    s3.delete_object(Bucket=S3_BUCKET_NAME, Key=temp_filename)
+    fec_item_table.delete()
 
     return True

@@ -124,7 +124,6 @@ def lambdaHandler(event:dict, context: object) -> bool:
     for message in messages:
         body = json.loads(message['body'])
         candidate_id = body['candidate_id']
-        # candidate_id = 'S0KY00339'
         candidate_detail = get_candidate(candidate_id)
         # candidacy_filing = get_canidacy_filing(candidate_id)
         upsert_candidate(candidate_detail)

@@ -23,8 +23,6 @@ from src.sqs import delete_message_from_sqs, parse_message
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 
-# BUSYNESS LOGIC
-
 def get_committee_data(committee_id: str) -> JSONType:
     """Pulls the committee data from the openFEC API
         https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__

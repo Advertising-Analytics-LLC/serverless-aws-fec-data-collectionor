@@ -14,7 +14,6 @@ custom:
     dockerizePip: false
   dev:
     API_KEY: /global/openfec-api/api_key
-    cloudwatch_dashboard: ${file(cloudwatch.json)}
     deploymentBucketName: ${cf:fec-datasync-resources.DeploymentBucketName} #serverless-deploymentbucket-us-east-1-648881544937
     LOG_LEVEL: DEBUG
     candidate_sync_queue_arn: ${cf:fec-datasync-resources.CandidateSyncQueueArn}
@@ -299,6 +298,11 @@ provider:
       Resource:
         - "${self:custom.${self:provider.stage}.copy_from_bucket_arn}"
         - "${self:custom.${self:provider.stage}.copy_from_bucket_arn}/*"
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:*"
+      Resource:
+        - "*"
   tags:
     serverless_managed: true
     serverless_name: ${self:service}

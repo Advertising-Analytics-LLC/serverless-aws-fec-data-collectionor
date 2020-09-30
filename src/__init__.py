@@ -22,3 +22,4 @@ def serialize_dates(o: Any) -> str:
     """
     if isinstance(o, (datetime.date, datetime.datetime)):
         return o.strftime('%Y-%m-%d')
+    return o

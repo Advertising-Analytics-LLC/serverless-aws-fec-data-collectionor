@@ -18,6 +18,7 @@ import re
 import time
 from collections import OrderedDict
 from copy import deepcopy
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 from psycopg2 import sql
 from psycopg2.sql import SQL, Literal
@@ -62,7 +63,9 @@ def parse_event_record(eventrecord) -> (dict, int):
 
 def create_dynamo_table(table_name_prefix):
     """ creates dynamodb table, waits for existance, returns table """
-    table_name = f'{table_name_prefix}-{str(uuid.uuid4())}'
+    datetime_now_string = datetime.isoformat(
+        datetime.now(timezone.utc))[:-6].replace(':', '')
+    table_name = f'{table_name_prefix}-{datetime_now_string}'
     table = dynamodb.create_table(
         TableName=table_name,
         KeySchema=[

@@ -161,10 +161,12 @@ def lambdaHandler(event: dict, context: object) -> bool:
                     f'Expected # rows: {len(insert_values)}, # copied: {copy_rowcount}, # deleted: {rows_deleted}, fec_file_ids: {",".join(map(str, fec_file_ids))}')
 
             db.commit()
+
         except Exception as e:
             db.rollback()
             raise e
 
-    fec_item_table.delete()
+        finally:
+            fec_item_table.delete()
 
     return True

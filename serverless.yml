@@ -135,7 +135,7 @@ functions:
     handler: src/FilingSync.lambdaBackfillHandler
     # reservedConcurrency: ${self:custom.backfill}
     reservedConcurrency: 1
-    timeout: 120
+    timeout: 900
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}

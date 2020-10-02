@@ -70,10 +70,10 @@ def create_dynamo_table(table_name_prefix):
         TableName=table_name,
         KeySchema=[
             {'AttributeName': 'fec_file_id', 'KeyType': 'HASH'},
-            {'AttributeName': 'transaction_id_number', 'KeyType': 'RANGE'}],
+            {'AttributeName': 'random_hash', 'KeyType': 'RANGE'}],
         AttributeDefinitions=[
-            {'AttributeName': 'transaction_id_number', 'AttributeType': 'S'},
-            {'AttributeName': 'fec_file_id', 'AttributeType': 'S'}],
+            {'AttributeName': 'fec_file_id', 'AttributeType': 'S'},
+            {'AttributeName': 'random_hash', 'AttributeType': 'S'}],
         BillingMode='PAY_PER_REQUEST')
 
     table.meta.client.get_waiter('table_exists').wait(TableName=table_name)
@@ -136,10 +136,9 @@ def lambdaHandler(event: dict, context: object) -> bool:
     with fec_item_table.batch_writer() as writer:
         for val in insert_values:
             itm = {k: str(serialize_dates(v)) for k, v in val.items() if v}
+            itm['random_hash'] = str(uuid.uuid4())
             logger.debug(itm)
-            writer.put_item(
-                Item=itm
-            )
+            writer.put_item(Item=itm)
 
     # delete old records and copy new ones to DB
     with Database() as db:

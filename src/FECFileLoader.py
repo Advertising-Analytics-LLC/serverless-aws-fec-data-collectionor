@@ -74,7 +74,7 @@ def create_dynamo_table(table_name_prefix):
         AttributeDefinitions=[
             {'AttributeName': 'transaction_id_number', 'AttributeType': 'S'},
             {'AttributeName': 'fec_file_id', 'AttributeType': 'S'}],
-        ProvisionedThroughput={'ReadCapacityUnits': 1, 'WriteCapacityUnits': 1})
+        BillingMode='PAY_PER_REQUEST')
 
     table.meta.client.get_waiter('table_exists').wait(TableName=table_name)
 

@@ -133,8 +133,7 @@ functions:
   FilingBackfill:
     description: Crawls back in time over filings
     handler: src/FilingSync.lambdaBackfillHandler
-    # reservedConcurrency: ${self:custom.backfill}
-    reservedConcurrency: 1
+    reservedConcurrency: ${self:custom.backfill}
     timeout: 900
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}

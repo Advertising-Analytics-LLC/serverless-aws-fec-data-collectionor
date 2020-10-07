@@ -74,7 +74,7 @@ def insert_fec_filing(filing: JSONType) -> SQL:
 
 def amendment_chain_exists(fec_file_id: str, amendment_id: str) -> SQL:
     query = SQL('SELECT * FROM fec.filing_amendment_chain WHERE fec_file_id={} AND amendment_id={}')\
-        .format(Literal(fec_file_id), Literal(amendment_id))
+        .format(Literal(int(fec_file_id)), Literal(int(amendment_id)))
     return query
 
 

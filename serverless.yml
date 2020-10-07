@@ -9,6 +9,7 @@ frameworkVersion: ">=2.0.0 <3.0.0"
 # Custom variables
 custom:
   backfill: 0
+  loader_concurrency: 2
   Version: ${cf:fec-datasync-resources.Version}
   pythonRequirements:
     dockerizePip: false
@@ -74,7 +75,7 @@ functions:
   CandidateLoader:
     description: Triggered by SQS it recieves Messages and writes candidate data to the DB
     handler: src/CandidateLoader.lambdaHandler
-    reservedConcurrency: 1
+    reservedConcurrency: ${self:custom.loader_concurrency}
     timeout: 30
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -110,7 +111,7 @@ functions:
   CommitteeLoader:
     description: Recieves committee Ids from SQS, queries api for committee info, updates DB
     handler: src/CommitteLoader.committeLoader
-    reservedConcurrency: 1
+    reservedConcurrency: ${self:custom.loader_concurrency}
     timeout: 300
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -145,7 +146,7 @@ functions:
   FinancialSummaryLoader:
     description: Takes new filings from SQS, queries api, writes to DB
     handler: src/FinancialSummaryLoader.lambdaHandler
-    reservedConcurrency: 1
+    reservedConcurrency: ${self:custom.loader_concurrency}
     timeout: 900
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
@@ -158,7 +159,7 @@ functions:
     description: Gets FEC file url from SQS, downloads, parses for Schedule B filings, loads into DB
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008
-    reservedConcurrency: 1
+    reservedConcurrency: ${self:custom.loader_concurrency}
     timeout: 900
     environment:
       FILING_TYPE: 'SB'
@@ -173,7 +174,7 @@ functions:
     description: Gets FEC file url from SQS, downloads, parses for Schedule E filings, loads into DB
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008
-    reservedConcurrency: 1
+    reservedConcurrency: ${self:custom.loader_concurrency}
     timeout: 900
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -188,7 +189,7 @@ functions:
     description: Gets FEC file url from SQS, downloads, parses for Form 1 Supplemental Data, loads into DB
     handler: src/FECFileLoader.lambdaHandler
     memorySize: 3008
-    reservedConcurrency: 1
+    reservedConcurrency: ${self:custom.loader_concurrency}
     timeout: 900
     environment:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}

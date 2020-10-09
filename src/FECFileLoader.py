@@ -135,7 +135,7 @@ def lambdaHandler(event: dict, context: object) -> bool:
     # write to dynamo
     with fec_item_table.batch_writer() as writer:
         for val in insert_values:
-            itm = {k: str(serialize_dates(v)) for k, v in val.items() if v}
+            itm = {k: str(serialize_dates(v)).strip() for k, v in val.items() if v}
             itm['random_hash'] = str(uuid.uuid4())
             logger.debug(itm)
             writer.put_item(Item=itm)

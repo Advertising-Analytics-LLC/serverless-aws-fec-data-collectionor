@@ -75,15 +75,7 @@ def condense_dimension(containing_dict: Dict[str, Any], column_name: str) -> Dic
 
 
 def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
-    """upserts a single filing
-
-    Args:
-        fec_file_id (str): FEC filing ID
-        filing (Dict[str, Any]): Filing object
-
-    Returns:
-        bool: if upsert succeeded
-    """
+    """upserts a single filing"""
 
     # condense a few lists
     candidate_message = condense_dimension(candidate_message, 'cycles')

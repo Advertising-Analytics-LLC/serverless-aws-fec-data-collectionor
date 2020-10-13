@@ -162,6 +162,7 @@ def upsert_filing(filing: JSONType) -> bool:
         return False
 
     fec_file_id = fec_file_id.replace('FEC-', '')
+    filing['fec_file_id'] = fec_file_id
 
     amendment_chain = filing.pop('amendment_chain')
     if amendment_chain:

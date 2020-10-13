@@ -31,6 +31,7 @@ FILING_TYPE = os.environ['FILING_TYPE']
 REDSHIFT_COPY_ROLE = os.environ['REDSHIFT_COPY_ROLE']
 
 dynamodb = boto3.resource('dynamodb')
+errored_fec_files_table = dynamodb.Table('errored-fec-files')
 
 filing_table_mapping = {
     'SB': 'filings_schedule_b',
@@ -81,6 +82,27 @@ def create_dynamo_table(table_name_prefix):
     return table
 
 
+def iter_fec_filing(filing_id: int, insert_values: list, fec_file_ids: set):
+    """ requests filing and MUTATES insert_values & fec_file_ids!!! """
+
+    try:
+        for fec_item in fecfile.iter_http(filing_id, options={'filter_itemizations': [FILING_TYPE]}):
+
+            if fec_item.data_type != 'itemization':
+                continue
+
+            fec_file_ids.add(filing_id)
+            data_dict = fec_item.data
+            data_dict['fec_file_id'] = filing_id
+            insert_values.append(data_dict)
+
+    except fecfile.FilingUnavailableError as e:
+        logger.warning(e)
+        errored_fec_files_table.put_item(
+            Item={'fec_file_id': filing_id,
+                  'error': e.message})
+
+
 def lambdaHandler(event: dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
         takes events that have fec file IDs, gets the filing from docquery and writes to the DB
@@ -110,16 +132,6 @@ def lambdaHandler(event: dict, context: object) -> bool:
             logger.warning(te)
             continue
 
-        for fec_item in fecfile.iter_http(filing_id, options={'filter_itemizations': [FILING_TYPE]}):
-
-            if fec_item.data_type != 'itemization':
-                continue
-
-            fec_file_ids.add(filing_id)
-            data_dict = fec_item.data
-            data_dict['fec_file_id'] = filing_id
-            insert_values.append(data_dict)
-
     # If there was no applicable data return
     if len(insert_values) == 0:
         logger.info('No relevent FEC items. Exiting.')
@@ -135,7 +147,8 @@ def lambdaHandler(event: dict, context: object) -> bool:
     # write to dynamo
     with fec_item_table.batch_writer() as writer:
         for val in insert_values:
-            itm = {k: str(serialize_dates(v)).strip() for k, v in val.items() if v}
+            itm = {k: str(serialize_dates(v)).strip()
+                   for k, v in val.items() if v}
             itm['random_hash'] = str(uuid.uuid4())
             logger.debug(itm)
             writer.put_item(Item=itm)

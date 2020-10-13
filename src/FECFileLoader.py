@@ -100,7 +100,7 @@ def iter_fec_filing(filing_id: int, insert_values: list, fec_file_ids: set):
         logger.warning(e)
         errored_fec_files_table.put_item(
             Item={'fec_file_id': filing_id,
-                  'error': e.message})
+                  'error': str(e)})
 
 
 def lambdaHandler(event: dict, context: object) -> bool:
@@ -131,6 +131,8 @@ def lambdaHandler(event: dict, context: object) -> bool:
         except TransactionIdMissingException as te:
             logger.warning(te)
             continue
+
+        iter_fec_filing(filing_id, insert_values, fec_file_ids)
 
     # If there was no applicable data return
     if len(insert_values) == 0:

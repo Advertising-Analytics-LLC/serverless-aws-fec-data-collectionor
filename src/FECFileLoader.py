@@ -97,7 +97,7 @@ def iter_fec_filing(filing_id: int, insert_values: list, fec_file_ids: set):
             insert_values.append(data_dict)
 
     except fecfile.FilingUnavailableError as e:
-        logger.warning(e)
+        logger.error(e)
         errored_fec_files_table.put_item(
             Item={'fec_file_id': filing_id,
                   'error': str(e)})

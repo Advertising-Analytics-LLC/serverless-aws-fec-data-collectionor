@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS fec.filings (
   document_type_full TEXT DEFAULT NULL,
   election_year INT DEFAULT NULL,
   ending_image_number TEXT DEFAULT NULL,
-  fec_file_id TEXT NOT NULL,
+  fec_file_id INT NOT NULL,
   fec_url TEXT DEFAULT NULL,
   file_number INT DEFAULT NULL,
   form_category TEXT DEFAULT NULL,

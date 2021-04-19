@@ -27,8 +27,6 @@ from src.sqs import delete_message_from_sqs, parse_message
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 
-# schema/db functions
-
 # comittee totals
 
 def committee_total_exists(committee_id: str, cycle: int) -> SQL:
@@ -76,13 +74,13 @@ def insert_fec_filing(filing: JSONType) -> SQL:
 
 def amendment_chain_exists(fec_file_id: str, amendment_id: str) -> SQL:
     query = SQL('SELECT * FROM fec.filing_amendment_chain WHERE fec_file_id={} AND amendment_id={}')\
-        .format(Literal(fec_file_id), Literal(amendment_id))
+        .format(Literal(int(fec_file_id)), Literal(int(amendment_id)))
     return query
 
 
 def insert_amendment_chain(fec_file_id: str, amendment_id: str, amendment_number: int) -> SQL:
     query = SQL('INSERT INTO fec.filing_amendment_chain(fec_file_id, amendment_id, amendment_number) VALUES ({}, {}, {})')\
-        .format(Literal(fec_file_id), Literal(amendment_id), Literal(amendment_number))
+        .format(Literal(fec_file_id), Literal(int(amendment_id)), Literal(int(amendment_number)))
     return query
 
 
@@ -140,9 +138,8 @@ def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
 
     amendment_number = 0
     for amendment in amendment_chain:
-        amendment_chain_exists_query = amendment_chain_exists(filing_id, amendment)
         with Database() as db:
-            if not db.record_exists(amendment_chain_exists_query):
+            if not db.record_exists(amendment_chain_exists(filing_id, amendment)):
                 query = insert_amendment_chain(filing_id, amendment, amendment_number)
                 db.try_query(query)
             amendment_number += 1
@@ -164,13 +161,15 @@ def upsert_filing(filing: JSONType) -> bool:
         logger.warning(f'fec_file_id missing, filing: {filing}')
         return False
 
+    fec_file_id = fec_file_id.replace('FEC-', '')
+    filing['fec_file_id'] = fec_file_id
+
     amendment_chain = filing.pop('amendment_chain')
     if amendment_chain:
         upsert_amendment_chain(fec_file_id, amendment_chain)
 
-    filing_exists_query = fec_file_exists(fec_file_id)
     with Database() as db:
-        if db.record_exists(filing_exists_query):
+        if db.record_exists(fec_file_exists(fec_file_id)):
             logger.warning(f'Financial Summary with fec_file_id {fec_file_id} already exists')
             return True
 
@@ -192,9 +191,8 @@ def upsert_committee_total(commitee_total: JSONType) -> bool:
     pk1 = commitee_total['committee_id']
     pk2 = commitee_total['cycle']
 
-    total_exists_query = committee_total_exists(pk1, pk2)
     with Database() as db:
-        if db.record_exists(total_exists_query):
+        if db.record_exists(committee_total_exists(pk1, pk2)):
             query = update_committee_total(commitee_total)
         else:
             query = insert_committee_total(commitee_total)

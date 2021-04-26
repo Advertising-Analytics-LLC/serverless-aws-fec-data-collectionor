@@ -93,6 +93,6 @@ def lambdaBackfillHandler(event:dict, context: object) -> bool:
     for candidate in candidates_list:
         push_message_to_sqs(candidate)
 
-    filings_backfill_success(max_receipt_date)
+    filings_backfill_success(max_first_file_date)
 
     return True

@@ -53,10 +53,8 @@ while True:
         path = os.path.join(args.output, d.strftime('%Y-%m-%d'))
         if not os.path.exists(path):
             os.mkdir(path)
-        filename = os.path.join(path, msg['MessageId'])
-        obj = {'id': msg['MessageId'],
-               'attributes': msg.get('MessageAttributes'),
-               'body': msg['Body']}
+        filename = os.path.join(path, msg['MessageId'] + '.json')
+        obj = json.loads(msg['Body'])
 
         with open(filename, 'w') as f:
             json.dump(obj, f, indent=2)

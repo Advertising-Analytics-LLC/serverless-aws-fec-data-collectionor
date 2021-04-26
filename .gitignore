@@ -38,3 +38,6 @@ tmp
 
 # doc site
 site
+
+# local dir for inspecting queues
+queue-messages

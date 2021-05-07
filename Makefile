@@ -22,7 +22,7 @@ deploy-cfn:
 	    --stack-name "$(CFN_STACK_NAME)" \
 	    --template-file prerequisite-cloudformation-resources.ym
 
-diff-cfn:
+create-change-set:
 	$(eval cs_name := change-set-$(GIT_HASH_SHORT))
 	aws cloudformation create-change-set \
 		--change-set-name $(cs_name) \
@@ -30,13 +30,16 @@ diff-cfn:
 		--template-body file://prerequisite-cloudformation-resources.yml \
 	> $(cs_name).json
 
+diff-cfn:
+	$(eval cs_name := change-set-$(GIT_HASH_SHORT))
 	$(eval cs_id := $(shell cat $(cs_name).json | jq '.Id'))
 
 	aws cloudformation wait change-set-create-complete \
 		--change-set-name $(cs_id)
 
 	aws cloudformation describe-change-set \
-		--change-set-name $(cs_id)
+		--change-set-name $(cs_id) \
+		--ouput yaml
 
 ##########################################
 # serverless

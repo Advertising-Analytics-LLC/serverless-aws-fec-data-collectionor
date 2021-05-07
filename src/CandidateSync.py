@@ -83,7 +83,7 @@ def lambdaBackfillHandler(event:dict, context: object) -> bool:
 
     logger.debug(f'running {__file__}')
 
-    from src.backfill import candidate_sync_backfill_date, get_next_day
+    from src.backfill import candidate_sync_backfill_date, get_next_day, filings_backfill_success
 
     MIN_FIST_FILE_DATE = candidate_sync_backfill_date()
     max_first_file_date = get_next_day(MIN_FIST_FILE_DATE)
@@ -92,5 +92,7 @@ def lambdaBackfillHandler(event:dict, context: object) -> bool:
 
     for candidate in candidates_list:
         push_message_to_sqs(candidate)
+
+    filings_backfill_success(max_first_file_date)
 
     return True

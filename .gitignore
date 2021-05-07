@@ -24,6 +24,7 @@ __pycache__
 
 # node.js/npm
 node_modules
+package-lock.json
 
 # local secrets
 .env
@@ -37,3 +38,6 @@ tmp
 
 # doc site
 site
+
+# local dir for inspecting queues
+queue-messages

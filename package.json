@@ -4,6 +4,7 @@
   "description": "Serverless app for AWS python runtime",
   "main": "index.js",
   "scripts": {
+    "preinstall": "npm install -g serverless",
     "test": "pytest"
   },
   "repository": {

@@ -1,18 +1,47 @@
 SHELL := /bin/bash
+CFN_STACK_NAME=fec-datasync-resources
+GIT_HASH_SHORT=$(shell git rev-parse --short HEAD)
 
 all: help
+
+##########################################
+# general
+##########################################
 
 clean:
 	@echo deleting all your compiled python files
 	find . | grep -E "(__pycache__|\.pyc|\.pyo$$)" | xargs rm -rf
 
-.phony: deploy
-deploy:
-	bin/deploy.sh
+##########################################
+# cloudformation
+##########################################
 
-.phony: deploy-docs
-deploy-docs:
-	mkdocs gh-deploy
+diff-cfn:
+	$(eval cs_name := change-set-$(GIT_HASH_SHORT))
+	aws cloudformation create-change-set \
+		--change-set-name $(cs_name) \
+	    --stack-name "$(CFN_STACK_NAME)" \
+		--template-body file://prerequisite-cloudformation-resources.yml \
+	> $(cs_name).json
+
+	$(eval cs_id := $(shell cat $(cs_name).json | jq '.Id'))
+
+	aws cloudformation wait change-set-create-complete \
+		--change-set-name $(cs_id)
+
+	aws cloudformation describe-change-set \
+		--change-set-name $(cs_id)
+
+##########################################
+# serverless
+##########################################
+
+diff-sls:
+	sls package && sls diff
+
+.phony: deploy
+deploy-sls:
+	bin/deploy.sh
 
 .phony: help
 help:
@@ -22,11 +51,6 @@ help:
 .phony: run
 run:
 	bin/run.sh
-
-.phony: serve
-serve:
-	@echo serving docs to http://127.0.0.1:8000
-	mkdocs serve
 
 .phony: setup
 setup:
@@ -41,3 +65,16 @@ start:
 .phony: test
 test:
 	bin/test.sh
+
+##########################################
+# docs
+##########################################
+
+.phony: serve
+serve:
+	@echo serving docs to http://127.0.0.1:8000
+	mkdocs serve
+
+.phony: deploy-docs
+deploy-docs:
+	mkdocs gh-deploy

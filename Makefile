@@ -16,6 +16,12 @@ clean:
 # cloudformation
 ##########################################
 
+deploy-cfn:
+	aws cloudformation deploy \
+	    --no-fail-on-empty-changeset \
+	    --stack-name "$(CFN_STACK_NAME)" \
+	    --template-file prerequisite-cloudformation-resources.ym
+
 diff-cfn:
 	$(eval cs_name := change-set-$(GIT_HASH_SHORT))
 	aws cloudformation create-change-set \
@@ -39,9 +45,9 @@ diff-cfn:
 diff-sls:
 	sls package && sls diff
 
-.phony: deploy
+.phony: deploy-sls
 deploy-sls:
-	bin/deploy.sh
+	serverless deploy
 
 .phony: help
 help:

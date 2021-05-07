@@ -20,7 +20,7 @@ deploy-cfn:
 	aws cloudformation deploy \
 	    --no-fail-on-empty-changeset \
 	    --stack-name "$(CFN_STACK_NAME)" \
-	    --template-file prerequisite-cloudformation-resources.ym
+	    --template-file prerequisite-cloudformation-resources.yml
 
 create-change-set:
 	$(eval cs_name := change-set-$(GIT_HASH_SHORT))

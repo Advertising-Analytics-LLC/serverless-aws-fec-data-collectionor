@@ -15,7 +15,7 @@ from src.sqs import delete_message_from_sqs, push_message_to_sqs
 
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', '')
-MIN_FIST_FILE_DATE = os.getenv('MIN_FIST_FILE_DATE', datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d'))
+MIN_FIST_FILE_DATE = os.getenv('MIN_FIST_FILE_DATE', datetime.strftime(datetime.now() - timedelta(7), '%Y-%m-%d'))
 
 
 # business logic

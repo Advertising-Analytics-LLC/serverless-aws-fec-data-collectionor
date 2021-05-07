@@ -4,7 +4,7 @@ all: help
 
 clean:
 	@echo deleting all your compiled python files
-	bin/clean.sh
+	find . | grep -E "(__pycache__|\.pyc|\.pyo$$)" | xargs rm -rf
 
 .phony: deploy
 deploy:

@@ -133,7 +133,7 @@ Resources:
       QueueName: !Ref CandidateSyncQueueName
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt CandidateDeadLetterQueue.Arn
-        maxReceiveCount: 5
+        maxReceiveCount: 15
       Tags:
       - Key: Name
         Value: !Ref CandidateSyncQueueName

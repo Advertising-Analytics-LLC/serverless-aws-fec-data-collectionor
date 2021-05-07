@@ -1,10 +1,6 @@
 Description: Prerequisite AWS Resources for FEC Data-sync serverless functions
 
 Parameters:
-  Version:
-    Default: v0.0.1
-    Description: Code verison, see bin/deploy.sh
-    Type: String
   DeadLetterQueueMessageRetentionPeriod:
     Default: 1209600 # 604800 # 7 days in seconds
     Type: Number
@@ -87,8 +83,6 @@ Resources:
       - Key: Name
         Value:
           Ref: DeploymentBucketName
-      - Key: Version
-        Value: !Ref Version
       VersioningConfiguration:
          Status: Enabled
 
@@ -116,8 +110,6 @@ Resources:
       - Key: Name
         Value:
           Ref: CopyFromBucketName
-      - Key: Version
-        Value: !Ref Version
       VersioningConfiguration:
          Status: Enabled
 
@@ -134,8 +126,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Ref CandidateDeadLetterQueueName
-      - Key: Version
-        Value: !Ref Version
 
   CandidateSyncQueue:
     Type: AWS::SQS::Queue
@@ -147,8 +137,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Ref CandidateSyncQueueName
-      - Key: Version
-        Value: !Ref Version
 
 ########################################
 # Committee data stream
@@ -162,8 +150,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Ref CommitteeDeadLetterQueueName
-      - Key: Version
-        Value: !Ref Version
 
   CommitteeSyncQueue:
     Type: AWS::SQS::Queue
@@ -176,8 +162,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Ref CommitteeSyncQueueName
-      - Key: Version
-        Value: !Ref Version
 
 ########################################
 # Filing data stream
@@ -200,8 +184,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Ref FinancialSummaryQueueName
-      - Key: Version
-        Value: !Ref Version
 
   FilingSEDLQueue:
     Type: AWS::SQS::Queue
@@ -220,8 +202,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Ref FilingSEQueueName
-      - Key: Version
-        Value: !Ref Version
 
   FilingF1SDLQueue:
     Type: AWS::SQS::Queue
@@ -240,8 +220,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Ref FilingF1SQueueName
-      - Key: Version
-        Value: !Ref Version
 
   FilingSBDLQueue:
     Type: AWS::SQS::Queue
@@ -260,8 +238,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Ref FilingSBQueueName
-      - Key: Version
-        Value: !Ref Version
 
   RSSFeedTopic:
     Type: AWS::SNS::Topic
@@ -279,8 +255,6 @@ Resources:
       Tags:
       - Key: Name
         Value: !Ref RSSFeedTopicName
-      - Key: Version
-        Value: !Ref Version
 
   RSSFanoutQueuePolicy:
     Type: AWS::SQS::QueuePolicy
@@ -382,7 +356,3 @@ Outputs:
   RSSFeedTopicArn:
     Description: Arn of SNS Topic for new new RSS filings
     Value: !Ref RSSFeedTopic
-
-  Version:
-    Description: see bin/deploy.sh
-    Value: !Ref Version

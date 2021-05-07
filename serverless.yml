@@ -10,7 +10,6 @@ frameworkVersion: ">=2.0.0 <3.0.0"
 custom:
   backfill: 0
   loader_concurrency: 1
-  Version: ${cf:fec-datasync-resources.Version}
   pythonRequirements:
     dockerizePip: false
   dev:
@@ -63,14 +62,15 @@ functions:
   CandidateBackfill:
     description: Backfills candidates queue
     handler: src/CandidateSync.lambdaBackfillHandler
-    reservedConcurrency: ${self:custom.backfill}
+    package: {}
+    reservedConcurrency: 1 #${self:custom.backfill}
     timeout: 90
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.candidate_sync_queue_name}
     events:
-      - schedule: rate(15 minutes)
+      - schedule: rate(1 minutes)
 
   CandidateLoader:
     description: Triggered by SQS it recieves Messages and writes candidate data to the DB
@@ -230,8 +230,8 @@ package:
     - tests/**
     - tmp/**
 
-# plugin to package dependencies
 plugins:
+  - serverless-plugin-diff
   - serverless-python-requirements
 
 # Cloud Provider config
@@ -309,7 +309,6 @@ provider:
     Owner: Rhythmic Engineering
     Namespace: aws-AdvertisingAnalytics
     Env: ${self:provider.stage}
-    git_description: ${self:custom.Version}
   # tracing:
   #   lambda: true
 

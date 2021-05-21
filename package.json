@@ -4,6 +4,7 @@
   "description": "Serverless app for AWS python runtime",
   "main": "index.js",
   "scripts": {
+    "preinstall": "npm install -g serverless",
     "test": "pytest"
   },
   "repository": {
@@ -18,5 +19,8 @@
   "homepage": "https://github.com/rhythmictech/serverless-aws-python3-openfec-starter#readme",
   "dependencies": {
     "serverless-python-requirements": "^5.1.0"
+  },
+  "devDependencies": {
+    "serverless-plugin-diff": "^1.3.0"
   }
 }

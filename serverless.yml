@@ -10,7 +10,6 @@ frameworkVersion: ">=2.0.0 <3.0.0"
 custom:
   backfill: 0
   loader_concurrency: 1
-  Version: ${cf:fec-datasync-resources.Version}
   pythonRequirements:
     dockerizePip: false
   dev:
@@ -118,7 +117,9 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.committeesync_sqs_name}
     events:
-      - sqs: "${self:custom.${self:provider.stage}.committeesync_sqs_arn}"
+      - sqs:
+        arn: "${self:custom.${self:provider.stage}.committeesync_sqs_arn}"
+        batchSize: 1
 
   FilingSync:
     description: Scrapes FEC RSS feed for recent filings, pushes the new filings to SNS and SQS
@@ -230,8 +231,8 @@ package:
     - tests/**
     - tmp/**
 
-# plugin to package dependencies
 plugins:
+  - serverless-plugin-diff
   - serverless-python-requirements
 
 # Cloud Provider config
@@ -309,7 +310,6 @@ provider:
     Owner: Rhythmic Engineering
     Namespace: aws-AdvertisingAnalytics
     Env: ${self:provider.stage}
-    git_description: ${self:custom.Version}
   # tracing:
   #   lambda: true
 

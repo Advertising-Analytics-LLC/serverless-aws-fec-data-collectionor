@@ -8,7 +8,7 @@ frameworkVersion: ">=2.0.0 <3.0.0"
 
 # Custom variables
 custom:
-  backfill: 0
+  backfill: 1
   loader_concurrency: 1
   pythonRequirements:
     dockerizePip: false
@@ -111,7 +111,7 @@ functions:
     description: Recieves committee Ids from SQS, queries api for committee info, updates DB
     handler: src/CommitteLoader.committeLoader
     reservedConcurrency: ${self:custom.loader_concurrency}
-    timeout: 1200
+    timeout: 900
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}

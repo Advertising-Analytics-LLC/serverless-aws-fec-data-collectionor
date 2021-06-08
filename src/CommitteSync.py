@@ -95,4 +95,4 @@ def lambdaBackfillHandler(event: dict, context: object) -> List[any]:
 
     filings_backfill_success(MIN_LAST_F1_DATE, 'commmittee_file_date')
 
-    return True
+    return response

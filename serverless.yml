@@ -313,12 +313,6 @@ provider:
   # tracing:
   #   lambda: true
 
-# TODO: add cfn role
-# see https://www.albertgao.xyz/2020/02/26/how-to-resolve-require-the-cfnrole-option-warning-for-serverless-framework/
-#  cfnRole: arn:aws:iam::XXXXXX:role/role
-
-# TODO: integrate serverless and cfn rsc deploys?
-# you can add CloudFormation resource templates here
 resources:
   Resources:
     Dashboard:
@@ -326,8 +320,6 @@ resources:
       Properties:
         DashboardBody: ${file(my-dashboard-body.js):myDashboardBody}
         DashboardName: ${self:service}-dashboard
-#  - ${file(cfn_resources/deploymentBucket.yml)}
-#  - ${file(cfn_resources/sqsQueue.yml)}
 
 outputs:
   MonitoringDashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:name=${self:service}-dashboard

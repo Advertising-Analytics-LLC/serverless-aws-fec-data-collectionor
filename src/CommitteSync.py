@@ -21,7 +21,7 @@ from src.sqs import push_committee_id_to_sqs
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
-MIN_LAST_F1_DATE = os.getenv('MIN_LAST_F1_DATE', datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d'))
+MIN_LAST_F1_DATE = os.getenv('MIN_LAST_F1_DATE', datetime.strftime(datetime.now() - timedelta(7), '%Y-%m-%d'))
 
 # BUSYNESS LOGIC
 def get_committees_since(isodate: str, max_last_f1_date='') -> json:

@@ -80,9 +80,9 @@ def lambdaBackfillHandler(event: dict, context: object) -> List[any]:
         json:
     """
 
-    from src.backfill import committee_sync_backfill_date, get_next_day
+    from src.backfill import get_next_day, filings_backfill_success, filings_sync_backfill_date
 
-    MIN_LAST_F1_DATE = committee_sync_backfill_date()
+    MIN_LAST_F1_DATE = filings_sync_backfill_date('commmittee_file_date')
     max_last_f1_date = get_next_day(MIN_LAST_F1_DATE)
 
     logger.info(f'Running committeeSync with date: {MIN_LAST_F1_DATE}')
@@ -92,5 +92,7 @@ def lambdaBackfillHandler(event: dict, context: object) -> List[any]:
         return {}
     response = push_committee_id_to_sqs(results_json)
     logging.debug(response)
+
+    filings_backfill_success(MIN_LAST_F1_DATE, 'commmittee_file_date')
 
     return response

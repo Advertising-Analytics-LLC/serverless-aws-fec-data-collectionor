@@ -111,7 +111,7 @@ functions:
     description: Recieves committee Ids from SQS, queries api for committee info, updates DB
     handler: src/CommitteLoader.committeLoader
     reservedConcurrency: ${self:custom.loader_concurrency}
-    timeout: 300
+    timeout: 1200
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}

@@ -77,7 +77,7 @@ def lambdaBackfillHandler(event: dict, context: object) -> List[any]:
         context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
 
     Returns:
-        json:
+        bool:
     """
 
     from src.backfill import get_next_day, filings_backfill_success, filings_sync_backfill_date
@@ -89,10 +89,10 @@ def lambdaBackfillHandler(event: dict, context: object) -> List[any]:
     results_json = get_committees_since(MIN_LAST_F1_DATE, max_last_f1_date)
     if not results_json:
         logger.warning('no results')
-        return {}
-    response = push_committee_id_to_sqs(results_json)
-    logging.debug(response)
+    else:
+        response = push_committee_id_to_sqs(results_json)
+        logging.debug(response)
 
     filings_backfill_success(MIN_LAST_F1_DATE, 'commmittee_file_date')
 
-    return response
+    return True

@@ -8,7 +8,7 @@ frameworkVersion: ">=2.0.0 <3.0.0"
 
 # Custom variables
 custom:
-  backfill: 1
+  backfill: 0
   loader_concurrency: 1
   pythonRequirements:
     dockerizePip: false

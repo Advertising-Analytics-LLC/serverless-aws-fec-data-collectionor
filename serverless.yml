@@ -8,7 +8,7 @@ frameworkVersion: ">=2.0.0 <3.0.0"
 
 # Custom variables
 custom:
-  backfill: 1
+  backfill: 0
   loader_concurrency: 1
   pythonRequirements:
     dockerizePip: false
@@ -154,7 +154,9 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.financial_summary_sqs_name}
     events:
-      - sqs: "${self:custom.${self:provider.stage}.financial_summary_sqs_arn}"
+      - sqs:
+        arn: "${self:custom.${self:provider.stage}.financial_summary_sqs_arn}"
+        batchSize: 1
 
   FECFileLoaderSB:
     description: Gets FEC file url from SQS, downloads, parses for Schedule B filings, loads into DB
@@ -169,7 +171,9 @@ functions:
       S3_BUCKET_NAME: ${self:custom.${self:provider.stage}.copy_from_bucket_name}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.filing_sb_sqs_name}
     events:
-      - sqs: "${self:custom.${self:provider.stage}.filing_sb_sqs_arn}"
+      - sqs:
+        arn: "${self:custom.${self:provider.stage}.filing_sb_sqs_arn}"
+        batchSize: 1
 
   FECFileLoaderSE:
     description: Gets FEC file url from SQS, downloads, parses for Schedule E filings, loads into DB
@@ -184,7 +188,9 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.filing_se_sqs_name}
       FILING_TYPE: 'SE'
     events:
-      - sqs: "${self:custom.${self:provider.stage}.filing_se_sqs_arn}"
+      - sqs:
+        arn: "${self:custom.${self:provider.stage}.filing_se_sqs_arn}"
+        batchSize: 1
 
   FECFileLoaderSupp:
     description: Gets FEC file url from SQS, downloads, parses for Form 1 Supplemental Data, loads into DB
@@ -199,7 +205,9 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.filing_f1s_sqs_name}
       FILING_TYPE: 'F1S'
     events:
-      - sqs: "${self:custom.${self:provider.stage}.filing_f1s_sqs_arn}"
+      - sqs:
+        arn: "${self:custom.${self:provider.stage}.filing_f1s_sqs_arn}"
+        batchSize: 1
 
 # packaging instructuions, and ignore list
 package:

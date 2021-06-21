@@ -17,4 +17,6 @@ CREATE TABLE IF NOT EXISTS fec.loading_stats (
     filings_schedule_e_count_uniqe INT,
     form_1_supplemental_count INT,
     form_1_supplemental_count_uniqe INT
+    missing_candidates INT,
+    missing_committees INT
 )

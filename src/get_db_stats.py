@@ -32,7 +32,9 @@ queries = [
     'select count(*) from fec.filings_schedule_e;',
     'select count(DISTINCT fec_file_id) from fec.filings_schedule_e;',
     'select count(*) from fec.form_1_supplemental;',
-    'select count(DISTINCT fec_file_id) from fec.form_1_supplemental;'
+    'select count(DISTINCT fec_file_id) from fec.form_1_supplemental;',
+    'select count(distinct cc.candidate_id) as missing_candidates from fec.committee_candidate cc where cc.candidate_id not in (select cd.candidate_id from fec.candidate_detail cd);',
+    'select count(distinct cc.committee_id) as missing_committees from fec.committee_candidate cc where cc.committee_id not in (select cd.committee_id from fec.committee_detail cd);'
 ]
 
 def db_stats_insert(values: List[str]) -> str:

@@ -17,7 +17,7 @@ from psycopg2.sql import SQL, Literal
 from requests import Response
 from time import asctime, gmtime, time
 from typing import Any, Dict, List
-from src import JSONType, logger
+from src import condense_dimension, get_current_cycle_year, JSONType, logger
 from src.database import Database, get_insert_query
 from src.OpenFec import OpenFec, NotFound404Exception
 from src.secrets import get_param_value_by_name
@@ -163,6 +163,7 @@ def upsert_filing(filing: JSONType) -> bool:
 
     fec_file_id = fec_file_id.replace('FEC-', '')
     filing['fec_file_id'] = fec_file_id
+    filing = condense_dimension(filing, 'additional_bank_names')
 
     amendment_chain = filing.pop('amendment_chain')
     if amendment_chain:
@@ -199,15 +200,6 @@ def upsert_committee_total(commitee_total: JSONType) -> bool:
 
         success = db.try_query(query)
         return success
-
-
-def get_current_cycle_year() -> str:
-    """  The cycle begins with an odd year and is named for its ending, even year """
-    current_year = datetime.today().strftime('%Y')
-    is_even_year = int(current_year) % 2 == 0
-    if is_even_year:
-        return current_year
-    return str(int(current_year) + 1)
 
 
 def lambdaHandler(event:dict, context: object) -> bool:

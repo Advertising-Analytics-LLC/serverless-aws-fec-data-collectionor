@@ -9,7 +9,7 @@ import json
 import os
 import requests
 from typing import Any, Dict, List
-from src import JSONType, logger, schema
+from src import JSONType, logger, schema, condense_dimension
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -62,22 +62,6 @@ def get_candidate(candidate_id: str) -> Dict['str', Any]:
         logger.warning(f'API {route} returned zero results')
         return []
 
-def condense_dimension(containing_dict: Dict[str, Any], column_name: str) -> Dict[str, Any]:
-    """takes a dimension (list) in a dictionary and joins the elements with ~s
-        WARNING: this method uses dict.pop and so has side effets
-
-    Args:
-        containing_dict (Dict[str, Any]): Dictionary containing the
-        column_name (str): to join
-
-    Returns:
-        Dict[str, Any]: input dict with that list as a str
-    """
-
-    containing_dict[column_name] = '~'.join([str(item) for item in containing_dict.pop(column_name)])
-
-    return containing_dict
-
 
 def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
     """upserts a single filing"""
@@ -99,17 +83,6 @@ def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
         success = db.try_query(query)
 
     return success
-
-def upsert_candidate_filing(candidate_message: Dict[str, Any]) -> bool:
-    """upserts a single filing"""
-
-    candidate_message['fec_file_id'] = candidate_message['fec_file_id'].replace('FEC-', '')
-    exists_query = schema.form2_exists(candidate_message['fec_file_id'])
-
-    with Database() as db:
-        if not db.record_exists(exists_query):
-            query = schema.form2_insert(candidate_message)
-            return db.try_query(query)
 
 
 def lambdaHandler(event:dict, context: object) -> bool:

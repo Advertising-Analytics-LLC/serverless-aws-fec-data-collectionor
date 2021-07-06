@@ -81,7 +81,7 @@ def amendment_chain_exists(fec_file_id: str, amendment_id: str) -> SQL:
 
 def insert_amendment_chain(fec_file_id: str, amendment_id: str, amendment_number: int) -> SQL:
     query = SQL('INSERT INTO fec.filing_amendment_chain(filing_amendment_chain_id, fec_file_id, amendment_id, amendment_number) VALUES ({}, {}, {}, {})')\
-        .format(Literal(uuid.uuid4()), Literal(fec_file_id), Literal(int(amendment_id)), Literal(int(amendment_number)))
+        .format(Literal(str(uuid.uuid4())), Literal(fec_file_id), Literal(int(amendment_id)), Literal(int(amendment_number)))
     return query
 
 

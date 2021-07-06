@@ -3,9 +3,9 @@
 this file contains logging and utils
 """
 
-import datetime
 import logging
 import os
+from datetime import datetime
 from typing import Dict, List, Union, Any
 
 

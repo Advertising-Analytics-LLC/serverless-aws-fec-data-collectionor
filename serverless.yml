@@ -118,8 +118,8 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.committeesync_sqs_name}
     events:
       - sqs:
-        arn: "${self:custom.${self:provider.stage}.committeesync_sqs_arn}"
-        batchSize: 1
+          arn: "${self:custom.${self:provider.stage}.committeesync_sqs_arn}"
+          batchSize: 1
 
   FilingSync:
     description: Scrapes FEC RSS feed for recent filings, pushes the new filings to SNS and SQS
@@ -155,8 +155,8 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.financial_summary_sqs_name}
     events:
       - sqs:
-        arn: "${self:custom.${self:provider.stage}.financial_summary_sqs_arn}"
-        batchSize: 1
+          arn: "${self:custom.${self:provider.stage}.financial_summary_sqs_arn}"
+          batchSize: 1
 
   FECFileLoaderSB:
     description: Gets FEC file url from SQS, downloads, parses for Schedule B filings, loads into DB
@@ -172,8 +172,8 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.filing_sb_sqs_name}
     events:
       - sqs:
-        arn: "${self:custom.${self:provider.stage}.filing_sb_sqs_arn}"
-        batchSize: 1
+          arn: "${self:custom.${self:provider.stage}.filing_sb_sqs_arn}"
+          batchSize: 1
 
   FECFileLoaderSE:
     description: Gets FEC file url from SQS, downloads, parses for Schedule E filings, loads into DB
@@ -189,8 +189,8 @@ functions:
       FILING_TYPE: 'SE'
     events:
       - sqs:
-        arn: "${self:custom.${self:provider.stage}.filing_se_sqs_arn}"
-        batchSize: 1
+          arn: "${self:custom.${self:provider.stage}.filing_se_sqs_arn}"
+          batchSize: 1
 
   FECFileLoaderSupp:
     description: Gets FEC file url from SQS, downloads, parses for Form 1 Supplemental Data, loads into DB
@@ -206,8 +206,8 @@ functions:
       FILING_TYPE: 'F1S'
     events:
       - sqs:
-        arn: "${self:custom.${self:provider.stage}.filing_f1s_sqs_arn}"
-        batchSize: 1
+          arn: "${self:custom.${self:provider.stage}.filing_f1s_sqs_arn}"
+          batchSize: 1
 
 # packaging instructuions, and ignore list
 package:

@@ -64,6 +64,7 @@ def get_committee_data(committee_id: str) -> JSONType:
         return results_json[0]
     else:
         logger.warning(f'API {route} returned zero results')
+        logger.debug(results_json)
         return []
 
 

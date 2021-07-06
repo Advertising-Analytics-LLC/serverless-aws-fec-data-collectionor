@@ -5,7 +5,7 @@ this file contains logging and utils
 
 import logging
 import os
-from datetime import datetime
+from datetime import date, datetime
 from typing import Dict, List, Union, Any
 
 
@@ -50,6 +50,6 @@ def serialize_dates(o: Any) -> str:
     """Helper function to serialize datetimes
     thnx https://stackoverflow.com/a/11875813/5568528
     """
-    if isinstance(o, (datetime.date, datetime.datetime)):
+    if isinstance(o, (date, datetime)):
         return o.strftime('%Y-%m-%d')
     return o

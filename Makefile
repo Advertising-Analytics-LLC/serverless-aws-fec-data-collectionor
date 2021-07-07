@@ -42,6 +42,11 @@ diff-cfn: create-change-set
 		--change-set-name $(cs_id) \
 		--output yaml
 
+apply-cfn: diff-cfn
+	aws cloudformation execute-change-set \
+		--change-set-name $(cs_id) \
+		--output yaml
+
 ##########################################
 # serverless
 ##########################################

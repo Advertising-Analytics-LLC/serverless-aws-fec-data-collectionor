@@ -114,3 +114,9 @@ CREATE TABLE IF NOT EXISTS fec.committee_totals (
   PRIMARY KEY(committee_id, cycle),
   FOREIGN KEY(committee_id) REFERENCES fec.committee_detail(committee_id)
 ) DISTSTYLE AUTO;
+
+ALTER TABLE fec.committee_totals ADD committee_state varchar NULL;
+ALTER TABLE fec.committee_totals ADD filing_frequency varchar NULL;
+ALTER TABLE fec.committee_totals ADD filing_frequency_full varchar NULL;
+ALTER TABLE fec.committee_totals ADD first_file_date varchar NULL;
+ALTER TABLE fec.committee_totals ADD treasurer_name varchar NULL;

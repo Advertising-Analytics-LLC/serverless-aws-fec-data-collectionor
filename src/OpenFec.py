@@ -135,7 +135,8 @@ class OpenFec:
         first_response = self.get_route(route, payload)
         yield first_response
         num_pages = first_response['pagination']['pages']
-        for page in range(2, num_pages + 1):
-            payload['page'] = page
-            next_page = self.get_route(route, payload)
-            yield next_page
+        if num_pages > 1:
+            for page in range(2, num_pages + 1):
+                payload['page'] = page
+                next_page = self.get_route(route, payload)
+                yield next_page

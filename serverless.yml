@@ -69,7 +69,7 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.candidate_sync_queue_name}
     events:
-      - schedule: rate(15 minutes)
+      - schedule: rate(1 minute)
 
   CandidateLoader:
     description: Triggered by SQS it recieves Messages and writes candidate data to the DB
@@ -105,13 +105,13 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.committeesync_sqs_name}
     events:
-      - schedule: rate(15 minutes)
+      - schedule: rate(1 minute)
 
   CommitteeLoader:
     description: Recieves committee Ids from SQS, queries api for committee info, updates DB
     handler: src/CommitteLoader.committeLoader
     reservedConcurrency: ${self:custom.loader_concurrency}
-    timeout: 300
+    timeout: 900
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
@@ -142,7 +142,7 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       RSS_SNS_TOPIC_ARN: "${self:custom.${self:provider.stage}.rss_sns_topic_arn}"
     events:
-      - schedule: rate(15 minutes)
+      - schedule: rate(1 minute)
 
   FinancialSummaryLoader:
     description: Takes new filings from SQS, queries api, writes to DB
@@ -154,7 +154,9 @@ functions:
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.financial_summary_sqs_name}
     events:
-      - sqs: "${self:custom.${self:provider.stage}.financial_summary_sqs_arn}"
+      - sqs:
+        arn: "${self:custom.${self:provider.stage}.financial_summary_sqs_arn}"
+        batchSize: 1
 
   FECFileLoaderSB:
     description: Gets FEC file url from SQS, downloads, parses for Schedule B filings, loads into DB
@@ -169,7 +171,9 @@ functions:
       S3_BUCKET_NAME: ${self:custom.${self:provider.stage}.copy_from_bucket_name}
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.filing_sb_sqs_name}
     events:
-      - sqs: "${self:custom.${self:provider.stage}.filing_sb_sqs_arn}"
+      - sqs:
+        arn: "${self:custom.${self:provider.stage}.filing_sb_sqs_arn}"
+        batchSize: 1
 
   FECFileLoaderSE:
     description: Gets FEC file url from SQS, downloads, parses for Schedule E filings, loads into DB
@@ -184,7 +188,9 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.filing_se_sqs_name}
       FILING_TYPE: 'SE'
     events:
-      - sqs: "${self:custom.${self:provider.stage}.filing_se_sqs_arn}"
+      - sqs:
+        arn: "${self:custom.${self:provider.stage}.filing_se_sqs_arn}"
+        batchSize: 1
 
   FECFileLoaderSupp:
     description: Gets FEC file url from SQS, downloads, parses for Form 1 Supplemental Data, loads into DB
@@ -199,7 +205,9 @@ functions:
       SQS_QUEUE_NAME: ${self:custom.${self:provider.stage}.filing_f1s_sqs_name}
       FILING_TYPE: 'F1S'
     events:
-      - sqs: "${self:custom.${self:provider.stage}.filing_f1s_sqs_arn}"
+      - sqs:
+        arn: "${self:custom.${self:provider.stage}.filing_f1s_sqs_arn}"
+        batchSize: 1
 
 # packaging instructuions, and ignore list
 package:
@@ -313,12 +321,6 @@ provider:
   # tracing:
   #   lambda: true
 
-# TODO: add cfn role
-# see https://www.albertgao.xyz/2020/02/26/how-to-resolve-require-the-cfnrole-option-warning-for-serverless-framework/
-#  cfnRole: arn:aws:iam::XXXXXX:role/role
-
-# TODO: integrate serverless and cfn rsc deploys?
-# you can add CloudFormation resource templates here
 resources:
   Resources:
     Dashboard:
@@ -326,8 +328,6 @@ resources:
       Properties:
         DashboardBody: ${file(my-dashboard-body.js):myDashboardBody}
         DashboardName: ${self:service}-dashboard
-#  - ${file(cfn_resources/deploymentBucket.yml)}
-#  - ${file(cfn_resources/sqsQueue.yml)}
 
 outputs:
   MonitoringDashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:name=${self:service}-dashboard

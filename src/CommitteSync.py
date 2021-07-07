@@ -21,7 +21,7 @@ from src.sqs import push_committee_id_to_sqs
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
-MIN_LAST_F1_DATE = os.getenv('MIN_LAST_F1_DATE', datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d'))
+MIN_LAST_F1_DATE = os.getenv('MIN_LAST_F1_DATE', datetime.strftime(datetime.now() - timedelta(7), '%Y-%m-%d'))
 
 # BUSYNESS LOGIC
 def get_committees_since(isodate: str, max_last_f1_date='') -> json:
@@ -77,20 +77,22 @@ def lambdaBackfillHandler(event: dict, context: object) -> List[any]:
         context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
 
     Returns:
-        json:
+        bool:
     """
 
-    from src.backfill import committee_sync_backfill_date, get_next_day
+    from src.backfill import get_next_day, filings_backfill_success, filings_sync_backfill_date
 
-    MIN_LAST_F1_DATE = committee_sync_backfill_date()
+    MIN_LAST_F1_DATE = filings_sync_backfill_date('commmittee_file_date')
     max_last_f1_date = get_next_day(MIN_LAST_F1_DATE)
 
     logger.info(f'Running committeeSync with date: {MIN_LAST_F1_DATE}')
     results_json = get_committees_since(MIN_LAST_F1_DATE, max_last_f1_date)
     if not results_json:
         logger.warning('no results')
-        return {}
-    response = push_committee_id_to_sqs(results_json)
-    logging.debug(response)
+    else:
+        response = push_committee_id_to_sqs(results_json)
+        logging.debug(response)
 
-    return response
+    filings_backfill_success(MIN_LAST_F1_DATE, 'commmittee_file_date')
+
+    return True

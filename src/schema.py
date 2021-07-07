@@ -109,7 +109,7 @@ def get_committee_detail_insert_statement(
         treasurer_street_2='',
         treasurer_zip='',
         website='',
-        zip=''):
+        zip='', **kwargs):
     """returns insert statement as SQL object for record in committee_detail table
 
     Args:
@@ -239,7 +239,7 @@ def get_committee_detail_update_statement(
         treasurer_street_2='',
         treasurer_zip='',
         website='',
-        zip=''):
+        zip='', **kwargs):
     """returns insert statement as SQL object for record in committee_detail table
 
     Args:

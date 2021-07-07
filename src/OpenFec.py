@@ -30,7 +30,7 @@ class OpenFec:
             base_url (str, optional): OpenFEC base url. Defaults to 'https://api.open.fec.gov/v1'.
         """
         self.api_key = api_key
-        self.api_arg = '?api_key=' + api_key
+        self.api_arg = 'api_key=' + api_key
         self.base_url = base_url
         self.throttle = 0.5 # seconds to wait between requests
 
@@ -43,7 +43,11 @@ class OpenFec:
         Returns:
             str: fully-formed route, eg https://api.open.fec.gov/v1/committees/?api_key=<API_KEY>
         """
-        url = self.base_url + route + self.api_arg
+        url = self.base_url + route
+        if '?' in url.split('/')[-1]:
+            url = url + '&' + self.api_arg
+        else:
+            url = url + '?' + self.api_arg
         return url
 
     def _over_rate_limit(self, response: Response) -> bool:

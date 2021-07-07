@@ -75,7 +75,7 @@ functions:
     description: Triggered by SQS it recieves Messages and writes candidate data to the DB
     handler: src/CandidateLoader.lambdaHandler
     reservedConcurrency: ${self:custom.loader_concurrency}
-    timeout: 30
+    timeout: 300
     environment:
       API_KEY: ${self:custom.${self:provider.stage}.API_KEY}
       LOG_LEVEL: ${self:custom.${self:provider.stage}.LOG_LEVEL}

@@ -14,23 +14,22 @@ from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.sqs import delete_message_from_sqs, parse_message
+from src.FinancialSummaryLoader import upsert_filing
 
 
 # business logic
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 openFec = OpenFec(API_KEY)
 
-# def get_canidacy_filing(candidate_id: str):
+def get_canidacy_filing(candidate_id: str):
+    """ https://api.open.fec.gov/developers/#/filings/get_candidate__candidate_id__filings_ """
+    response_generator = openFec.get_route_paginator(f'/candidate/{candidate_id}/filings/?form_category=STATEMENT')
 
-#     payload = { 'candidate_id': candidate_id, 'form_type': 'F2' }
-#     response_generator = openFec.get_route_paginator(f'/filings/', payload=payload)
+    results_json = []
+    for response in response_generator:
+        results_json += response['results']
 
-#     results_json = []
-#     for response in response_generator:
-#         results_json += response['results']
-
-#         # /candidate/#/ returns a list with one record
-#     return results_json[0]
+    return results_json[0]
 
 
 def get_candidate(candidate_id: str) -> Dict['str', Any]:
@@ -43,10 +42,6 @@ def get_candidate(candidate_id: str) -> Dict['str', Any]:
         json: json list containing IDs
     """
 
-    # payload = {
-    #     'election_full': True,
-    #     'cycle': 2020
-    # }
     response_generator = openFec.get_route_paginator(
                                 f'/candidate/{candidate_id}/')
 
@@ -55,7 +50,10 @@ def get_candidate(candidate_id: str) -> Dict['str', Any]:
         results_json += response['results']
 
         # /candidate/#/ returns a list with one record
-    return results_json[0]
+    if len(results_json) > 0:
+        return results_json[0]
+    else:
+        raise Exception(f'Candidate ID {candidate_id} returned zero results')
 
 def condense_dimension(containing_dict: Dict[str, Any], column_name: str) -> Dict[str, Any]:
     """takes a dimension (list) in a dictionary and joins the elements with ~s
@@ -95,6 +93,17 @@ def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
 
     return success
 
+def upsert_candidate_filing(candidate_message: Dict[str, Any]) -> bool:
+    """upserts a single filing"""
+
+    candidate_message['fec_file_id'] = candidate_message['fec_file_id'].replace('FEC-', '')
+    exists_query = schema.form2_exists(candidate_message['fec_file_id'])
+
+    with Database() as db:
+        if not db.record_exists(exists_query):
+            query = schema.form2_insert(candidate_message)
+            return db.try_query(query)
+
 
 def lambdaHandler(event:dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
@@ -117,7 +126,8 @@ def lambdaHandler(event:dict, context: object) -> bool:
         body = json.loads(message['body'])
         candidate_id = body['candidate_id']
         candidate_detail = get_candidate(candidate_id)
-        # candidacy_filing = get_canidacy_filing(candidate_id)
         upsert_candidate(candidate_detail)
+        candidacy_filing = get_canidacy_filing(candidate_id)
+        upsert_filing(candidacy_filing)
 
     return True

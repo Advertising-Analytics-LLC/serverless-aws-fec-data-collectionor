@@ -18,10 +18,23 @@ from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 from src.sqs import delete_message_from_sqs, parse_message
+from src.FinancialSummaryLoader import upsert_filing
 
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
+openFec = OpenFec(API_KEY)
+
+def get_committee_filing(committee_id: str):
+    """ https://api.open.fec.gov/developers/#/filings/get_committee__committee_id__filings_ """
+    response_generator = openFec.get_route_paginator(f'/committee/{committee_id}/filings/?form_category=STATEMENT')
+
+    results_json = []
+    for response in response_generator:
+        results_json += response['results']
+
+    return results_json[0]
+
 
 def get_committee_data(committee_id: str) -> JSONType:
     """Pulls the committee data from the openFEC API
@@ -35,7 +48,6 @@ def get_committee_data(committee_id: str) -> JSONType:
     """
 
     results_json = []
-    openFec = OpenFec(API_KEY)
     response_generator = openFec.get_committee_by_id_paginator(committee_id)
 
     for response in response_generator:
@@ -143,9 +155,9 @@ def committeLoader(event: dict, context: object) -> bool:
             logger.error(f'Committee {committee_id} not found! exiting.')
             return False
 
-        success = upsert_committee_data(committee_data[0])
+        upsert_committee_data(committee_data[0])
 
-        if success:
-            delete_message_from_sqs(message)
+        committee_filings = get_committee_filing(committee_id)
+        upsert_filing(committee_filings)
 
     return True

@@ -12,6 +12,11 @@ clean:
 	@echo deleting all your compiled python files
 	find . | grep -E "(__pycache__|\.pyc|\.pyo$$)" | xargs rm -rf
 
+help:
+	@echo 'pick a target to run. see Makefile:'
+	cat Makefile
+
+
 ##########################################
 # cloudformation
 ##########################################
@@ -20,14 +25,14 @@ deploy-cfn:
 	aws cloudformation deploy \
 	    --no-fail-on-empty-changeset \
 	    --stack-name "$(CFN_STACK_NAME)" \
-	    --template-file prerequisite-cloudformation-resources.yml
+	    --template-file cloudformation/prerequisite-cloudformation-resources.yml
 
 create-change-set:
 	$(eval cs_name := change-set-$(GIT_HASH_SHORT))
 	aws cloudformation create-change-set \
 		--change-set-name $(cs_name) \
 	    --stack-name "$(CFN_STACK_NAME)" \
-		--template-body file://prerequisite-cloudformation-resources.yml \
+		--template-body file://cloudformation/prerequisite-cloudformation-resources.yml \
 	> $(cs_name).json
 
 diff-cfn: create-change-set
@@ -47,6 +52,7 @@ apply-cfn: diff-cfn
 		--change-set-name $(cs_id) \
 		--output yaml
 
+
 ##########################################
 # serverless
 ##########################################
@@ -58,10 +64,6 @@ diff-sls:
 deploy-sls:
 	serverless deploy
 
-.phony: help
-help:
-	@echo 'pick a target to run. see Makefile:'
-	cat Makefile
 
 ##########################################
 # docs

@@ -64,6 +64,11 @@ diff-sls:
 deploy-sls:
 	serverless deploy
 
+deploy-dashboard:
+	aws cloudwatch put-dashboard \
+		--dashboard-name serverless-aws-python3-fec-datasync-dashboard \
+		--dashboard-body file://cloudformation/cloudwatch.json
+
 
 ##########################################
 # docs

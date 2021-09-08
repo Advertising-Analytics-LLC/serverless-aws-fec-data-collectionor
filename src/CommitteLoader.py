@@ -13,18 +13,12 @@ from src import logger, schema, condense_dimension
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
-from src.sqs import parse_message
 from src.FinancialSummaryLoader import upsert_filing
 
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 openFec = OpenFec(API_KEY)
-
-
-def upsert_committeecandidate(committee_id: str, candidate_id:str) -> bool:
-    """upsert single record to committee-candidate linking table"""
-
 
 
 def committeLoader(event: dict, context: object):
@@ -36,8 +30,7 @@ def committeLoader(event: dict, context: object):
 
     for message in messages:
 
-        message_parsed = parse_message(message)
-        committee_id = message_parsed
+        committee_id = message
 
         route = f'/committee/{committee_id}/'
         committee_data = openFec.get_route_paginator(route)

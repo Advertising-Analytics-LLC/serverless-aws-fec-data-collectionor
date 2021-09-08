@@ -31,7 +31,7 @@ def push_committee_id_to_sqs(message_list):
     """Pushes a list of committee_ids to SQS"""
 
     for msg in message_list:
-        response = queue.send_message(MessageBody=json.dumps(msg['committee_id']))
+        response = queue.send_message(MessageBody=msg['committee_id'])
         logger.debug(response)
 
 
@@ -52,8 +52,7 @@ def get_committees_since(isodate: str, max_last_f1_date='') -> json:
         get_committees_payload = {'min_last_f1_date': isodate}
     results_json = []
     openFec = OpenFec(API_KEY)
-    response_generator = openFec.get_route_paginator('/committees/',
-                                                    payload=get_committees_payload)
+    response_generator = openFec.get_route_paginator('/committees/', payload=get_committees_payload)
     for response in response_generator:
         results_json += response['results']
     return results_json

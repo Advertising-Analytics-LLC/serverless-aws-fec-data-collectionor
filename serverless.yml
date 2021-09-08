@@ -320,14 +320,3 @@ provider:
     Env: ${self:provider.stage}
   # tracing:
   #   lambda: true
-
-resources:
-  Resources:
-    Dashboard:
-      Type: AWS::CloudWatch::Dashboard
-      Properties:
-        DashboardBody: ${file(my-dashboard-body.js):myDashboardBody}
-        DashboardName: ${self:service}-dashboard
-
-outputs:
-  MonitoringDashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:name=${self:service}-dashboard

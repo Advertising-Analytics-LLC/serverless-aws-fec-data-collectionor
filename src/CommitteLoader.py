@@ -7,12 +7,9 @@ CommitteeLoader lambda:
 - writes data to redshift
 """
 
-import boto3
 import json
 import os
-from datetime import datetime, timedelta
 from time import time
-from typing import List, Dict, Any
 from src import logger, JSONType, schema, serialize_dates, condense_dimension
 from src.database import Database
 from src.OpenFec import OpenFec
@@ -25,59 +22,9 @@ from src.FinancialSummaryLoader import upsert_filing
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 openFec = OpenFec(API_KEY)
 
-def get_committee_filing(committee_id: str):
-    """ https://api.open.fec.gov/developers/#/filings/get_committee__committee_id__filings_ """
-
-    route = f'/committee/{committee_id}/filings/?form_category=STATEMENT'
-    response_generator = openFec.get_route_paginator(route)
-
-    results_json = []
-    for response in response_generator:
-        results_json += response['results']
-
-    if len(results_json) > 0:
-        return results_json[0]
-    else:
-        logger.warning(f'API {route} returned zero results')
-        return []
-
-
-def get_committee_data(committee_id: str) -> JSONType:
-    """Pulls the committee data from the openFEC API
-        https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
-
-    Args:
-        committee_id (str): ID of committee
-
-    Returns:
-        json: committee data
-    """
-
-    route = f'/committee/{committee_id}/'
-    response_generator = openFec.get_route_paginator(route)
-
-    results_json = []
-    for response in response_generator:
-        results_json += response['results']
-
-    if len(results_json) > 0:
-        return results_json[0]
-    else:
-        logger.warning(f'API {route} returned zero results')
-        logger.debug(results_json)
-        return []
-
 
 def upsert_committeecandidate(committee_id: str, candidate_id:str) -> bool:
-    """upsert single record to committee-candidate linking table
-
-    Args:
-        committee_id (str): ID of committee
-        candidate_id (str): ID of candidate they endorse
-
-    Returns:
-        bool: success
-    """
+    """upsert single record to committee-candidate linking table"""
 
     record_exists_query = schema.get_committee_candidate_by_id(committee_id, candidate_id)
 
@@ -93,11 +40,7 @@ def upsert_committeecandidate(committee_id: str, candidate_id:str) -> bool:
 
 
 def transform_committee_detail(committee_detail: JSONType) -> JSONType:
-    """handles transformation of CommitteeDetail object
-
-    Args:
-        committee_detail (JSONType): CommitteeDetail object
-    """
+    """handles transformation of CommitteeDetail object"""
 
     # date this update - the database converts 'now' to a timestamp
     committee_detail['last_updated'] = "'now'"
@@ -112,14 +55,7 @@ def transform_committee_detail(committee_detail: JSONType) -> JSONType:
 
 
 def upsert_committee_data(committee_data: JSONType) -> bool:
-    """opens DB contextmanager and upserts committee data
-
-    Args:
-        committee_data (JSONType): CommitteeDetail object from OpenFEC API
-
-    Returns:
-        bool: success
-    """
+    """opens DB contextmanager and upserts committee data"""
 
     committee_id = committee_data['committee_id']
     candidate_ids = committee_data.pop('candidate_ids')
@@ -143,18 +79,9 @@ def upsert_committee_data(committee_data: JSONType) -> bool:
 
 
 
-def committeLoader(event: dict, context: object) -> bool:
-    """Gets committee IDs from SQS, pulls data from OpenFEC API, and pushes to RedShift
-        and loops like that for ten minutes
-    Args:
-        event (dict): json object containing headers and body of request
-        context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
+def committeLoader(event: dict, context: object):
+    """Gets committee IDs from SQS, pulls data from OpenFEC API, and pushes to RedShift"""
 
-    Returns:
-        json:
-    """
-
-    logger.info(f'running {__file__}')
     logger.debug(json.dumps(event))
 
     messages = event['Records']
@@ -164,12 +91,12 @@ def committeLoader(event: dict, context: object) -> bool:
         message_parsed = parse_message(message)
         committee_id = message_parsed
 
-        committee_data = get_committee_data(committee_id)
-        if committee_data:
-            upsert_committee_data(committee_data)
+        route = f'/committee/{committee_id}/'
+        committee_data = openFec.get_route_paginator(route)
+        for datum in committee_data:
+            upsert_committee_data(datum)
 
-        committee_filings = get_committee_filing(committee_id)
-        if committee_filings:
-            upsert_filing(committee_filings)
-
-    return True
+        route = f'/committee/{committee_id}/filings/?form_category=STATEMENT'
+        committee_filings = openFec.get_route_paginator(route)
+        for filing in committee_filings:
+            upsert_filing(filing)

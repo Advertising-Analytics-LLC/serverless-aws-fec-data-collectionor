@@ -155,7 +155,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref CommitteeSyncQueueName
-      VisibilityTimeout: 300
+      VisibilityTimeout: 900
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt CommitteeDeadLetterQueue.Arn
         maxReceiveCount: 5

@@ -13,7 +13,7 @@ import os
 from datetime import datetime, timedelta
 from time import time
 from typing import List, Dict, Any
-from src import logger, JSONType, schema, serialize_dates
+from src import logger, JSONType, schema, serialize_dates, condense_dimension
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -27,13 +27,19 @@ openFec = OpenFec(API_KEY)
 
 def get_committee_filing(committee_id: str):
     """ https://api.open.fec.gov/developers/#/filings/get_committee__committee_id__filings_ """
-    response_generator = openFec.get_route_paginator(f'/committee/{committee_id}/filings/?form_category=STATEMENT')
+
+    route = f'/committee/{committee_id}/filings/?form_category=STATEMENT'
+    response_generator = openFec.get_route_paginator(route)
 
     results_json = []
     for response in response_generator:
         results_json += response['results']
 
-    return results_json[0]
+    if len(results_json) > 0:
+        return results_json[0]
+    else:
+        logger.warning(f'API {route} returned zero results')
+        return []
 
 
 def get_committee_data(committee_id: str) -> JSONType:
@@ -47,13 +53,19 @@ def get_committee_data(committee_id: str) -> JSONType:
         json: committee data
     """
 
-    results_json = []
-    response_generator = openFec.get_committee_by_id_paginator(committee_id)
+    route = f'/committee/{committee_id}/'
+    response_generator = openFec.get_route_paginator(route)
 
+    results_json = []
     for response in response_generator:
         results_json += response['results']
 
-    return results_json
+    if len(results_json) > 0:
+        return results_json[0]
+    else:
+        logger.warning(f'API {route} returned zero results')
+        logger.debug(results_json)
+        return []
 
 
 def upsert_committeecandidate(committee_id: str, candidate_id:str) -> bool:
@@ -81,18 +93,21 @@ def upsert_committeecandidate(committee_id: str, candidate_id:str) -> bool:
 
 
 def transform_committee_detail(committee_detail: JSONType) -> JSONType:
-    """handles transformation of CommitteeDetail object:
-        - date this update - the database converts 'now' to a timestamp
-        - rename name -> committee_name
-        - convert cycles list seperated by ~
+    """handles transformation of CommitteeDetail object
 
     Args:
         committee_detail (JSONType): CommitteeDetail object
     """
 
+    # date this update - the database converts 'now' to a timestamp
     committee_detail['last_updated'] = "'now'"
+
+    # rename name -> committee_name
     committee_detail['committee_name'] = committee_detail.pop('name')
-    committee_detail['cycles'] = '~'.join(str(cycle) for cycle in committee_detail['cycles'])
+
+    # convert cycles list seperated by ~
+    committee_detail = condense_dimension(committee_detail, 'cycles')
+
     return committee_detail
 
 
@@ -150,14 +165,11 @@ def committeLoader(event: dict, context: object) -> bool:
         committee_id = message_parsed
 
         committee_data = get_committee_data(committee_id)
-
-        if not committee_data:
-            logger.error(f'Committee {committee_id} not found! exiting.')
-            return False
-
-        upsert_committee_data(committee_data[0])
+        if committee_data:
+            upsert_committee_data(committee_data)
 
         committee_filings = get_committee_filing(committee_id)
-        upsert_filing(committee_filings)
+        if committee_filings:
+            upsert_filing(committee_filings)
 
     return True

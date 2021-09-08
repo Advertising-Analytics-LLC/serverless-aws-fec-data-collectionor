@@ -2,7 +2,7 @@
 SET search_path TO fec;
 
 CREATE TABLE IF NOT EXISTS fec.filing_amendment_chain (
-  filing_amendment_chain_id INT IDENTITY(1,1),
+	filing_amendment_chain_id varchar(256) NOT null default cast(round(random()*1000000000000) as varchar),
   fec_file_id INT NOT NULL,
   amendment_id INT NOT NULL,
   amendment_number INT NOT NULL,

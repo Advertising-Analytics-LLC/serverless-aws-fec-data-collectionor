@@ -9,7 +9,7 @@ import json
 import os
 import requests
 from typing import Any, Dict, List
-from src import JSONType, logger, schema
+from src import JSONType, logger, schema, condense_dimension
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -23,13 +23,19 @@ openFec = OpenFec(API_KEY)
 
 def get_canidacy_filing(candidate_id: str):
     """ https://api.open.fec.gov/developers/#/filings/get_candidate__candidate_id__filings_ """
-    response_generator = openFec.get_route_paginator(f'/candidate/{candidate_id}/filings/?form_category=STATEMENT')
+
+    route = f'/candidate/{candidate_id}/filings/?form_category=STATEMENT'
+    response_generator = openFec.get_route_paginator(route)
 
     results_json = []
     for response in response_generator:
         results_json += response['results']
 
-    return results_json[0]
+    if len(results_json) > 0:
+        return results_json[0]
+    else:
+        logger.warning(f'API {route} returned zero results')
+        return []
 
 
 def get_candidate(candidate_id: str) -> Dict['str', Any]:
@@ -42,8 +48,8 @@ def get_candidate(candidate_id: str) -> Dict['str', Any]:
         json: json list containing IDs
     """
 
-    response_generator = openFec.get_route_paginator(
-                                f'/candidate/{candidate_id}/')
+    route = f'/candidate/{candidate_id}/'
+    response_generator = openFec.get_route_paginator(route)
 
     results_json = []
     for response in response_generator:
@@ -53,23 +59,8 @@ def get_candidate(candidate_id: str) -> Dict['str', Any]:
     if len(results_json) > 0:
         return results_json[0]
     else:
-        raise Exception(f'Candidate ID {candidate_id} returned zero results')
-
-def condense_dimension(containing_dict: Dict[str, Any], column_name: str) -> Dict[str, Any]:
-    """takes a dimension (list) in a dictionary and joins the elements with ~s
-        WARNING: this method uses dict.pop and so has side effets
-
-    Args:
-        containing_dict (Dict[str, Any]): Dictionary containing the
-        column_name (str): to join
-
-    Returns:
-        Dict[str, Any]: input dict with that list as a str
-    """
-
-    containing_dict[column_name] = '~'.join([str(item) for item in containing_dict.pop(column_name)])
-
-    return containing_dict
+        logger.warning(f'API {route} returned zero results')
+        return []
 
 
 def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
@@ -93,17 +84,6 @@ def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
 
     return success
 
-def upsert_candidate_filing(candidate_message: Dict[str, Any]) -> bool:
-    """upserts a single filing"""
-
-    candidate_message['fec_file_id'] = candidate_message['fec_file_id'].replace('FEC-', '')
-    exists_query = schema.form2_exists(candidate_message['fec_file_id'])
-
-    with Database() as db:
-        if not db.record_exists(exists_query):
-            query = schema.form2_insert(candidate_message)
-            return db.try_query(query)
-
 
 def lambdaHandler(event:dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
@@ -125,9 +105,13 @@ def lambdaHandler(event:dict, context: object) -> bool:
     for message in messages:
         body = json.loads(message['body'])
         candidate_id = body['candidate_id']
+
         candidate_detail = get_candidate(candidate_id)
-        upsert_candidate(candidate_detail)
+        if candidate_detail:
+            upsert_candidate(candidate_detail)
+
         candidacy_filing = get_canidacy_filing(candidate_id)
-        upsert_filing(candidacy_filing)
+        if candidacy_filing:
+            upsert_filing(candidacy_filing)
 
     return True

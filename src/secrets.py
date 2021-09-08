@@ -4,15 +4,14 @@ Functions for getting secrets
 """
 
 import boto3
-import logging
-from typing import List, Dict, Union, Any
+from typing import List, Dict, Any
+from src import logger, JSONType
 
 
-JSONType = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 
-logger = logging.getLogger(__name__)
 session = boto3.Session()
 client = session.client('ssm')
+
 
 def get_parameter_by_name(parameter_name: str) -> dict:
     """Gets parameters value and other attributes from AWS"""
@@ -21,6 +20,7 @@ def get_parameter_by_name(parameter_name: str) -> dict:
         WithDecryption=True)
     parameter = parameter_object['Parameter']
     return parameter
+
 
 def get_param_value_by_name(parameter_name: str) -> str:
     """Gets SSM parameter value, decrypted

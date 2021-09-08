@@ -48,6 +48,7 @@ def get_committees_since(isodate: str, max_last_f1_date='') -> json:
     return results_json
 
 
+# todo: rename lambdaHandler to conform style
 def committeSync(event: dict, context: object) -> List[any]:
     """Gets committees who've filed in the last day and push their IDs to SQS
 

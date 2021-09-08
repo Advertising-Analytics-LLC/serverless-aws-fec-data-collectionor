@@ -8,8 +8,8 @@ import fecfile
 import json
 import os
 import requests
-from typing import Any, Dict, List
-from src import JSONType, logger, schema, condense_dimension
+from typing import Any, Dict
+from src import schema, condense_dimension, logger
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -71,7 +71,14 @@ def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
     candidate_message = condense_dimension(candidate_message, 'election_districts')
     candidate_message = condense_dimension(candidate_message, 'election_years')
 
-    pk = candidate_message['candidate_id']
+    pk = {}
+
+    try:
+        pk = candidate_message['candidate_id']
+    except TypeError as e:
+        logger.debug(candidate_message)
+        raise e
+
     exists_query = schema.candidate_exists(pk)
 
     with Database() as db:

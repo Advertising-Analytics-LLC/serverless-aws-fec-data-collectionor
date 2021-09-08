@@ -1,8 +1,5 @@
 #!/bin/env python3
-""" lightweight SDK for OpenFec API
-influences:
-- https://github.com/rhythmictech/pagerduty-to-jira-lambda/blob/master/pd2jira_function/pd2jira/app.py
-- https://github.com/sblack4/lolcrawler2/blob/master/lolcrawler/riot.py
+""" lightweight SDK for OpenFec API https://api.open.fec.gov/developers/
 """
 
 import json
@@ -22,6 +19,7 @@ class NotFound404Exception(Exception):
 class OpenFec:
     """Lightweight wrapper over the openFEC api - https://api.open.fec.gov/developers/
     """
+
     def __init__(self, api_key: str, base_url='https://api.open.fec.gov/v1'):
         """Create OpenFec api objects
 

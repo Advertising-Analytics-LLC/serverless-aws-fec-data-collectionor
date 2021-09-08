@@ -39,6 +39,7 @@ def pull_message_from_sqs() -> Dict[str, Any]:
     return {}
 
 
+# TODO: move to CommmiteeSync.py
 def push_committee_id_to_sqs(message_list: List[any]) -> object:
     """Pushes a list of SendMessageBatchRequestEntry (messages) to
         see https://github.com/boto/botocore/blob/f1f0c6d2e445d7c3a3f8f355eaf6d692bbf3cd6a/botocore/data/sqs/2012-11-05/service-2.json#L1238
@@ -95,9 +96,9 @@ def parse_message(message: JSONType) -> Dict[str, str]:
     """
 
     my_body = message['body']
-    json_body = json.loads(my_body)
 
     try:
+        json_body = json.loads(my_body)
         if type(json_body) == dict:
             body_content = json.loads(json_body['Message'].replace("'", '"'))
 
@@ -108,6 +109,8 @@ def parse_message(message: JSONType) -> Dict[str, str]:
         logger.error('KeyError parsing message')
         logger.error(message)
         raise ex
+    except Exception as ex:
+        logger.error(f'Error: {ex}\nSQS message: {message}')
 
 
 def push_message_to_sqs(message: str) -> Dict[str, str]:

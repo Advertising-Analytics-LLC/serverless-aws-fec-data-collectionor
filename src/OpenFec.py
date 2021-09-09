@@ -116,11 +116,27 @@ class OpenFec:
         Yields:
             Generator: python Generator object to iteratate over responses
         """
+
+        payload['page'] = 1
         first_response = self.get_route(route, payload)
         yield first_response
         num_pages = first_response['pagination']['pages']
         if num_pages > 1:
             for page in range(2, num_pages + 1):
+                print(f'page {page}')
                 payload['page'] = page
                 next_page = self.get_route(route, payload)
                 yield next_page
+
+    def stream_paginations_to_callback(self, callback_function, route: str, payload={}):
+
+        payload['page'] = 1
+        first_response = self.get_route(route, payload)
+        callback_function(first_response)
+        estimated_num_pages = first_response['pagination']['pages']
+
+        for page in range(2, estimated_num_pages + 2):
+            print(f'page {page}')
+            payload['page'] = page
+            next_page = self.get_route(route, payload)
+            callback_function(next_page)

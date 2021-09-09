@@ -18,7 +18,6 @@ from src.FinancialSummaryLoader import upsert_filing
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
-openFec = OpenFec(API_KEY)
 
 
 def committeLoader(event, context):
@@ -30,6 +29,7 @@ def committeLoader(event, context):
 
     for message in messages:
 
+        openFec = OpenFec(API_KEY)
         committee_id = message['body']
 
         route = f'/committee/{committee_id}/'
@@ -58,11 +58,15 @@ def committeLoader(event, context):
                 committee_exists_query = schema.get_committee_detail_by_id(committee_id)
 
                 with Database() as db:
+                    table_name = 'committee_detail'
+                    table_pk_name = 'committee_id'
+                    committee_detail_column_names = db.query(schema.get_ordered_column_names(table_name))
+                    print(f'colum nnames: {committee_detail_column_names}')
 
                     if db.record_exists(committee_exists_query):
-                        query = schema.get_committee_detail_update_statement(**committee_datum)
+                        query = schema.get_sql_update(table_name, committee_detail_column_names, committee_datum, table_pk_name)
                     else:
-                        query = schema.get_committee_detail_insert_statement(**committee_datum)
+                        query = schema.get_sql_insert(table_name, committee_detail_column_names, committee_datum)
 
                     db.try_query(query)
 

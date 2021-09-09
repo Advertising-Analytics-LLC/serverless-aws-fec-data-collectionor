@@ -64,8 +64,12 @@ def get_sql_insert(table, ordered_columns, values):
 
     values = filter_dict_by_keys(values, ordered_columns)
 
-    query_string = f'INSERT INTO fec.{table} VALUES ' \
-        + ', '.join([f' {key}={{}}' for key, val in values.items()])
+    query_string = f'INSERT INTO fec.{table} ('\
+        + ', '.join([f'{key}' for key, val in values.items()])\
+        + ') '\
+        + 'VALUES ('\
+        + ', '.join(['{}' for key, val in values.items()])\
+        + ')'
 
     query = sql.SQL(query_string)\
         .format(*[Literal(val) for key, val in values.items()])
@@ -73,8 +77,13 @@ def get_sql_insert(table, ordered_columns, values):
     return query
 
 
+
 # committees
 
+def get_committee_detail_by_id(committee_id: str) -> SQL:
+    query = sql.SQL('SELECT * FROM fec.committee_detail WHERE committee_id = {committee_id}')\
+        .format(committee_id=Literal(parse_value(committee_id)))
+    return query
 
 def get_committee_candidate_by_id(committee_id: str, candidate_id: str) -> SQL:
     query = SQL('SELECT * FROM fec.committee_candidate WHERE committee_id = {committee_id} AND candidate_id = {candidate_id}')\

@@ -71,8 +71,12 @@ def get_sql_insert(table, ordered_columns, values):
         + ', '.join(['{}' for key, val in values.items()])\
         + ')'
 
+    def truncate(val):
+        if isinstance(val, str):
+            return val[:255]
+
     query = sql.SQL(query_string)\
-        .format(*[Literal(val) for key, val in values.items()])
+        .format(*[Literal(truncate(val)) for key, val in values.items()])
 
     return query
 

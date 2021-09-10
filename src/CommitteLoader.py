@@ -47,7 +47,6 @@ def handle_committee_pagination(pagination):
             table_name = 'committee_detail'
             table_pk_name = 'committee_id'
             committee_detail_column_names = db.query(schema.get_ordered_column_names(table_name))
-            print(f'colum nnames: {committee_detail_column_names}')
 
             if db.record_exists(committee_exists_query):
                 query = schema.get_sql_update(table_name, committee_detail_column_names, committee_datum, table_pk_name)

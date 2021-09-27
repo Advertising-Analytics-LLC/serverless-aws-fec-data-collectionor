@@ -1,7 +1,7 @@
 Description: Prerequisite AWS Resources for FEC Data-sync serverless functions
 
 Parameters:
-  DeadLetterQueueMessageRetentionPeriod:
+  MessageRetentionPeriod:
     Default: 1209600 # 604800 # 7 days in seconds
     Type: Number
   CopyFromBucketName:
@@ -120,8 +120,7 @@ Resources:
   CandidateDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
-      MessageRetentionPeriod:
-        Ref: DeadLetterQueueMessageRetentionPeriod
+      MessageRetentionPeriod: !Ref MessageRetentionPeriod
       QueueName: !Ref CandidateDeadLetterQueueName
       Tags:
       - Key: Name
@@ -145,7 +144,7 @@ Resources:
   CommitteeDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
-      MessageRetentionPeriod: 1209600
+      MessageRetentionPeriod: !Ref MessageRetentionPeriod
       QueueName: !Ref CommitteeDeadLetterQueueName
       Tags:
       - Key: Name
@@ -155,10 +154,10 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref CommitteeSyncQueueName
-      VisibilityTimeout: 900
+      VisibilityTimeout: 5400
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt CommitteeDeadLetterQueue.Arn
-        maxReceiveCount: 5
+        maxReceiveCount: 15
       Tags:
       - Key: Name
         Value: !Ref CommitteeSyncQueueName
@@ -176,7 +175,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref FinancialSummaryQueueName
-      VisibilityTimeout: 900
+      VisibilityTimeout: 5400
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FinancialSummaryDLQueue.Arn
         maxReceiveCount: 5
@@ -194,7 +193,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref FilingSEQueueName
-      VisibilityTimeout: 900
+      VisibilityTimeout: 5400
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FilingSEDLQueue.Arn
         # maxReceiveCount: !Ref FilingRedriveCount
@@ -212,7 +211,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref FilingF1SQueueName
-      VisibilityTimeout: 900
+      VisibilityTimeout: 5400
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FilingF1SDLQueue.Arn
         # maxReceiveCount: !Ref FilingRedriveCount
@@ -230,7 +229,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Ref FilingSBQueueName
-      VisibilityTimeout: 900
+      VisibilityTimeout: 5400
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FilingSBDLQueue.Arn
         # maxReceiveCount: !Ref FilingRedriveCount

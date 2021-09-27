@@ -1,11 +1,6 @@
 #!/bin/env python3
-""" lightweight SDK for OpenFec API
-influences:
-- https://github.com/rhythmictech/pagerduty-to-jira-lambda/blob/master/pd2jira_function/pd2jira/app.py
-- https://github.com/sblack4/lolcrawler2/blob/master/lolcrawler/riot.py
-"""
+"""lightweight SDK for OpenFec API https://api.open.fec.gov/developers/"""
 
-import json
 import requests
 from requests import Response
 from src import JSONType, logger
@@ -14,14 +9,14 @@ from typing import Generator
 
 
 class NotFound404Exception(Exception):
-    """ URL return 404 """
+    """URL return 404"""
     def __init__(self, message):
         self.message = message
 
 
 class OpenFec:
-    """Lightweight wrapper over the openFEC api - https://api.open.fec.gov/developers/
-    """
+    """Lightweight wrapper over the openFEC api - https://api.open.fec.gov/developers/"""
+
     def __init__(self, api_key: str, base_url='https://api.open.fec.gov/v1'):
         """Create OpenFec api objects
 
@@ -99,25 +94,14 @@ class OpenFec:
 
         return response
 
-    def get_route(self, route:str, payload: dict) -> JSONType:
-        """get response from openfec API
-            https://api.open.fec.gov/developers/
+    def get_route(self, route: str, payload: dict) -> JSONType:
+        """get response from openfec API https://api.open.fec.gov/developers/
 
         Args:
             payload (dict): request params object
 
         Returns:
-            json: response as json object, has this structure:
-                    {
-                      "api_version": "1.0",
-                      "pagination": {
-                        "page": 1,
-                        "per_page": 20,
-                        "count": 0,
-                        "pages": 0
-                      },
-                      "results": []
-                    }
+            json: api response (should be json)
         """
         url = self._get_route(route)
         response = self._get_request(url, payload)
@@ -132,11 +116,27 @@ class OpenFec:
         Yields:
             Generator: python Generator object to iteratate over responses
         """
+
+        payload['page'] = 1
         first_response = self.get_route(route, payload)
         yield first_response
         num_pages = first_response['pagination']['pages']
         if num_pages > 1:
             for page in range(2, num_pages + 1):
+                print(f'page {page}')
                 payload['page'] = page
                 next_page = self.get_route(route, payload)
                 yield next_page
+
+    def stream_paginations_to_callback(self, callback_function, route: str, payload={}):
+
+        payload['page'] = 1
+        first_response = self.get_route(route, payload)
+        callback_function(first_response)
+        estimated_num_pages = first_response['pagination']['pages']
+
+        for page in range(2, estimated_num_pages + 2):
+            print(f'page {page}')
+            payload['page'] = page
+            next_page = self.get_route(route, payload)
+            callback_function(next_page)

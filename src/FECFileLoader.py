@@ -15,13 +15,9 @@ import json
 import os
 import uuid
 import re
-import time
-from collections import OrderedDict
-from copy import deepcopy
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Tuple
 from psycopg2 import sql
-from psycopg2.sql import SQL, Literal
 from src import JSONType, logger, serialize_dates
 from src.database import Database
 from src.sqs import parse_message
@@ -50,7 +46,7 @@ class TransactionIdMissingException(Exception):
         self.message = message
 
 
-def parse_event_record(eventrecord) -> (dict, int):
+def parse_event_record(eventrecord) -> Tuple[dict, int]:
     message_parsed = parse_message(eventrecord)
     filing_id = message_parsed['filing_id'].replace('FEC-', '')
 

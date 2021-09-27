@@ -7,169 +7,72 @@ CommitteeLoader lambda:
 - writes data to redshift
 """
 
-import boto3
 import json
 import os
-from datetime import datetime, timedelta
-from time import time
-from typing import List, Dict, Any
-from src import logger, JSONType, schema, serialize_dates, condense_dimension
+from src import logger, schema, condense_dimension
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
-from src.sqs import delete_message_from_sqs, parse_message
 from src.FinancialSummaryLoader import upsert_filing
 
 
 # SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
-openFec = OpenFec(API_KEY)
 
-def get_committee_filing(committee_id: str):
-    """ https://api.open.fec.gov/developers/#/filings/get_committee__committee_id__filings_ """
+def handle_committee_pagination(pagination):
 
-    route = f'/committee/{committee_id}/filings/?form_category=STATEMENT'
-    response_generator = openFec.get_route_paginator(route)
+    for committee_datum in pagination['results']:
+        committee_id = committee_datum['committee_id']
+        candidate_ids = committee_datum.pop('candidate_ids')
 
-    results_json = []
-    for response in response_generator:
-        results_json += response['results']
+        for candidate_id in candidate_ids:
+            with Database() as db:
 
-    if len(results_json) > 0:
-        return results_json[0]
-    else:
-        logger.warning(f'API {route} returned zero results')
-        return []
+                record_exists_query = schema.get_committee_candidate_by_id(committee_id, candidate_id)
+                if db.record_exists(record_exists_query):
+                    continue
 
+                query = schema.get_committee_candidate_insert_statement(committee_id, candidate_id)
+                db.try_query(query)
 
-def get_committee_data(committee_id: str) -> JSONType:
-    """Pulls the committee data from the openFEC API
-        https://api.open.fec.gov/developers/#/committee/get_committee__committee_id__
+        committee_datum['last_updated'] = "'now'"
+        # rename name -> committee_name
+        committee_datum['committee_name'] = committee_datum.pop('name')
+        # convert cycles list seperated by ~
+        committee_datum = condense_dimension(committee_datum, 'cycles')
 
-    Args:
-        committee_id (str): ID of committee
+        committee_exists_query = schema.get_committee_detail_by_id(committee_id)
 
-    Returns:
-        json: committee data
-    """
+        with Database() as db:
+            table_name = 'committee_detail'
+            table_pk_name = 'committee_id'
+            committee_detail_column_names = db.query(schema.get_ordered_column_names(table_name))
 
-    route = f'/committee/{committee_id}/'
-    response_generator = openFec.get_route_paginator(route)
+            if db.record_exists(committee_exists_query):
+                query = schema.get_sql_update(table_name, committee_detail_column_names, committee_datum, table_pk_name)
+            else:
+                query = schema.get_sql_insert(table_name, committee_detail_column_names, committee_datum)
 
-    results_json = []
-    for response in response_generator:
-        results_json += response['results']
-
-    if len(results_json) > 0:
-        return results_json[0]
-    else:
-        logger.warning(f'API {route} returned zero results')
-        logger.debug(results_json)
-        return []
+            db.try_query(query)
 
 
-def upsert_committeecandidate(committee_id: str, candidate_id:str) -> bool:
-    """upsert single record to committee-candidate linking table
+def committeLoader(event, context):
+    """Gets committee IDs from SQS, pulls data from OpenFEC API, and pushes to RedShift"""
 
-    Args:
-        committee_id (str): ID of committee
-        candidate_id (str): ID of candidate they endorse
-
-    Returns:
-        bool: success
-    """
-
-    record_exists_query = schema.get_committee_candidate_by_id(committee_id, candidate_id)
-
-    with Database() as db:
-
-        if db.record_exists(record_exists_query):
-            return
-
-        query = schema.get_committee_candidate_insert_statement(committee_id, candidate_id)
-
-        success = db.try_query(query)
-        return success
-
-
-def transform_committee_detail(committee_detail: JSONType) -> JSONType:
-    """handles transformation of CommitteeDetail object
-
-    Args:
-        committee_detail (JSONType): CommitteeDetail object
-    """
-
-    # date this update - the database converts 'now' to a timestamp
-    committee_detail['last_updated'] = "'now'"
-
-    # rename name -> committee_name
-    committee_detail['committee_name'] = committee_detail.pop('name')
-
-    # convert cycles list seperated by ~
-    committee_detail = condense_dimension(committee_detail, 'cycles')
-
-    return committee_detail
-
-
-def upsert_committee_data(committee_data: JSONType) -> bool:
-    """opens DB contextmanager and upserts committee data
-
-    Args:
-        committee_data (JSONType): CommitteeDetail object from OpenFEC API
-
-    Returns:
-        bool: success
-    """
-
-    committee_id = committee_data['committee_id']
-    candidate_ids = committee_data.pop('candidate_ids')
-
-    for candidate_id in candidate_ids:
-        upsert_committeecandidate(committee_id, candidate_id)
-
-    committee_detail = transform_committee_detail(committee_data)
-
-    committee_exists_query = schema.get_committee_detail_by_id(committee_id)
-
-    with Database() as db:
-
-        if db.record_exists(committee_exists_query):
-            query = schema.get_committee_detail_update_statement(**committee_detail)
-        else:
-            query = schema.get_committee_detail_insert_statement(**committee_detail)
-
-        success = db.try_query(query)
-        return success
-
-
-
-def committeLoader(event: dict, context: object) -> bool:
-    """Gets committee IDs from SQS, pulls data from OpenFEC API, and pushes to RedShift
-        and loops like that for ten minutes
-    Args:
-        event (dict): json object containing headers and body of request
-        context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
-
-    Returns:
-        json:
-    """
-
-    logger.info(f'running {__file__}')
     logger.debug(json.dumps(event))
 
     messages = event['Records']
 
     for message in messages:
 
-        message_parsed = parse_message(message)
-        committee_id = message_parsed
+        openFec = OpenFec(API_KEY)
+        committee_id = message['body']
 
-        committee_data = get_committee_data(committee_id)
-        if committee_data:
-            upsert_committee_data(committee_data)
+        route = f'/committee/{committee_id}/'
+        openFec.stream_paginations_to_callback(handle_committee_pagination, route)
 
-        committee_filings = get_committee_filing(committee_id)
-        if committee_filings:
-            upsert_filing(committee_filings)
-
-    return True
+        route = f'/committee/{committee_id}/filings/?form_category=STATEMENT'
+        committee_paginator = openFec.get_route_paginator(route)
+        for pagination in committee_paginator:
+            for filing in pagination['results']:
+                upsert_filing(filing)

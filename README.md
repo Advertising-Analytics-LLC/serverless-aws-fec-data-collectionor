@@ -1,18 +1,6 @@
 # serverless-aws-fec-data-collectionor
 Serverless applications to get near-real-time FEC data
 
-## Table of Contents
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-
-- [About](#about)
-- [Documentation](#documentation)
-- [Repo Contents](#repo-contents)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 ## About
 All the serverless functions in this module do a few things:
 - Get secrets/variables from SSM

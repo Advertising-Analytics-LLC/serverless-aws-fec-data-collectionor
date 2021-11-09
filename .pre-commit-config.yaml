@@ -11,8 +11,3 @@ repos:
     - id: debug-statements
     - id: double-quote-string-fixer
     - id: requirements-txt-fixer
-    - id: no-commit-to-branch
--   repo: https://github.com/thlorenz/doctoc
-    rev: v1.4.0
-    hooks:
-    - id: doctoc

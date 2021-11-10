@@ -33,7 +33,7 @@ Parameters:
     Default: fec-financialsummary-queue
     Description: Name of Queue for new filings, processed for Financial Summary
     Type: String
-  FilingRedriveCount:
+  RedriveCount:
     Default: 5
     Type: Number
   FilingSEQueueName:
@@ -122,6 +122,9 @@ Resources:
     Properties:
       MessageRetentionPeriod: !Ref MessageRetentionPeriod
       QueueName: !Ref CandidateDeadLetterQueueName
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SuperDLQueue.Arn
+        maxReceiveCount: !Ref RedriveCount
       Tags:
       - Key: Name
         Value: !Ref CandidateDeadLetterQueueName
@@ -146,6 +149,9 @@ Resources:
     Properties:
       MessageRetentionPeriod: !Ref MessageRetentionPeriod
       QueueName: !Ref CommitteeDeadLetterQueueName
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SuperDLQueue.Arn
+        maxReceiveCount: !Ref RedriveCount
       Tags:
       - Key: Name
         Value: !Ref CommitteeDeadLetterQueueName
@@ -170,6 +176,9 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 1209600
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SuperDLQueue.Arn
+        maxReceiveCount: !Ref RedriveCount
 
   FinancialSummaryQueue:
     Type: AWS::SQS::Queue
@@ -178,8 +187,7 @@ Resources:
       VisibilityTimeout: 5400
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FinancialSummaryDLQueue.Arn
-        maxReceiveCount: 5
-        # maxReceiveCount: !Ref FilingRedriveCount
+        maxReceiveCount: !Ref RedriveCount
       Tags:
       - Key: Name
         Value: !Ref FinancialSummaryQueueName
@@ -188,6 +196,9 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 1209600
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SuperDLQueue.Arn
+        maxReceiveCount: !Ref RedriveCount
 
   FilingSEQueue:
     Type: AWS::SQS::Queue
@@ -196,8 +207,7 @@ Resources:
       VisibilityTimeout: 5400
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FilingSEDLQueue.Arn
-        # maxReceiveCount: !Ref FilingRedriveCount
-        maxReceiveCount: 5
+        maxReceiveCount: !Ref RedriveCount
       Tags:
       - Key: Name
         Value: !Ref FilingSEQueueName
@@ -206,6 +216,9 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 1209600
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SuperDLQueue.Arn
+        maxReceiveCount: !Ref RedriveCount
 
   FilingF1SQueue:
     Type: AWS::SQS::Queue
@@ -214,8 +227,7 @@ Resources:
       VisibilityTimeout: 5400
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FilingF1SDLQueue.Arn
-        # maxReceiveCount: !Ref FilingRedriveCount
-        maxReceiveCount: 5
+        maxReceiveCount: !Ref RedriveCount
       Tags:
       - Key: Name
         Value: !Ref FilingF1SQueueName
@@ -224,6 +236,9 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 1209600
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SuperDLQueue.Arn
+        maxReceiveCount: !Ref RedriveCount
 
   FilingSBQueue:
     Type: AWS::SQS::Queue
@@ -232,8 +247,7 @@ Resources:
       VisibilityTimeout: 5400
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FilingSBDLQueue.Arn
-        # maxReceiveCount: !Ref FilingRedriveCount
-        maxReceiveCount: 5
+        maxReceiveCount: !Ref RedriveCount
       Tags:
       - Key: Name
         Value: !Ref FilingSBQueueName
@@ -297,6 +311,12 @@ Resources:
             Condition:
              ArnEquals:
               aws:SourceArn: !Ref RSSFeedTopic
+
+  SuperDLQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+
 
 Outputs:
 

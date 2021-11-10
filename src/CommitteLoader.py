@@ -1,11 +1,5 @@
 #!/bin/env python3
-"""
-CommitteeLoader lambda:
-- subscribes to topic,
-- read committee IDs from queue,
-- gets data from the /committees/COMMITTEE_ID API
-- writes data to redshift
-"""
+
 
 import json
 import os
@@ -16,10 +10,11 @@ from src.secrets import get_param_value_by_name
 from src.FinancialSummaryLoader import upsert_filing
 
 
-# SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 
+
 def handle_committee_pagination(pagination):
+    '''paginates over committees, inserting them and their candidates into the db'''
 
     for committee_datum in pagination['results']:
         committee_id = committee_datum['committee_id']

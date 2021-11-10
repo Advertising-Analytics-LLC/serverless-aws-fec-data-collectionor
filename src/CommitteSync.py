@@ -1,11 +1,4 @@
 #!/bin/env python3
-"""
-CommitteeSync lambda:
-iterates on /committees API and publishes committee IDs to a queue thing.
-It should:
-- read the last filing date scanned parameter ()
-- query for only committees updated in the 24 hours prior (just to make sure we don't miss anything)
-"""
 
 import boto3
 import json
@@ -17,7 +10,6 @@ from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
 
 
-# SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 MIN_LAST_F1_DATE = os.getenv('MIN_LAST_F1_DATE', datetime.strftime(datetime.now() - timedelta(7), '%Y-%m-%d'))
 
@@ -45,6 +37,7 @@ def get_committees_since(isodate: str, max_last_f1_date='') -> json:
     Returns:
         json: json list containing IDs
     """
+
     # only get those filed today
     if max_last_f1_date:
         get_committees_payload = {'min_last_f1_date': isodate, 'max_last_f1_date': max_last_f1_date}
@@ -58,7 +51,6 @@ def get_committees_since(isodate: str, max_last_f1_date='') -> json:
     return results_json
 
 
-# todo: rename lambdaHandler to conform style
 def committeSync(event: dict, context: object):
     """Gets committees who've filed in the last day and push their IDs to SQS"""
 

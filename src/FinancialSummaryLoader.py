@@ -7,28 +7,22 @@ FilingWriter lambda:
 - writes data to redshift
 """
 
-import boto3
 import json
 import os
 import uuid
 from copy import deepcopy
-from datetime import datetime
 from collections import OrderedDict
 from psycopg2.sql import SQL, Literal
-from requests import Response
-from time import asctime, gmtime, time
 from typing import Any, Dict, List
 from src import condense_dimension, get_current_cycle_year, JSONType, logger
 from src.database import Database, get_insert_query
 from src.OpenFec import OpenFec, NotFound404Exception
 from src.secrets import get_param_value_by_name
-from src.sqs import delete_message_from_sqs, parse_message
+from src.sqs import parse_message
 
 
-# SSM VARS
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 
-# comittee totals
 
 def committee_total_exists(committee_id: str, cycle: int) -> SQL:
     query = SQL('SELECT * FROM fec.committee_totals WHERE committee_id={committee_id} AND cycle={cycle}')\
@@ -88,14 +82,7 @@ def insert_amendment_chain(fec_file_id: str, amendment_id: str, amendment_number
 # BUSYNESS LOGIC
 
 def get_filings(filters: Dict[str, str]) -> Dict[str, Any]:
-    """pulls filings from openfec api
-
-    Args:
-        filters (Dict[str, str]): filters for API query
-
-    Returns:
-        Dict[str, Any]: response as a dict
-    """
+    """pulls filings from openfec api"""
 
     path = '/filings/'
     reports = []
@@ -109,15 +96,7 @@ def get_filings(filters: Dict[str, str]) -> Dict[str, Any]:
 
 
 def get_totals(committee_id: str, filters: Dict[str, Any]) -> Dict[str, Any]:
-    """[summary]
-
-    Args:
-        committee_id (str): [description]
-        filters (Dict[str, Any]): [description]
-
-    Returns:
-        [type]: [description]
-    """
+    """ """
 
     totals_path = '/committee/' + committee_id + '/totals/'
     totals = []
@@ -130,12 +109,7 @@ def get_totals(committee_id: str, filters: Dict[str, Any]) -> Dict[str, Any]:
     return totals
 
 def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
-    """upserts amendment chain linker table
-
-    Args:
-        filing_id (str): ID of filing
-        amendment_chain (List[str]): list of amendment ids
-    """
+    """upserts amendment chain linker table"""
 
     amendment_number = 0
     for amendment in amendment_chain:
@@ -147,14 +121,7 @@ def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
 
 
 def upsert_filing(filing: JSONType) -> bool:
-    """upserts single filing record
-
-    Args:
-        filing (JSONType): A dictionary representing a single filing record
-
-    Returns:
-        bool: success
-    """
+    """upserts single filing record"""
 
     fec_file_id = filing['fec_file_id']
 
@@ -182,14 +149,8 @@ def upsert_filing(filing: JSONType) -> bool:
 
 
 def upsert_committee_total(commitee_total: JSONType) -> bool:
-    """upserts single commitee total given as dict/json
+    """upserts single commitee total given as dict/json"""
 
-    Args:
-        filing (JSONType): A dictionary representing a single committee total record
-
-    Returns:
-        bool: success
-    """
     pk1 = commitee_total['committee_id']
     pk2 = commitee_total['cycle']
 
@@ -204,15 +165,7 @@ def upsert_committee_total(commitee_total: JSONType) -> bool:
 
 
 def lambdaHandler(event:dict, context: object) -> bool:
-    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
-
-    Args:
-        event (dict): for event types see https://docs.aws.amazon.com/lambda/latest/dg/lambda-services.html
-        context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
-
-    Returns:
-        bool: Success
-    """
+    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html"""
 
     logger.debug(f'running {__file__}')
     logger.debug(json.dumps(event))
@@ -253,5 +206,3 @@ def lambdaHandler(event:dict, context: object) -> bool:
         totals_flat = [item for sublist in totals for item in sublist]
         for committee_total in totals_flat:
             upsert_committee_total(committee_total)
-
-    return True

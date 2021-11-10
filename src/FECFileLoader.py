@@ -18,7 +18,7 @@ import re
 from datetime import datetime, timezone
 from typing import Tuple
 from psycopg2 import sql
-from src import JSONType, logger, serialize_dates
+from src import logger, serialize_dates
 from src.database import Database
 from src.sqs import parse_message
 
@@ -37,10 +37,7 @@ filing_table_mapping = {
 
 
 class TransactionIdMissingException(Exception):
-    """ transaction ID is misling
-    Attributes:
-        message -- explanation of the error
-    """
+    """transaction ID is misling"""
 
     def __init__(self, message):
         self.message = message
@@ -60,6 +57,7 @@ def parse_event_record(eventrecord) -> Tuple[dict, int]:
 
 def create_dynamo_table(table_name_prefix):
     """ creates dynamodb table, waits for existance, returns table """
+
     datetime_now_string = datetime.isoformat(
         datetime.now(timezone.utc))[:-6].replace(':', '')
     table_name = f'{table_name_prefix}-{datetime_now_string}'
@@ -100,16 +98,7 @@ def iter_fec_filing(filing_id: int, insert_values: list, fec_file_ids: set):
 
 
 def lambdaHandler(event: dict, context: object) -> bool:
-    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
-        takes events that have fec file IDs, gets the filing from docquery and writes to the DB
-
-    Args:
-        event (dict): for event types see https://docs.aws.amazon.com/lambda/latest/dg/lambda-services.html
-        context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
-
-    Returns:
-        bool: success
-    """
+    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html """
 
     logger.debug(f'running {__file__}')
     logger.debug(json.dumps(event))

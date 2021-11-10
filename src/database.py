@@ -8,13 +8,12 @@ import psycopg2
 import sys
 from collections import OrderedDict
 from psycopg2 import sql, ProgrammingError
-from psycopg2.sql import SQL, Literal
-from src import JSONType, logger, schema
+from psycopg2.sql import Literal
+from src import logger
 from src.secrets import get_param_value_by_name
-from typing import List, Any
+from typing import Any
 
 
-# SSM VARS
 DATABASE = get_param_value_by_name('/global/fec-schema/database')
 HOSTNAME = get_param_value_by_name('/global/fec-schema/hostname')
 PASSWORD = get_param_value_by_name('/global/fec-schema/password')
@@ -26,9 +25,7 @@ class Database:
     """redshift wrapper to handle data serialization"""
 
     def __init__(self):
-        """creates connection to redshift database and performs operations
-            Gets connection variables from SSM
-        """
+        """creates connection to redshift"""
         self.conn = psycopg2.connect(dbname=DATABASE, user=USERNAME, password=PASSWORD, host=HOSTNAME, port=PORT)
 
     def __enter__(self):
@@ -72,14 +69,7 @@ class Database:
         return value
 
     def try_query(self, query: sql.SQL) -> bool:
-        """query in a try block. returns bool representing success
-
-        Args:
-            query (sql.SQL): SQL query
-
-        Returns:
-            bool: query success
-        """
+        """query in a try block. returns bool representing success"""
         try:
             self.query(query)
             self.commit()

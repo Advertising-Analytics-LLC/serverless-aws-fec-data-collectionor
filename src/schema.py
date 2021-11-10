@@ -20,8 +20,7 @@ def parse_value(value: Union[str, int]) -> Union[str, int]:
 
 def filter_dict_by_keys(unfiltered_dict, keys):
     """takes a dictionary and a list of sets containing keys (because that is how redshift returns them
-    and returns a dictionary with only the keys given by the list
-    """
+    and returns a dictionary with only the keys given by the list"""
 
     keys_list = [ key[0] for key in keys ]
     filtered_dict = { str(key): unfiltered_dict[str(key)] for key in keys_list}
@@ -111,14 +110,7 @@ def get_committee_candidate_insert_statement(committee_id: str, candidate_id: st
 
 
 def candidate_exists(candidate_id: str) -> SQL:
-    """returns a query to check if a candidate id has a record
-
-    Args:
-        candidate_id (str): ID representing candidate
-
-    Returns:
-        SQL: select query for record
-    """
+    """returns a query to check if a candidate id has a record"""
 
     query = sql.SQL('SELECT * FROM fec.candidate_detail WHERE candidate_id={}')\
         .format(Literal(candidate_id))
@@ -127,14 +119,7 @@ def candidate_exists(candidate_id: str) -> SQL:
 
 
 def candidate_insert(candidate: Dict[str, str]) -> SQL:
-    """inserts a record into fec.candidate_details
-
-    Args:
-        candidate (Dict[str, Any]): dictionary containing candidate data
-
-    Returns:
-        SQL: SQL insert query
-    """
+    """inserts a record into fec.candidate_details"""
 
     values = OrderedDict(sorted(candidate.items()))
 
@@ -152,14 +137,7 @@ def candidate_insert(candidate: Dict[str, str]) -> SQL:
 
 
 def candidate_update(candidate: Dict[str, str]) -> SQL:
-    """updates a record in fec.candidate_detail
-
-    Args:
-        candidate (Dict[str, Any]): dictionary containing candidate data
-
-    Returns:
-        SQL: SQL update query
-    """
+    """updates a record in fec.candidate_detail"""
 
     primary_key = candidate['candidate_id']
     values = OrderedDict(sorted(candidate.items()))

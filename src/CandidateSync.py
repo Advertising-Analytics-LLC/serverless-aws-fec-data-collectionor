@@ -6,11 +6,10 @@ CandidateSync lambda:
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
-from src import JSONType, logger, schema
+from src import logger
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
-from src.sqs import delete_message_from_sqs, push_message_to_sqs
+from src.sqs import push_message_to_sqs
 
 
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
@@ -71,15 +70,7 @@ def lambdaHandler(event:dict, context: object) -> bool:
     return True
 
 def lambdaBackfillHandler(event:dict, context: object) -> bool:
-    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
-
-    Args:
-        event (dict): for event types see https://docs.aws.amazon.com/lambda/latest/dg/lambda-services.html
-        context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
-
-    Returns:
-        bool: Did this go well?
-    """
+    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html"""
 
     logger.debug(f'running {__file__}')
 

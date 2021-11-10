@@ -1,19 +1,13 @@
 #!/bin/env python3
-"""
-CandidateLoader lambda:
-"""
 
-import boto3
-import fecfile
+
 import json
 import os
-import requests
 from typing import Any, Dict
 from src import schema, condense_dimension, logger
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
-from src.sqs import delete_message_from_sqs, parse_message
 from src.FinancialSummaryLoader import upsert_filing
 
 
@@ -22,7 +16,7 @@ API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 openFec = OpenFec(API_KEY)
 
 def get_canidacy_filing(candidate_id: str):
-    """ https://api.open.fec.gov/developers/#/filings/get_candidate__candidate_id__filings_ """
+    """https://api.open.fec.gov/developers/#/filings/get_candidate__candidate_id__filings_"""
 
     route = f'/candidate/{candidate_id}/filings/?form_category=STATEMENT'
     response_generator = openFec.get_route_paginator(route)
@@ -39,14 +33,7 @@ def get_canidacy_filing(candidate_id: str):
 
 
 def get_candidate(candidate_id: str) -> Dict['str', Any]:
-    """gets list of candidate by id
-
-    Args:
-        candidate_id (str): ID of candidate, eg
-
-    Returns:
-        json: json list containing IDs
-    """
+    """gets list of candidate by id"""
 
     route = f'/candidate/{candidate_id}/'
     response_generator = openFec.get_route_paginator(route)
@@ -93,16 +80,7 @@ def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
 
 
 def lambdaHandler(event:dict, context: object) -> bool:
-    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
-        takes events that have CandidateDetail in them and write to DB
-
-    Args:
-        event (dict): for event types see https://docs.aws.amazon.com/lambda/latest/dg/lambda-services.html
-        context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
-
-    Returns:
-        bool: Did this go well?
-    """
+    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html"""
 
     logger.debug(f'running {__file__}, event:')
     logger.debug(json.dumps(event))

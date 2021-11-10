@@ -1,8 +1,5 @@
 #!/bin/env python3
-"""
-sns:
-- helper to work with sns
-"""
+
 
 import boto3
 import os
@@ -15,11 +12,7 @@ client = boto3.client('sns')
 
 
 def send_message_to_sns(msg: str) -> Dict[str, str]:
-    """sends a single message to sns
-
-    Args:
-        msg (str): message
-    """
+    """sends a single message to sns"""
 
     logger.debug(f'sending {msg} to sns')
 

@@ -44,13 +44,11 @@ diff-cfn: create-change-set
 		--change-set-name $(cs_id)
 
 	aws cloudformation describe-change-set \
-		--change-set-name $(cs_id) \
-		--output yaml
+		--change-set-name $(cs_id)
 
 apply-cfn: diff-cfn
 	aws cloudformation execute-change-set \
-		--change-set-name $(cs_id) \
-		--output yaml
+		--change-set-name $(cs_id)
 
 
 ##########################################

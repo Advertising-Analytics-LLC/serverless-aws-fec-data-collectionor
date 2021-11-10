@@ -11,7 +11,6 @@ from src.secrets import get_param_value_by_name
 from src.FinancialSummaryLoader import upsert_filing
 
 
-# business logic
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 openFec = OpenFec(API_KEY)
 
@@ -43,7 +42,10 @@ def get_candidate(candidate_id: str) -> Dict['str', Any]:
         results_json += response['results']
 
         # /candidate/#/ returns a list with one record
-    if len(results_json) > 0:
+    if len(results_json) == 1:
+        return results_json[0]
+    elif len(results_json) > 1:
+        logger.warning(f'too many candidates returned from api length: {len(results_json)}')
         return results_json[0]
     else:
         logger.warning(f'API {route} returned zero results')

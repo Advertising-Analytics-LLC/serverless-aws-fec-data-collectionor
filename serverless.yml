@@ -247,6 +247,7 @@ plugins:
 provider:
   name: aws
   deploymentPrefix: ${self:service}
+  lambdaHashingVersion: "20201221"
   logRetentionInDays: 14
   region: ${opt:region, 'us-east-1'}
   runtime: python3.7

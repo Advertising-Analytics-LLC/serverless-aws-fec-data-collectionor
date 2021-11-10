@@ -10,7 +10,6 @@ eg:
 where ./Missing-committee_details-8.31.21.csv is a files containing committee IDs seperated by newlines
 '''
 
-import json
 import sys
 
 # hack to import local module

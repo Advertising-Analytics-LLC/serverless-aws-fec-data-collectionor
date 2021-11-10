@@ -7,7 +7,6 @@ get_db_stats:
     sends stats to stdout at level INFO
 """
 
-from datetime import datetime, timedelta
 from psycopg2 import sql
 from src import logger
 from src.database import Database

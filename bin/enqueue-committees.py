@@ -11,8 +11,6 @@ where ./Missing-committee_details-8.31.21.csv is a files containing committee ID
 '''
 
 import boto3
-import json
-# import subprocess
 import sys
 
 

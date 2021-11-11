@@ -40,7 +40,12 @@ def filter_dict_by_keys(unfiltered_dict: Dict[str, str], keys: List[str]):
     and returns a dictionary with only the keys given by the list"""
 
     keys_list = [ key[0] for key in keys ]
-    filtered_dict = { str(key): unfiltered_dict[str(key)] for key in keys_list}
+    filtered_dict = {}
+    for key in keys_list:
+        if key in unfiltered_dict.keys():
+            filtered_dict[key] = unfiltered_dict[str(key)]
+        else:
+            logger.warning(f'key {key} not found in {unfiltered_dict}')
 
     return filtered_dict
 

@@ -24,12 +24,11 @@ def handle_committee_pagination(pagination):
         for candidate_id in candidate_ids:
             with Database() as db:
 
-                record_exists_query = db.get_sql_from_string(f'SELECT * FROM fec.{table_name} WHERE committee_id = \'{committee_id}\' AND candidate_id = \'{candidate_id}\'')
+                record_exists_query = db.get_sql_query(f'SELECT * FROM fec.{table_name} WHERE committee_id = \'{committee_id}\' AND candidate_id = \'{candidate_id}\'')
                 if db.record_exists(record_exists_query):
                     continue
 
-                query = db.get_sql_insert(table_name, [candidate_id, committee_id])
-                db.try_query(query)
+                db.sql_insert(table_name, [candidate_id, committee_id])
 
         committee_datum['last_updated'] = "'now'"
         # rename name -> committee_name
@@ -42,13 +41,11 @@ def handle_committee_pagination(pagination):
 
         with Database() as db:
 
-            committee_exists_query = db.get_sql_from_string(f'SELECT * FROM fec.{table_name} WHERE committee_id = \'{committee_id}\'')
+            committee_exists_query = db.get_sql_query(f'SELECT * FROM fec.{table_name} WHERE committee_id = \'{committee_id}\'')
             if db.record_exists(committee_exists_query):
-                query = db.get_sql_update(table_name, committee_datum, table_pk_name)
+                db.sql_update(table_name, committee_datum, table_pk_name)
             else:
-                query = db.get_sql_insert(table_name, committee_datum)
-
-            db.try_query(query)
+                db.sql_insert(table_name, committee_datum)
 
 
 def committeLoader(event, context):

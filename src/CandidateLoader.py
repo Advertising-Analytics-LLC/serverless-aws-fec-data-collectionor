@@ -4,7 +4,7 @@
 import json
 import os
 from typing import Any, Dict
-from src import schema, condense_dimension, logger
+from src import condense_dimension, logger
 from src.database import Database
 from src.OpenFec import OpenFec
 from src.secrets import get_param_value_by_name
@@ -61,24 +61,24 @@ def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
     candidate_message = condense_dimension(candidate_message, 'election_years')
 
     pk = {}
+    table_name = 'candidate_detail'
+    table_pk_name = 'candidate_id'
 
     try:
-        pk = candidate_message['candidate_id']
+        pk = candidate_message[table_pk_name]
     except TypeError as e:
         logger.debug(candidate_message)
         raise e
 
-    exists_query = schema.candidate_exists(pk)
 
     with Database() as db:
-        if db.record_exists(exists_query):
-            query = schema.candidate_update(candidate_message)
+        exists_query = f'SELECT * FROM fec.{table_name} WHERE candidate_id=\'{pk}\''
+        if db.record_exists(db.get_sql_query(exists_query)):
+            query_result = db.sql_update(table_name, candidate_message, table_pk_name)
         else:
-            query = schema.candidate_insert(candidate_message)
+            query_result = db.sql_insert(table_name, candidate_message)
 
-        success = db.try_query(query)
-
-    return success
+    return query_result
 
 
 def lambdaHandler(event:dict, context: object) -> bool:

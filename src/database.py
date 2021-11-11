@@ -147,22 +147,18 @@ class Database:
     # sql funcs
     ##########################################
 
-
-
     def get_ordered_column_names_query(self, table):
         '''takes the name of a table in fmw and returns a query for all the columns'''
 
-        query_string = f'''select column_name
-    from information_schema.columns
-    where table_name = '{table}'
-    order by ordinal_position;'''
+        query_string = 'select column_name from information_schema.columns ' + \
+                      f'where table_name = \'{table}\' order by ordinal_position;'
 
         query = sql.SQL(query_string)
 
         return query
 
 
-    def get_sql_from_string(self, query_string):
+    def get_sql_query(self, query_string):
         """returns a sql from string"""
 
         query = sql.SQL(query_string)
@@ -170,7 +166,15 @@ class Database:
         return query
 
 
-    def get_sql_update(self, table, values: Dict[str, str], pk_col_name):
+    def sql_query(self, query_string):
+        '''executes arbitrary sql string'''
+
+        query = self.get_sql_query(query_string)
+
+        return query
+
+
+    def get_sql_update_query(self, table, values: Dict[str, str], pk_col_name):
         """returns a generic update statement"""
 
         ordered_columns = self.query(self.get_ordered_column_names_query(table))
@@ -188,7 +192,16 @@ class Database:
         return query
 
 
-    def get_sql_insert(self, table, values):
+    def sql_update(self, table, values: Dict[str, str], pk_col_name):
+        '''perform sql update'''
+
+        query = self.get_sql_update_query(table, values, pk_col_name)
+        result = self.try_query(query)
+
+        return result
+
+
+    def get_sql_insert_query(self, table, values):
         '''returns a generic insert statement'''
 
         ordered_columns = self.query(self.get_ordered_column_names_query(table))
@@ -212,3 +225,12 @@ class Database:
             .format(*[Literal(truncate(val)) for key, val in values.items()])
 
         return query
+
+
+    def sql_insert(self, table, values: Dict[str, str]):
+        '''perform sql insert'''
+
+        query = self.get_sql_insert_query(table, values)
+        result = self.try_query(query)
+
+        return result

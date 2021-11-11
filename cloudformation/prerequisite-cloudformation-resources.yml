@@ -114,6 +114,31 @@ Resources:
          Status: Enabled
 
 ########################################
+# results queue
+########################################
+
+  ResultsDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: !Ref MessageRetentionPeriod
+      QueueName: fec-results-dlq
+      Tags:
+      - Key: Name
+        Value: fec-results-dlq
+
+  ResultsQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: fec-results-q
+      VisibilityTimeout: 5400
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt ResultsDLQ.Arn
+        maxReceiveCount: 15
+      Tags:
+      - Key: Name
+        Value: fec-results-q
+
+########################################
 # Candidate data stream
 ########################################
 

@@ -28,7 +28,7 @@ def handle_committee_pagination(pagination):
                 if db.record_exists(record_exists_query):
                     continue
 
-                db.sql_insert(table_name, [candidate_id, committee_id])
+                db.sql_insert(table_name, {'candidate_id': candidate_id, 'committee_id': committee_id})
 
         committee_datum['last_updated'] = "'now'"
         # rename name -> committee_name

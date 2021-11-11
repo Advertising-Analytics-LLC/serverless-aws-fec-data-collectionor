@@ -167,7 +167,6 @@ def upsert_committee_total(commitee_total: JSONType) -> bool:
 def lambdaHandler(event:dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html"""
 
-    logger.debug(f'running {__file__}')
     logger.debug(json.dumps(event))
 
     messages = event['Records']

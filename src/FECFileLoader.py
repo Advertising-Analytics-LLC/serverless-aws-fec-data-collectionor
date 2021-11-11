@@ -37,13 +37,15 @@ filing_table_mapping = {
 
 
 class TransactionIdMissingException(Exception):
-    """transaction ID is misling"""
+    """transaction ID is missing"""
 
     def __init__(self, message):
         self.message = message
 
 
 def parse_event_record(eventrecord) -> Tuple[dict, int]:
+    '''gets filing id and tries to load sns json'''
+
     message_parsed = parse_message(eventrecord)
     filing_id = message_parsed['filing_id'].replace('FEC-', '')
 
@@ -52,11 +54,12 @@ def parse_event_record(eventrecord) -> Tuple[dict, int]:
             f'Missing filing ID for filing record {message_parsed}')
 
     filing_id = int(filing_id)
+
     return message_parsed, filing_id
 
 
 def create_dynamo_table(table_name_prefix):
-    """ creates dynamodb table, waits for existance, returns table """
+    """creates dynamodb table, waits for existance, returns table"""
 
     datetime_now_string = datetime.isoformat(
         datetime.now(timezone.utc))[:-6].replace(':', '')
@@ -98,9 +101,8 @@ def iter_fec_filing(filing_id: int, insert_values: list, fec_file_ids: set):
 
 
 def lambdaHandler(event: dict, context: object) -> bool:
-    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html """
+    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html"""
 
-    logger.debug(f'running {__file__}')
     logger.debug(json.dumps(event))
 
     messages = event['Records']

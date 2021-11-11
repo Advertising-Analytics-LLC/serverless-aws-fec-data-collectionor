@@ -1,7 +1,5 @@
 #!/bin/env python3
-"""
-CandidateSync lambda:
-"""
+
 
 import json
 import os
@@ -16,8 +14,6 @@ API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 SQS_QUEUE_NAME = os.getenv('SQS_QUEUE_NAME', '')
 MIN_FIST_FILE_DATE = os.getenv('MIN_FIST_FILE_DATE', datetime.strftime(datetime.now() - timedelta(7), '%Y-%m-%d'))
 
-
-# business logic
 
 def get_candidates_since(isodate: str, max_first_file_date='') -> json:
     """gets list of candidates that have filed today
@@ -50,17 +46,7 @@ def get_candidates_since(isodate: str, max_first_file_date='') -> json:
 
 
 def lambdaHandler(event:dict, context: object) -> bool:
-    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html
-
-    Args:
-        event (dict): for event types see https://docs.aws.amazon.com/lambda/latest/dg/lambda-services.html
-        context (bootstrap.LambdaContext): see https://docs.aws.amazon.com/lambda/latest/dg/python-context.html
-
-    Returns:
-        bool: Did this go well?
-    """
-
-    logger.debug(f'running {__file__}')
+    """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html"""
 
     candidates_list = get_candidates_since(MIN_FIST_FILE_DATE)
 
@@ -69,10 +55,9 @@ def lambdaHandler(event:dict, context: object) -> bool:
 
     return True
 
+
 def lambdaBackfillHandler(event:dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html"""
-
-    logger.debug(f'running {__file__}')
 
     from src.backfill import get_next_day, filings_backfill_success, filings_sync_backfill_date
 

@@ -14,6 +14,7 @@ from src.FinancialSummaryLoader import upsert_filing
 API_KEY = get_param_value_by_name(os.environ['API_KEY'])
 openFec = OpenFec(API_KEY)
 
+
 def get_canidacy_filing(candidate_id: str):
     """https://api.open.fec.gov/developers/#/filings/get_candidate__candidate_id__filings_"""
 
@@ -25,9 +26,12 @@ def get_canidacy_filing(candidate_id: str):
         results_json += response['results']
 
     if len(results_json) > 0:
+
         return results_json[0]
+
     else:
         logger.warning(f'API {route} returned zero results')
+
         return []
 
 
@@ -43,12 +47,17 @@ def get_candidate(candidate_id: str) -> Dict['str', Any]:
 
         # /candidate/#/ returns a list with one record
     if len(results_json) == 1:
+
         return results_json[0]
+
     elif len(results_json) > 1:
         logger.warning(f'too many candidates returned from api length: {len(results_json)}')
+
         return results_json[0]
+
     else:
         logger.warning(f'API {route} returned zero results')
+
         return []
 
 
@@ -84,7 +93,6 @@ def upsert_candidate(candidate_message: Dict[str, Any]) -> bool:
 def lambdaHandler(event:dict, context: object) -> bool:
     """see https://docs.aws.amazon.com/lambda/latest/dg/python-handler.html"""
 
-    logger.debug(f'running {__file__}, event:')
     logger.debug(json.dumps(event))
 
     messages = event['Records']
@@ -100,5 +108,3 @@ def lambdaHandler(event:dict, context: object) -> bool:
         candidacy_filing = get_canidacy_filing(candidate_id)
         if candidacy_filing:
             upsert_filing(candidacy_filing)
-
-    return True

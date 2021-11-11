@@ -48,6 +48,7 @@ def get_committees_since(isodate: str, max_last_f1_date='') -> json:
     response_generator = openFec.get_route_paginator('/committees/', payload=get_committees_payload)
     for response in response_generator:
         results_json += response['results']
+
     return results_json
 
 

@@ -59,14 +59,8 @@ def delete_message_from_sqs(message: JSONType) -> bool:
 
 def parse_message(message: JSONType) -> Dict[str, str]:
     """parse string from sqs - it's kind of jsonish
-        those coming from SNS -> SQS are JSON in a 'Message' object
-        those coming from -> SQS are a string
-
-    Args:
-        message (JSON): almost json
-
-    Returns:
-        Dict[str, str]: python dictionary
+        those coming from SNS to SQS are JSON in a 'Message' object
+        those coming from the sync lambdas are a string
     """
 
     my_body = message['body']
@@ -90,19 +84,6 @@ def parse_message(message: JSONType) -> Dict[str, str]:
 def push_message_to_sqs(message: str) -> Dict[str, str]:
     """Sends unformatted message to SQS
         see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sqs.html#SQS.Queue.send_message
-
-    Args:
-        message (str): Message can be unformatted string, JSON, or XML (as string)
-
-    Returns:
-        Dict[str, str]: Response from SQS, of format:
-            {
-                'MD5OfMessageBody': 'string',
-                'MD5OfMessageAttributes': 'string',
-                'MD5OfMessageSystemAttributes': 'string',
-                'MessageId': 'string',
-                'SequenceNumber': 'string'
-            }
     """
 
     response = queue.send_message(

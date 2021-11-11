@@ -10,6 +10,7 @@ from typing import Generator
 
 class NotFound404Exception(Exception):
     """URL return 404"""
+
     def __init__(self, message):
         self.message = message
 
@@ -24,10 +25,12 @@ class OpenFec:
             api_key (str): get a key at https://api.data.gov/signup/
             base_url (str, optional): OpenFEC base url. Defaults to 'https://api.open.fec.gov/v1'.
         """
+
         self.api_key = api_key
         self.api_arg = 'api_key=' + api_key
         self.base_url = base_url
         self.throttle = 0.5 # seconds to wait between requests
+
 
     def _get_route(self, route: str) -> str:
         """internal method to get fully-formed route
@@ -38,12 +41,15 @@ class OpenFec:
         Returns:
             str: fully-formed route, eg https://api.open.fec.gov/v1/committees/?api_key=<API_KEY>
         """
+
         url = self.base_url + route
         if '?' in url.split('/')[-1]:
             url = url + '&' + self.api_arg
         else:
             url = url + '?' + self.api_arg
+
         return url
+
 
     def _over_rate_limit(self, response: Response) -> bool:
         """returns true if response has OVER_RATE_LIMIT error
@@ -54,9 +60,12 @@ class OpenFec:
         Returns:
             bool: is request OVER_RATE_LIMIT
         """
+
         if response.status_code == 429:
             logger.info(f'Over rate limit, {response.json()}')
+
             return True
+
         return False
 
     def _get_request(self, url: str, payload: dict, throttle_multiplier=1) -> Response:
@@ -94,15 +103,18 @@ class OpenFec:
 
         return response
 
+
     def get_route(self, route: str, payload: dict) -> JSONType:
         """get response from openfec API https://api.open.fec.gov/developers/
 
         Args:
+            route (str): path, ie /committees/
             payload (dict): request params object
 
         Returns:
             json: api response (should be json)
         """
+
         url = self._get_route(route)
         response = self._get_request(url, payload)
         return response.json()
@@ -111,6 +123,7 @@ class OpenFec:
         """paginator for any endpoint
 
         Args:
+            route (str): path, ie /committees/
             payload (dict): request params
 
         Yields:
@@ -119,16 +132,21 @@ class OpenFec:
 
         payload['page'] = 1
         first_response = self.get_route(route, payload)
+
         yield first_response
+
         num_pages = first_response['pagination']['pages']
         if num_pages > 1:
             for page in range(2, num_pages + 1):
                 print(f'page {page}')
                 payload['page'] = page
                 next_page = self.get_route(route, payload)
+
                 yield next_page
 
+
     def stream_paginations_to_callback(self, callback_function, route: str, payload={}):
+        '''takes a callback function and passes in pages during route pagination'''
 
         payload['page'] = 1
         first_response = self.get_route(route, payload)

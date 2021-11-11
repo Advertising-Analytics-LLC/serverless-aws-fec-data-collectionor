@@ -38,11 +38,12 @@ def db_stats_insert(values: List[str]) -> str:
     literal_value_holes = ', '.join([ '{}' for val in values])
     query = sql.SQL(f'INSERT INTO fec.loading_stats VALUES ({literal_value_holes})')\
                 .format(*[sql.Literal(val) for val in values])
+
     return query
 
 
 def lambdaHandler(event, context):
-    """ lambda that queries db and then writes stats back """
+    """lambda that queries db and then writes stats back"""
 
     results = ["'now'"]
 
@@ -56,4 +57,5 @@ def lambdaHandler(event, context):
 
         # write stats back to DB
         insert_command = db_stats_insert(results)
+
         return db.try_query(insert_command)

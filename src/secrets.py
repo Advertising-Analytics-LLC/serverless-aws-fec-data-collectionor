@@ -15,6 +15,7 @@ def get_parameter_by_name(parameter_name: str) -> dict:
         Name=parameter_name,
         WithDecryption=True)
     parameter = parameter_object['Parameter']
+
     return parameter
 
 
@@ -23,4 +24,5 @@ def get_param_value_by_name(parameter_name: str) -> str:
 
     param = get_parameter_by_name(parameter_name)
     param_value = param['Value']
+
     return param_value

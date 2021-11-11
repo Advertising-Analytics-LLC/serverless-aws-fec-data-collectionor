@@ -1,12 +1,9 @@
 #!/bin/env python3
 """
 FECFileLoader lambda:
-- read FEC files from queue,
-- downloads files
-- parses file
+- read FEC files from SQS
+- downloads & parses file
 - writes data to redshift
-
-does this for a number of different filings types
 """
 
 import boto3

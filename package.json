@@ -18,6 +18,9 @@
   },
   "homepage": "hhttps://github.com/Advertising-Analytics-LLC/serverless-aws-fec-data-collectionor#readme",
   "dependencies": {
-    "serverless-python-requirements": "^5.1.0"
+  },
+  "devDependencies": {
+    "serverless-plugin-diff": "^3.0.0",
+    "serverless-python-requirements": "^6.0.1"
   }
 }

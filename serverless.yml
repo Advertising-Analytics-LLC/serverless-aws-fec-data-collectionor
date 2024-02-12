@@ -4,7 +4,7 @@
 
 service: serverless-aws-python3-fec-datasync
 app: fec-datasync
-frameworkVersion: ">=2.0.0 <3.0.0"
+frameworkVersion: ">=3.0.0"
 
 # Custom variables
 custom:
@@ -21,12 +21,12 @@ custom:
     copy_from_bucket_arn: ${cf:fec-datasync-resources.CopyFromBucketArn}
     copy_from_bucket_name: ${cf:fec-datasync-resources.CopyFromBucketName}
     REDSHIFT_COPY_ROLE: arn:aws:iam::648881544937:role/copyFromRedshiftRole
-    filing_se_sqs_arn: ${cf:fec-datasync-resources.FilingSEQueueArn}
+    filing_se_sqs_arn: 	arn:aws:sqs:us-east-1:648881544937:fec-se-queue #${cf:fec-datasync-resources.FilingSEQueueArn}
     filing_se_sqs_name: ${cf:fec-datasync-resources.FilingSEQueueName}
     rss_sns_topic_arn: ${cf:fec-datasync-resources.RSSFeedTopicArn}
     financial_summary_sqs_arn: ${cf:fec-datasync-resources.FinancialSummaryQueueArn}
     financial_summary_sqs_name: ${cf:fec-datasync-resources.FinancialSummaryQueueName}
-    filing_sb_sqs_arn: ${cf:fec-datasync-resources.FilingSBQueueArn}
+    filing_sb_sqs_arn: arn:aws:sqs:us-east-1:648881544937:fec-sb-queue #${cf:fec-datasync-resources.FilingSBQueueArn}
     filing_sb_sqs_name: ${cf:fec-datasync-resources.FilingSBQueueName}
     committeesync_sqs_name: ${cf:fec-datasync-resources.CommitteeSyncQueueName}
     committeesync_sqs_arn: ${cf:fec-datasync-resources.CommitteeSyncQueueArn}
@@ -184,7 +184,7 @@ functions:
       FILING_TYPE: 'F1S'
     events:
       - sqs:
-          arn: "${self:custom.${self:provider.stage}.filing_f1s_sqs_arn}"
+          arn: ${self:custom.${self:provider.stage}.filing_f1s_sqs_arn}
           batchSize: 1
 
 # packaging instructuions, and ignore list
@@ -227,7 +227,7 @@ provider:
   lambdaHashingVersion: "20201221"
   logRetentionInDays: 14
   region: ${opt:region, 'us-east-1'}
-  runtime: python3.7
+  runtime: python3.8
   stage: ${opt:stage,'dev'}
 
   deploymentBucket:
@@ -303,3 +303,14 @@ provider:
     Env: ${self:provider.stage}
   # tracing:
   #   lambda: true
+
+# resources:
+#   Resources:
+#     Dashboard:
+#       Type: AWS::CloudWatch::Dashboard
+#       Properties:
+#         DashboardBody: ${file(my-dashboard-body.js):myDashboardBody}
+#         DashboardName: ${self:service}-dashboard
+
+# outputs:
+#   MonitoringDashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:name=${self:service}-dashboard

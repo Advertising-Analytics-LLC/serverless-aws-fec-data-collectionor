@@ -33,8 +33,7 @@ The `bin/` has useful scripts that can be called via `make` targets defined in t
 ├── package.json
 ├── prerequisite-cloudformation-resources.yml # SQS qs, SNS topics, S3 Bucket
 ├── requirements.txt    # requirements for running code
-├── serverless.yml      # functions
+├── serverless.yml      # serverless function definitions
 ├── sql                 # SQL DDL
 ├── src                 # python code
-├── tests
 ```

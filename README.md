@@ -1,5 +1,5 @@
 # serverless-aws-fec-data-collectionor
-Serverless applications to get near-real-time FEC data
+Serverless applications to get near-real-time FEC data by scraping the FEC APIs using Lambda and storing the data in RedShift
 
 ## About
 All the serverless functions in this module do a few things:

@@ -114,6 +114,11 @@ resource "aws_cloudformation_stack" "prerequisites" {
   }
 
   tags = local.common_tags
+
+  lifecycle {
+    # Ignore changes to outputs since they're managed by CloudFormation
+    ignore_changes = [outputs]
+  }
 }
 
 # Data source to get stack outputs (for referencing in other resources)
@@ -278,43 +283,7 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
 ########################################
 # CloudWatch Log Groups
 ########################################
-
-resource "aws_cloudwatch_log_group" "lambda" {
-  for_each = toset([
-    "GetDBStats",
-    "CandidateSync",
-    "CandidateBackfill",
-    "CandidateLoader",
-    "CommitteeSync",
-    "CommitteeBackfill",
-    "CommitteeLoader",
-    "FilingSync",
-    "FilingBackfill",
-    "FinancialSummaryLoader",
-    "FECFileLoaderSB",
-    "FECFileLoaderSE",
-    "FECFileLoaderSupp"
-  ])
-
-  name              = "/aws/lambda/${local.service_name}-${var.stage}-${each.key}"
-  retention_in_days = 14
-
-  tags = local.common_tags
-}
-
-########################################
-# Copy requirements.txt to src/ for Lambda packaging
-########################################
-
-resource "null_resource" "copy_requirements" {
-  triggers = {
-    requirements_hash = filemd5("${path.module}/requirements.txt")
-  }
-
-  provisioner "local-exec" {
-    command = "cp ${path.module}/requirements.txt ${path.module}/src/requirements.txt"
-  }
-}
+# Note: Log groups are created by the Lambda modules, so we don't need explicit resources here
 
 ########################################
 # Lambda Functions using terraform-aws-modules
@@ -326,18 +295,17 @@ module "lambda_get_db_stats" {
 
   function_name = "${local.service_name}-${var.stage}-GetDBStats"
   description   = "Get database statistics"
-  handler       = "get_db_stats.lambdaHandler"
+  handler       = "src.get_db_stats.lambdaHandler"
   runtime       = "python3.11"
   timeout       = 30
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -369,18 +337,17 @@ module "lambda_candidate_sync" {
 
   function_name = "${local.service_name}-${var.stage}-CandidateSync"
   description   = "Polls OpenFEC API (once) for candidates that have filed recently and sends the IDs to SQS"
-  handler       = "CandidateSync.lambdaHandler"
+  handler       = "src.CandidateSync.lambdaHandler"
   runtime       = "python3.11"
   timeout       = 30
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -413,18 +380,17 @@ module "lambda_candidate_backfill" {
 
   function_name = "${local.service_name}-${var.stage}-CandidateBackfill"
   description   = "Backfills candidates queue"
-  handler       = "CandidateSync.lambdaBackfillHandler"
+  handler       = "src.CandidateSync.lambdaBackfillHandler"
   runtime       = "python3.11"
   timeout       = 90
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -457,18 +423,17 @@ module "lambda_candidate_loader" {
 
   function_name = "${local.service_name}-${var.stage}-CandidateLoader"
   description   = "Triggered by SQS it receives Messages and writes candidate data to the DB"
-  handler       = "CandidateLoader.lambdaHandler"
+  handler       = "src.CandidateLoader.lambdaHandler"
   runtime       = "python3.11"
   timeout       = 300
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -501,18 +466,17 @@ module "lambda_committee_sync" {
 
   function_name = "${local.service_name}-${var.stage}-CommitteeSync"
   description   = "Polls OpenFEC API (once) for committees that have filed recently and sends the IDs to SQS"
-  handler       = "CommitteSync.committeSync"
+  handler       = "src.CommitteSync.committeSync"
   runtime       = "python3.11"
   timeout       = 30
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -545,18 +509,17 @@ module "lambda_committee_backfill" {
 
   function_name = "${local.service_name}-${var.stage}-CommitteeBackfill"
   description   = "Backfills committee sync queue"
-  handler       = "CommitteSync.lambdaBackfillHandler"
+  handler       = "src.CommitteSync.lambdaBackfillHandler"
   runtime       = "python3.11"
   timeout       = 90
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -589,18 +552,17 @@ module "lambda_committee_loader" {
 
   function_name = "${local.service_name}-${var.stage}-CommitteeLoader"
   description   = "Receives committee Ids from SQS, queries api for committee info, updates DB"
-  handler       = "CommitteLoader.committeLoader"
+  handler       = "src.CommitteLoader.committeLoader"
   runtime       = "python3.11"
   timeout       = 900
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -633,18 +595,17 @@ module "lambda_filing_sync" {
 
   function_name = "${local.service_name}-${var.stage}-FilingSync"
   description   = "Scrapes FEC RSS feed for recent filings, pushes the new filings to SNS and SQS"
-  handler       = "FilingSync.lambdaHandler"
+  handler       = "src.FilingSync.lambdaHandler"
   runtime       = "python3.11"
   timeout       = 180
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -677,18 +638,17 @@ module "lambda_filing_backfill" {
 
   function_name = "${local.service_name}-${var.stage}-FilingBackfill"
   description   = "Crawls back in time over filings"
-  handler       = "FilingSync.lambdaBackfillHandler"
+  handler       = "src.FilingSync.lambdaBackfillHandler"
   runtime       = "python3.11"
   timeout       = 900
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -721,18 +681,17 @@ module "lambda_financial_summary_loader" {
 
   function_name = "${local.service_name}-${var.stage}-FinancialSummaryLoader"
   description   = "Takes new filings from SQS, queries api, writes to DB"
-  handler       = "FinancialSummaryLoader.lambdaHandler"
+  handler       = "src.FinancialSummaryLoader.lambdaHandler"
   runtime       = "python3.11"
   timeout       = 900
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -765,19 +724,18 @@ module "lambda_fec_file_loader_sb" {
 
   function_name = "${local.service_name}-${var.stage}-FECFileLoaderSB"
   description   = "Gets FEC file url from SQS, downloads, parses for Schedule B filings, loads into DB"
-  handler       = "FECFileLoader.lambdaHandler"
+  handler       = "src.FECFileLoader.lambdaHandler"
   runtime       = "python3.11"
   timeout       = 900
   memory_size   = 3008
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -813,19 +771,18 @@ module "lambda_fec_file_loader_se" {
 
   function_name = "${local.service_name}-${var.stage}-FECFileLoaderSE"
   description   = "Gets FEC file url from SQS, downloads, parses for Schedule E filings, loads into DB"
-  handler       = "FECFileLoader.lambdaHandler"
+  handler       = "src.FECFileLoader.lambdaHandler"
   runtime       = "python3.11"
   timeout       = 900
   memory_size   = 3008
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
@@ -861,19 +818,18 @@ module "lambda_fec_file_loader_supp" {
 
   function_name = "${local.service_name}-${var.stage}-FECFileLoaderSupp"
   description   = "Gets FEC file url from SQS, downloads, parses for Form 1 Supplemental Data, loads into DB"
-  handler       = "FECFileLoader.lambdaHandler"
+  handler       = "src.FECFileLoader.lambdaHandler"
   runtime       = "python3.11"
   timeout       = 900
   memory_size   = 3008
 
-  source_path     = "${path.module}/src"
+  source_path     = "${path.module}"
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-  depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true

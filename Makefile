@@ -24,7 +24,7 @@ OUTFILE_PATH=$(GIT_BRANCH)-$(TF_WORKSPACE).out
 SHELL := /bin/bash
 TF_WORKSPACE := $(shell terraform workspace show)
 WORKSPACE ?= $(TF_WORKSPACE)
-VAR_FILES := -var-file $(WORKSPACE).tfvars
+VAR_FILES := #-var-file $(WORKSPACE).tfvars
 
 
 clean:

@@ -30,3 +30,6 @@ terraform.rc
 node_modules/
 
 builds/
+
+*.out
+*.out.txt

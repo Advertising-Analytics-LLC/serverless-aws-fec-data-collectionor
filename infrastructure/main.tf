@@ -1,5 +1,13 @@
 terraform {
   required_version = ">= 1.0"
+
+    backend "s3" {
+    bucket         = "767398000173-us-east-1-tfstate-product"
+    key            = "serverless-aws-fec-data-collectionor.tfstate"
+    dynamodb_table = "tf-locktable-product"
+    region         = "us-east-1"
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -13,7 +21,24 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+
+  assume_role {
+    role_arn     = "arn:aws:iam::648881544937:role/Terraform"
+    session_name = "terraform-workspace-production"
+    external_id  = "NG2f9P7btVBQgLJc"
+  }
+
+  default_tags {
+    tags = {
+      code_managed_at  = "github.com/rhythmictech/serverless-aws-fec-data-collection"
+      code_managed_by  = "terraform",
+      datadog_managed  = "true",
+      rhythmic_managed = "true",
+      service          = "FECDataCollector",
+      env              = var.stage,
+    }
+  }
+
 }
 
 # Data sources

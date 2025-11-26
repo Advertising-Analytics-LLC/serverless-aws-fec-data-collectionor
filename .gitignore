@@ -33,3 +33,5 @@ builds/
 
 *.out
 *.out.txt
+
+.venv/

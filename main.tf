@@ -86,6 +86,55 @@ locals {
     Env       = var.stage
     ManagedBy = "Terraform"
   }
+
+  # Lambda source path with exclusion patterns to speed up packaging
+  # Patterns use ! prefix for exclusions (regex)
+  lambda_source_path = [{
+    path     = "${path.module}"
+    patterns = <<-END
+      # Exclude Terraform files and directories
+      !\.terraform/.*
+      !\.terraform\.lock\.hcl$
+      !terraform\.tfvars$
+      !.*\.tfvars$
+      !.*\.tfstate.*$
+      !override\.tf$
+      !.*_override\.tf$
+      
+      # Exclude build artifacts and dependencies
+      !node_modules/.*
+      !builds/.*
+      !\.venv/.*
+      !__pycache__/.*
+      !.*\.pyc$
+      
+      # Exclude documentation and config files
+      !docs/.*
+      !sql/.*
+      !bin/.*
+      !tests/.*
+      !tmp/.*
+      !site/.*
+      !\.out\.txt$
+      !\.out$
+      !Makefile$
+      !mkdocs\.yml$
+      !package\.json$
+      !package-lock\.json$
+      !pytest\.ini$
+      !README\.md$
+      !TERRAFORM\.md$
+      !terraform\.tfvars\.example$
+      !serverless\.yml$
+      !cloudformation/.*
+      !dev-requirements\.txt$
+      !\.git/.*
+      !\.gitignore$
+      !\.python-version$
+      !\.nvmrc$
+      !\.lambdaignore$
+    END
+  }]
 }
 
 ########################################
@@ -299,18 +348,17 @@ module "lambda_get_db_stats" {
   runtime       = "python3.11"
   timeout       = 30
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = 1
 
@@ -341,18 +389,17 @@ module "lambda_candidate_sync" {
   runtime       = "python3.11"
   timeout       = 30
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = 1
 
@@ -384,18 +431,17 @@ module "lambda_candidate_backfill" {
   runtime       = "python3.11"
   timeout       = 90
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = var.backfill
 
@@ -427,18 +473,17 @@ module "lambda_candidate_loader" {
   runtime       = "python3.11"
   timeout       = 300
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 
@@ -470,18 +515,17 @@ module "lambda_committee_sync" {
   runtime       = "python3.11"
   timeout       = 30
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = 1
 
@@ -513,18 +557,17 @@ module "lambda_committee_backfill" {
   runtime       = "python3.11"
   timeout       = 90
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = var.backfill
 
@@ -556,18 +599,17 @@ module "lambda_committee_loader" {
   runtime       = "python3.11"
   timeout       = 900
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 
@@ -599,18 +641,17 @@ module "lambda_filing_sync" {
   runtime       = "python3.11"
   timeout       = 180
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = 1
 
@@ -642,18 +683,17 @@ module "lambda_filing_backfill" {
   runtime       = "python3.11"
   timeout       = 900
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = var.backfill
 
@@ -685,18 +725,17 @@ module "lambda_financial_summary_loader" {
   runtime       = "python3.11"
   timeout       = 900
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 
@@ -729,18 +768,17 @@ module "lambda_fec_file_loader_sb" {
   timeout       = 900
   memory_size   = 3008
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 
@@ -776,18 +814,17 @@ module "lambda_fec_file_loader_se" {
   timeout       = 900
   memory_size   = 3008
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 
@@ -823,18 +860,17 @@ module "lambda_fec_file_loader_supp" {
   timeout       = 900
   memory_size   = 3008
 
-  source_path     = "${path.module}"
+  source_path     = local.lambda_source_path
   build_in_docker = true
 
   # Docker build options to ensure correct platform for Lambda (linux/amd64)
   # This is critical for native extensions like cryptography's Rust bindings
   docker_additional_options = ["--platform", "linux/amd64"]
 
-
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
   s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
-  s3_prefix   = "${var.stage}/"
+  s3_prefix   = "${local.service_name}/${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 

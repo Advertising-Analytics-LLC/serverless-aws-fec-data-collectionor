@@ -1,0 +1,21 @@
+# AWS Configuration
+aws_region = "us-east-1"
+
+# Deployment Stage
+stage = "dev"
+
+# Lambda Concurrency Settings
+backfill = 0              # Reserved concurrency for backfill functions (0 = disabled)
+loader_concurrency = 1     # Reserved concurrency for loader functions
+
+# SQS Configuration
+message_retention_period = 1209600  # 14 days in seconds
+redrive_count = 5                   # Max receive count for redrive policy
+
+# S3 Bucket Names
+deployment_bucket_name = "serverless-deploymentbucket"
+copy_from_bucket_name = "copy-from"
+
+# Redshift Configuration
+redshift_copy_role = "arn:aws:iam::648881544937:role/copyFromRedshiftRole"
+

@@ -1,47 +1,37 @@
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-.venv
-__pycache__
-.pytest_cache
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+terraform.tfvars
+*.tfvars
+.terraformrc
+terraform.rc
 
-# Serverless directories
-.serverless
+# Crash log files
+crash.log
+crash.*.log
 
-# node.js/npm
-node_modules
-package-lock.json
+# Exclude all .tfvars files, which are likely to contain sensitive data
+*.auto.tfvars
+*.auto.tfvars.json
 
-# local secrets
-.env
-tmp
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
 
-# editors
-.vscode
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
 
-# mac
-.DS_Store
+node_modules/
 
-# doc site
-site
+builds/
 
-# local dir for inspecting queues
-queue-messages
+*.out
+*.out.txt
 
-*.xlsx
-*.csv
-*.txt
+.venv/

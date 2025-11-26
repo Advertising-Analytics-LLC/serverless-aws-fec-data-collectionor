@@ -5,34 +5,83 @@
 These instructions are for engineers wishing to develop the project.
 
 ### 0. Install prerequisites
-Make sure [python](https://www.python.org/), [npm](https://www.npmjs.com/), and the [aws cli](https://aws.amazon.com/cli/) are installed.
-The services are written in python and [serverless](https://www.serverless.com/) is an npm package. They are deployed to AWS.
+Make sure [python](https://www.python.org/), [terraform](https://www.terraform.io/), [docker](https://www.docker.com/), and the [aws cli](https://aws.amazon.com/cli/) are installed.
+The services are written in python and deployed to AWS using Terraform.
 
 ### 1. Install development packages
-Pyenv was used for python versioning. 
+Pyenv is used for python versioning. 
 ```sh
-# install serverless globally
-npm install -g serverless@3
-
-# install serverless plugins
-npm install
-
 # install python version
-pyenv install $(cut -d'/' -f1 .python-version)
+pyenv install
 
 # create virtualenv
-pyenv virtualenv $(cut -d'/' -f1 .python-version) $(cut -d'/' -f3 .python-version)
+python3 -m venv .venv
+
+# activate virtualenv
+source .venv/bin/activate
 
 # install python dependencies
 pip install -r requirements.txt
 pip install -r dev-requirements.txt
 ```
 
-### 2. Develop
-Edit the code and run locally with `sls invoke local -f hello`.
-Replace `hello` with the name of your function.
+### 2. AWS Authentication
 
-### 3. Deploy
-First you will need to log into AWS through the cli.
-Then you can deploy your function with `sls deploy`.
-There's also targets in the Makefile for deploying a monitoring dashboard, and the cloudformation.
+The Terraform configuration uses a remote S3 backend and assumes a role in the target account.
+
+**Backend Setup:**
+- Terraform state is stored in S3 bucket: `767398000173-us-east-1-tfstate-product`
+- State locking uses DynamoDB table: `tf-locktable-product`
+- You must be authenticated to AWS account `767398000173` to run Terraform
+
+**Assume Role:**
+- Terraform assumes role `arn:aws:iam::648881544937:role/Terraform` in the target account
+- Resources are created in account `648881544937`
+
+
+### 3. Terraform Setup
+
+Navigate to the infrastructure directory:
+```sh
+cd infrastructure
+```
+
+Initialize Terraform (this will configure the remote backend):
+```sh
+make init
+```
+
+### 4. Configure Variables
+
+Edit `terraform.tfvars` to set your desired values (see `docs/TERRAFORM.md` for details).
+
+### 5. Develop
+
+Edit the code in `lambdas/src/` and test locally. You can test Lambda functions locally using tools like [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html) or by running the Python code directly.
+
+### 6. Deploy
+
+Review changes:
+```sh
+make plan
+```
+
+Apply changes:
+```sh
+make apply
+```
+
+For automated deployments:
+```sh
+make autoapply
+```
+
+### 7. Make Targets
+
+The `infrastructure/Makefile` provides convenient targets:
+- `make init` - Initialize Terraform
+- `make plan` - Show planned changes
+- `make apply` - Apply changes (interactive)
+- `make autoapply` - Apply changes (non-interactive)
+- `make destroy` - Destroy infrastructure
+- `make output` - Show Terraform outputs

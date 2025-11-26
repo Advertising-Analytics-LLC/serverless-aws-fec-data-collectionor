@@ -87,54 +87,13 @@ locals {
     ManagedBy = "Terraform"
   }
 
-  # Lambda source path with exclusion patterns to speed up packaging
-  # Patterns use ! prefix for exclusions (regex)
-  lambda_source_path = [{
-    path     = "${path.module}"
-    patterns = <<-END
-      # Exclude Terraform files and directories
-      !\.terraform/.*
-      !\.terraform\.lock\.hcl$
-      !terraform\.tfvars$
-      !.*\.tfvars$
-      !.*\.tfstate.*$
-      !override\.tf$
-      !.*_override\.tf$
-      
-      # Exclude build artifacts and dependencies
-      !node_modules/.*
-      !builds/.*
-      !\.venv/.*
-      !__pycache__/.*
-      !.*\.pyc$
-      
-      # Exclude documentation and config files
-      !docs/.*
-      !sql/.*
-      !bin/.*
-      !tests/.*
-      !tmp/.*
-      !site/.*
-      !\.out\.txt$
-      !\.out$
-      !Makefile$
-      !mkdocs\.yml$
-      !package\.json$
-      !package-lock\.json$
-      !pytest\.ini$
-      !README\.md$
-      !TERRAFORM\.md$
-      !terraform\.tfvars\.example$
-      !serverless\.yml$
-      !cloudformation/.*
-      !dev-requirements\.txt$
-      !\.git/.*
-      !\.gitignore$
-      !\.python-version$
-      !\.nvmrc$
-      !\.lambdaignore$
-    END
-  }]
+  # Lambda source path - points to lambdas/src directory and requirements.txt
+  lambda_source_path = [
+    {
+      path            = "${path.module}/../lambdas/"
+      pip_requirements = "${path.module}/../requirements.txt"
+    }
+  ]
 }
 
 ########################################
@@ -143,7 +102,7 @@ locals {
 
 resource "aws_cloudformation_stack" "prerequisites" {
   name         = "fec-datasync-resources"
-  template_body = file("${path.module}/cloudformation/prerequisite-cloudformation-resources.yml")
+  template_body = file("${path.module}/prerequisite-cloudformation-resources.yml")
 
   parameters = {
     MessageRetentionPeriod      = var.message_retention_period
@@ -328,11 +287,6 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
     }]
   })
 }
-
-########################################
-# CloudWatch Log Groups
-########################################
-# Note: Log groups are created by the Lambda modules, so we don't need explicit resources here
 
 ########################################
 # Lambda Functions using terraform-aws-modules

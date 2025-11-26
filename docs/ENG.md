@@ -12,16 +12,20 @@ The services are written in python and [serverless](https://www.serverless.com/)
 Pyenv was used for python versioning. 
 ```sh
 # install serverless globally
-npm install -g serverless
+npm install -g serverless@3
 
 # install serverless plugins
 npm install
 
 # install python version
-pyenv install
+pyenv install $(cut -d'/' -f1 .python-version)
+
+# create virtualenv
+pyenv virtualenv $(cut -d'/' -f1 .python-version) $(cut -d'/' -f3 .python-version)
 
 # install python dependencies
 pip install -r requirements.txt
+pip install -r dev-requirements.txt
 ```
 
 ### 2. Develop

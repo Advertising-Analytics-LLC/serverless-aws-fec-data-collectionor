@@ -227,7 +227,7 @@ provider:
   lambdaHashingVersion: "20201221"
   logRetentionInDays: 14
   region: ${opt:region, 'us-east-1'}
-  runtime: python3.8
+  runtime: python3.11
   stage: ${opt:stage,'dev'}
 
   deploymentBucket:

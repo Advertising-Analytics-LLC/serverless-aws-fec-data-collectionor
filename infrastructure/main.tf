@@ -87,10 +87,11 @@ locals {
     ManagedBy = "Terraform"
   }
 
-  # Lambda source path - points to lambdas/src directory and requirements.txt
+  # Lambda source path - points to lambdas directory and requirements.txt
+  # Using lambdas/ (not lambdas/src) so the src/ directory structure is preserved
   lambda_source_path = [
     {
-      path            = "${path.module}/../lambdas/"
+      path            = "${path.module}/../lambdas"
       pip_requirements = "${path.module}/../requirements.txt"
     }
   ]

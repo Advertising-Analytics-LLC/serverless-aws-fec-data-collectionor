@@ -3,7 +3,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 6.0"
     }
     null = {
       source  = "hashicorp/null"
@@ -76,7 +76,7 @@ variable "redshift_copy_role" {
 }
 
 locals {
-  service_name                = "serverless-aws-python3-fec-datasync"
+  service_name                = "FEC-loader"
   deployment_bucket_full_name = "${var.deployment_bucket_name}-${data.aws_region.current.name}-${data.aws_caller_identity.current.account_id}"
   copy_from_bucket_full_name  = "${var.copy_from_bucket_name}-${data.aws_region.current.name}-${data.aws_caller_identity.current.account_id}"
 
@@ -89,383 +89,41 @@ locals {
 }
 
 ########################################
-# S3 Buckets
+# CloudFormation Stack (Prerequisites)
 ########################################
 
-resource "aws_s3_bucket" "deployment" {
-  bucket = local.deployment_bucket_full_name
+resource "aws_cloudformation_stack" "prerequisites" {
+  name         = "fec-datasync-resources"
+  template_body = file("${path.module}/cloudformation/prerequisite-cloudformation-resources.yml")
 
-  tags = merge(local.common_tags, {
-    Name = var.deployment_bucket_name
-  })
-}
-
-resource "aws_s3_bucket_versioning" "deployment" {
-  bucket = aws_s3_bucket.deployment.id
-  versioning_configuration {
-    status = "Enabled"
+  parameters = {
+    MessageRetentionPeriod      = var.message_retention_period
+    CopyFromBucketName          = var.copy_from_bucket_name
+    DeploymentBucketName        = var.deployment_bucket_name
+    CandidateSyncQueueName      = "candidate-sync-queue"
+    CommitteeSyncQueueName      = "committee-sync-queue"
+    FinancialSummaryQueueName   = "fec-financialsummary-queue"
+    FilingSEQueueName           = "fec-se-queue"
+    FilingSBQueueName           = "fec-sb-queue"
+    FilingF1SQueueName          = "fec-f1s-queue"
+    RSSFeedTopicName            = "fec-new-filing-rss-fanout"
+    CandidateDeadLetterQueueName = "candidate-dead-letter-queue"
+    CommitteeDeadLetterQueueName = "committee-dead-letter-queue"
+    FilingDeadLetterQueueName    = "filing-dead-letter-queue"
+    RedriveCount                = var.redrive_count
   }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "deployment" {
-  bucket = aws_s3_bucket.deployment.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "deployment" {
-  bucket = aws_s3_bucket.deployment.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-resource "aws_s3_bucket" "copy_from" {
-  bucket = local.copy_from_bucket_full_name
-
-  tags = merge(local.common_tags, {
-    Name = var.copy_from_bucket_name
-  })
-}
-
-resource "aws_s3_bucket_versioning" "copy_from" {
-  bucket = aws_s3_bucket.copy_from.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "copy_from" {
-  bucket = aws_s3_bucket.copy_from.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "copy_from" {
-  bucket = aws_s3_bucket.copy_from.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-########################################
-# SQS Queues
-########################################
-
-# Super DLQ (ultimate dead letter queue)
-resource "aws_sqs_queue" "super_dlq" {
-  name                      = "super-dlq"
-  message_retention_seconds = var.message_retention_period
 
   tags = local.common_tags
 }
 
-# Results queue and DLQ
-resource "aws_sqs_queue" "results_dlq" {
-  name                      = "fec-results-dlq"
-  message_retention_seconds = var.message_retention_period
-
-  tags = merge(local.common_tags, {
-    Name = "fec-results-dlq"
-  })
+# Data source to get stack outputs (for referencing in other resources)
+data "aws_cloudformation_stack" "prerequisites" {
+  name = aws_cloudformation_stack.prerequisites.name
 }
 
-resource "aws_sqs_queue" "results_q" {
-  name                       = "fec-results-q"
-  visibility_timeout_seconds = 5400
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.results_dlq.arn
-    maxReceiveCount     = 15
-  })
-
-  tags = merge(local.common_tags, {
-    Name = "fec-results-q"
-  })
-}
-
-# Candidate queues
-resource "aws_sqs_queue" "candidate_dlq" {
-  name                      = "candidate-dead-letter-queue"
-  message_retention_seconds = var.message_retention_period
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.super_dlq.arn
-    maxReceiveCount     = var.redrive_count
-  })
-
-  tags = merge(local.common_tags, {
-    Name = "candidate-dead-letter-queue"
-  })
-}
-
-resource "aws_sqs_queue" "candidate_sync" {
-  name = "candidate-sync-queue"
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.candidate_dlq.arn
-    maxReceiveCount     = 15
-  })
-
-  tags = merge(local.common_tags, {
-    Name = "candidate-sync-queue"
-  })
-}
-
-# Committee queues
-resource "aws_sqs_queue" "committee_dlq" {
-  name                      = "committee-dead-letter-queue"
-  message_retention_seconds = var.message_retention_period
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.super_dlq.arn
-    maxReceiveCount     = var.redrive_count
-  })
-
-  tags = merge(local.common_tags, {
-    Name = "committee-dead-letter-queue"
-  })
-}
-
-resource "aws_sqs_queue" "committee_sync" {
-  name                       = "committee-sync-queue"
-  visibility_timeout_seconds = 5400
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.committee_dlq.arn
-    maxReceiveCount     = 15
-  })
-
-  tags = merge(local.common_tags, {
-    Name = "committee-sync-queue"
-  })
-}
-
-# Financial Summary queues
-resource "aws_sqs_queue" "financial_summary_dlq" {
-  name                      = "financial-summary-dlq"
-  message_retention_seconds = 1209600
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.super_dlq.arn
-    maxReceiveCount     = var.redrive_count
-  })
-}
-
-resource "aws_sqs_queue" "financial_summary" {
-  name                       = "fec-financialsummary-queue"
-  visibility_timeout_seconds = 5400
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.financial_summary_dlq.arn
-    maxReceiveCount     = var.redrive_count
-  })
-
-  tags = merge(local.common_tags, {
-    Name = "fec-financialsummary-queue"
-  })
-}
-
-# Filing SE queues
-resource "aws_sqs_queue" "filing_se_dlq" {
-  name                      = "filing-se-dlq"
-  message_retention_seconds = 1209600
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.super_dlq.arn
-    maxReceiveCount     = var.redrive_count
-  })
-}
-
-resource "aws_sqs_queue" "filing_se" {
-  name                       = "fec-se-queue"
-  visibility_timeout_seconds = 5400
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.filing_se_dlq.arn
-    maxReceiveCount     = var.redrive_count
-  })
-
-  tags = merge(local.common_tags, {
-    Name = "fec-se-queue"
-  })
-}
-
-# Filing F1S queues
-resource "aws_sqs_queue" "filing_f1s_dlq" {
-  name                      = "filing-f1s-dlq"
-  message_retention_seconds = 1209600
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.super_dlq.arn
-    maxReceiveCount     = var.redrive_count
-  })
-}
-
-resource "aws_sqs_queue" "filing_f1s" {
-  name                       = "fec-f1s-queue"
-  visibility_timeout_seconds = 5400
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.filing_f1s_dlq.arn
-    maxReceiveCount     = var.redrive_count
-  })
-
-  tags = merge(local.common_tags, {
-    Name = "fec-f1s-queue"
-  })
-}
-
-# Filing SB queues
-resource "aws_sqs_queue" "filing_sb_dlq" {
-  name                      = "filing-sb-dlq"
-  message_retention_seconds = 1209600
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.super_dlq.arn
-    maxReceiveCount     = var.redrive_count
-  })
-}
-
-resource "aws_sqs_queue" "filing_sb" {
-  name                       = "fec-sb-queue"
-  visibility_timeout_seconds = 5400
-
-  redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.filing_sb_dlq.arn
-    maxReceiveCount     = var.redrive_count
-  })
-
-  tags = merge(local.common_tags, {
-    Name = "fec-sb-queue"
-  })
-}
-
-########################################
-# SNS Topic
-########################################
-
-resource "aws_sns_topic" "rss_feed" {
-  name         = "fec-new-filing-rss-fanout"
-  display_name = "fec-new-filing-rss-fanout"
-
-  tags = merge(local.common_tags, {
-    Name = "fec-new-filing-rss-fanout"
-  })
-}
-
-# SNS to SQS subscriptions
-resource "aws_sns_topic_subscription" "rss_to_filing_se" {
-  topic_arn = aws_sns_topic.rss_feed.arn
-  protocol  = "sqs"
-  endpoint  = aws_sqs_queue.filing_se.arn
-}
-
-resource "aws_sns_topic_subscription" "rss_to_financial_summary" {
-  topic_arn = aws_sns_topic.rss_feed.arn
-  protocol  = "sqs"
-  endpoint  = aws_sqs_queue.financial_summary.arn
-}
-
-resource "aws_sns_topic_subscription" "rss_to_filing_f1s" {
-  topic_arn = aws_sns_topic.rss_feed.arn
-  protocol  = "sqs"
-  endpoint  = aws_sqs_queue.filing_f1s.arn
-}
-
-resource "aws_sns_topic_subscription" "rss_to_filing_sb" {
-  topic_arn = aws_sns_topic.rss_feed.arn
-  protocol  = "sqs"
-  endpoint  = aws_sqs_queue.filing_sb.arn
-}
-
-# SQS Queue Policies for SNS
-resource "aws_sqs_queue_policy" "rss_fanout_financial_summary" {
-  queue_url = aws_sqs_queue.financial_summary.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = "*"
-      Action    = "sqs:SendMessage"
-      Resource  = aws_sqs_queue.financial_summary.arn
-      Condition = {
-        ArnEquals = {
-          "aws:SourceArn" = aws_sns_topic.rss_feed.arn
-        }
-      }
-    }]
-  })
-}
-
-resource "aws_sqs_queue_policy" "rss_fanout_filing_se" {
-  queue_url = aws_sqs_queue.filing_se.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = "*"
-      Action    = "sqs:SendMessage"
-      Resource  = aws_sqs_queue.filing_se.arn
-      Condition = {
-        ArnEquals = {
-          "aws:SourceArn" = aws_sns_topic.rss_feed.arn
-        }
-      }
-    }]
-  })
-}
-
-resource "aws_sqs_queue_policy" "rss_fanout_filing_sb" {
-  queue_url = aws_sqs_queue.filing_sb.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = "*"
-      Action    = "sqs:SendMessage"
-      Resource  = aws_sqs_queue.filing_sb.arn
-      Condition = {
-        ArnEquals = {
-          "aws:SourceArn" = aws_sns_topic.rss_feed.arn
-        }
-      }
-    }]
-  })
-}
-
-resource "aws_sqs_queue_policy" "rss_fanout_filing_f1s" {
-  queue_url = aws_sqs_queue.filing_f1s.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = "*"
-      Action    = "sqs:SendMessage"
-      Resource  = aws_sqs_queue.filing_f1s.arn
-      Condition = {
-        ArnEquals = {
-          "aws:SourceArn" = aws_sns_topic.rss_feed.arn
-        }
-      }
-    }]
-  })
+# Data sources for queues not in stack outputs
+data "aws_sqs_queue" "results_q" {
+  name = "fec-results-q"
 }
 
 ########################################
@@ -547,12 +205,12 @@ resource "aws_iam_role_policy" "lambda_sqs" {
         "sqs:SendMessage"
       ]
       Resource = [
-        aws_sqs_queue.candidate_sync.arn,
-        aws_sqs_queue.filing_sb.arn,
-        aws_sqs_queue.financial_summary.arn,
-        aws_sqs_queue.filing_se.arn,
-        aws_sqs_queue.committee_sync.arn,
-        aws_sqs_queue.filing_f1s.arn
+        data.aws_cloudformation_stack.prerequisites.outputs["CandidateSyncQueueArn"],
+        data.aws_cloudformation_stack.prerequisites.outputs["FilingSBQueueArn"],
+        data.aws_cloudformation_stack.prerequisites.outputs["FinancialSummaryQueueArn"],
+        data.aws_cloudformation_stack.prerequisites.outputs["FilingSEQueueArn"],
+        data.aws_cloudformation_stack.prerequisites.outputs["CommitteeSyncQueueArn"],
+        data.aws_cloudformation_stack.prerequisites.outputs["FilingF1SQueueArn"]
       ]
     }]
   })
@@ -571,7 +229,7 @@ resource "aws_iam_role_policy" "lambda_sns" {
         "sns:Publish"
       ]
       Resource = [
-        aws_sns_topic.rss_feed.arn
+        data.aws_cloudformation_stack.prerequisites.outputs["RSSFeedTopicArn"]
       ]
     }]
   })
@@ -593,8 +251,8 @@ resource "aws_iam_role_policy" "lambda_s3" {
         "s3:PutObject"
       ]
       Resource = [
-        aws_s3_bucket.copy_from.arn,
-        "${aws_s3_bucket.copy_from.arn}/*"
+        data.aws_cloudformation_stack.prerequisites.outputs["CopyFromBucketArn"],
+        "${data.aws_cloudformation_stack.prerequisites.outputs["CopyFromBucketArn"]}/*"
       ]
     }]
   })
@@ -663,7 +321,8 @@ resource "null_resource" "copy_requirements" {
 ########################################
 
 module "lambda_get_db_stats" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-GetDBStats"
   description   = "Get database statistics"
@@ -674,11 +333,15 @@ module "lambda_get_db_stats" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
 
   # Store deployment package on S3 (required when package > 50MB)
   store_on_s3 = true
-  s3_bucket   = "serverless-deploymentbucket-us-east-1-648881544937"
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
   s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = 1
@@ -686,7 +349,7 @@ module "lambda_get_db_stats" {
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
   }
 
   cloudwatch_logs_retention_in_days = 14
@@ -701,7 +364,8 @@ module "lambda_get_db_stats" {
 }
 
 module "lambda_candidate_sync" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-CandidateSync"
   description   = "Polls OpenFEC API (once) for candidates that have filed recently and sends the IDs to SQS"
@@ -712,15 +376,24 @@ module "lambda_candidate_sync" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = 1
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
-    SQS_QUEUE_NAME       = aws_sqs_queue.candidate_sync.name
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
+    SQS_QUEUE_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["CandidateSyncQueueName"]
   }
 
   cloudwatch_logs_retention_in_days = 14
@@ -735,7 +408,8 @@ module "lambda_candidate_sync" {
 }
 
 module "lambda_candidate_backfill" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-CandidateBackfill"
   description   = "Backfills candidates queue"
@@ -746,15 +420,24 @@ module "lambda_candidate_backfill" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = var.backfill
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
-    SQS_QUEUE_NAME       = aws_sqs_queue.candidate_sync.name
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
+    SQS_QUEUE_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["CandidateSyncQueueName"]
   }
 
   cloudwatch_logs_retention_in_days = 14
@@ -769,7 +452,8 @@ module "lambda_candidate_backfill" {
 }
 
 module "lambda_candidate_loader" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-CandidateLoader"
   description   = "Triggered by SQS it receives Messages and writes candidate data to the DB"
@@ -780,15 +464,24 @@ module "lambda_candidate_loader" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
-    SQS_QUEUE_NAME       = aws_sqs_queue.candidate_sync.name
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
+    SQS_QUEUE_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["CandidateSyncQueueName"]
   }
 
   cloudwatch_logs_retention_in_days = 14
@@ -803,7 +496,8 @@ module "lambda_candidate_loader" {
 }
 
 module "lambda_committee_sync" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-CommitteeSync"
   description   = "Polls OpenFEC API (once) for committees that have filed recently and sends the IDs to SQS"
@@ -814,15 +508,24 @@ module "lambda_committee_sync" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = 1
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
-    SQS_QUEUE_NAME       = aws_sqs_queue.committee_sync.name
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
+    SQS_QUEUE_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["CommitteeSyncQueueName"]
   }
 
   cloudwatch_logs_retention_in_days = 14
@@ -837,7 +540,8 @@ module "lambda_committee_sync" {
 }
 
 module "lambda_committee_backfill" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-CommitteeBackfill"
   description   = "Backfills committee sync queue"
@@ -848,15 +552,24 @@ module "lambda_committee_backfill" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = var.backfill
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
-    SQS_QUEUE_NAME       = aws_sqs_queue.committee_sync.name
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
+    SQS_QUEUE_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["CommitteeSyncQueueName"]
   }
 
   cloudwatch_logs_retention_in_days = 14
@@ -871,7 +584,8 @@ module "lambda_committee_backfill" {
 }
 
 module "lambda_committee_loader" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-CommitteeLoader"
   description   = "Receives committee Ids from SQS, queries api for committee info, updates DB"
@@ -882,15 +596,24 @@ module "lambda_committee_loader" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
-    SQS_QUEUE_NAME       = aws_sqs_queue.committee_sync.name
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
+    SQS_QUEUE_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["CommitteeSyncQueueName"]
   }
 
   cloudwatch_logs_retention_in_days = 14
@@ -905,7 +628,8 @@ module "lambda_committee_loader" {
 }
 
 module "lambda_filing_sync" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-FilingSync"
   description   = "Scrapes FEC RSS feed for recent filings, pushes the new filings to SNS and SQS"
@@ -916,15 +640,24 @@ module "lambda_filing_sync" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = 1
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
-    RSS_SNS_TOPIC_ARN    = aws_sns_topic.rss_feed.arn
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
+    RSS_SNS_TOPIC_ARN    = data.aws_cloudformation_stack.prerequisites.outputs["RSSFeedTopicArn"]
   }
 
   cloudwatch_logs_retention_in_days = 14
@@ -939,7 +672,8 @@ module "lambda_filing_sync" {
 }
 
 module "lambda_filing_backfill" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-FilingBackfill"
   description   = "Crawls back in time over filings"
@@ -950,15 +684,24 @@ module "lambda_filing_backfill" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = var.backfill
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
-    RSS_SNS_TOPIC_ARN    = aws_sns_topic.rss_feed.arn
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
+    RSS_SNS_TOPIC_ARN    = data.aws_cloudformation_stack.prerequisites.outputs["RSSFeedTopicArn"]
   }
 
   cloudwatch_logs_retention_in_days = 14
@@ -973,7 +716,8 @@ module "lambda_filing_backfill" {
 }
 
 module "lambda_financial_summary_loader" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-FinancialSummaryLoader"
   description   = "Takes new filings from SQS, queries api, writes to DB"
@@ -984,15 +728,24 @@ module "lambda_financial_summary_loader" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
-    SQS_QUEUE_NAME       = aws_sqs_queue.financial_summary.name
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
+    SQS_QUEUE_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["FinancialSummaryQueueName"]
   }
 
   cloudwatch_logs_retention_in_days = 14
@@ -1007,7 +760,8 @@ module "lambda_financial_summary_loader" {
 }
 
 module "lambda_fec_file_loader_sb" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-FECFileLoaderSB"
   description   = "Gets FEC file url from SQS, downloads, parses for Schedule B filings, loads into DB"
@@ -1019,18 +773,27 @@ module "lambda_fec_file_loader_sb" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
     FILING_TYPE          = "SB"
     REDSHIFT_COPY_ROLE   = var.redshift_copy_role
-    S3_BUCKET_NAME       = aws_s3_bucket.copy_from.id
-    SQS_QUEUE_NAME       = aws_sqs_queue.filing_sb.name
+    S3_BUCKET_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["CopyFromBucketName"]
+    SQS_QUEUE_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["FilingSBQueueName"]
   }
 
   cloudwatch_logs_retention_in_days = 14
@@ -1045,7 +808,8 @@ module "lambda_fec_file_loader_sb" {
 }
 
 module "lambda_fec_file_loader_se" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-FECFileLoaderSE"
   description   = "Gets FEC file url from SQS, downloads, parses for Schedule E filings, loads into DB"
@@ -1057,17 +821,26 @@ module "lambda_fec_file_loader_se" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
     REDSHIFT_COPY_ROLE   = var.redshift_copy_role
-    S3_BUCKET_NAME       = aws_s3_bucket.copy_from.id
-    SQS_QUEUE_NAME       = aws_sqs_queue.filing_se.name
+    S3_BUCKET_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["CopyFromBucketName"]
+    SQS_QUEUE_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["FilingSEQueueName"]
     FILING_TYPE          = "SE"
   }
 
@@ -1083,7 +856,8 @@ module "lambda_fec_file_loader_se" {
 }
 
 module "lambda_fec_file_loader_supp" {
-  source = "terraform-aws-modules/lambda/aws"
+  source  = "terraform-aws-modules/lambda/aws"
+  version = "~> 8.0"
 
   function_name = "${local.service_name}-${var.stage}-FECFileLoaderSupp"
   description   = "Gets FEC file url from SQS, downloads, parses for Form 1 Supplemental Data, loads into DB"
@@ -1095,17 +869,26 @@ module "lambda_fec_file_loader_supp" {
   source_path     = "${path.module}/src"
   build_in_docker = true
 
+  # Docker build options to ensure correct platform for Lambda (linux/amd64)
+  # This is critical for native extensions like cryptography's Rust bindings
+  docker_additional_options = ["--platform", "linux/amd64"]
+
   depends_on = [null_resource.copy_requirements]
+
+  # Store deployment package on S3 (required when package > 50MB)
+  store_on_s3 = true
+  s3_bucket   = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
+  s3_prefix   = "${var.stage}/"
 
   reserved_concurrent_executions = var.loader_concurrency
 
   environment_variables = {
     API_KEY              = "/global/openfec-api/api_key"
     LOG_LEVEL            = "DEBUG"
-    ERROR_SQS_QUEUE_NAME = aws_sqs_queue.results_q.name
+    ERROR_SQS_QUEUE_NAME = data.aws_sqs_queue.results_q.name
     REDSHIFT_COPY_ROLE   = var.redshift_copy_role
-    S3_BUCKET_NAME       = aws_s3_bucket.copy_from.id
-    SQS_QUEUE_NAME       = aws_sqs_queue.filing_f1s.name
+    S3_BUCKET_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["CopyFromBucketName"]
+    SQS_QUEUE_NAME       = data.aws_cloudformation_stack.prerequisites.outputs["FilingF1SQueueName"]
     FILING_TYPE          = "F1S"
   }
 
@@ -1283,37 +1066,37 @@ resource "aws_lambda_permission" "filing_backfill" {
 ########################################
 
 resource "aws_lambda_event_source_mapping" "candidate_loader" {
-  event_source_arn = aws_sqs_queue.candidate_sync.arn
+  event_source_arn = data.aws_cloudformation_stack.prerequisites.outputs["CandidateSyncQueueArn"]
   function_name    = module.lambda_candidate_loader.lambda_function_arn
   batch_size       = 10
 }
 
 resource "aws_lambda_event_source_mapping" "committee_loader" {
-  event_source_arn = aws_sqs_queue.committee_sync.arn
+  event_source_arn = data.aws_cloudformation_stack.prerequisites.outputs["CommitteeSyncQueueArn"]
   function_name    = module.lambda_committee_loader.lambda_function_arn
   batch_size       = 1
 }
 
 resource "aws_lambda_event_source_mapping" "financial_summary_loader" {
-  event_source_arn = aws_sqs_queue.financial_summary.arn
+  event_source_arn = data.aws_cloudformation_stack.prerequisites.outputs["FinancialSummaryQueueArn"]
   function_name    = module.lambda_financial_summary_loader.lambda_function_arn
   batch_size       = 1
 }
 
 resource "aws_lambda_event_source_mapping" "fec_file_loader_sb" {
-  event_source_arn = aws_sqs_queue.filing_sb.arn
+  event_source_arn = data.aws_cloudformation_stack.prerequisites.outputs["FilingSBQueueArn"]
   function_name    = module.lambda_fec_file_loader_sb.lambda_function_arn
   batch_size       = 1
 }
 
 resource "aws_lambda_event_source_mapping" "fec_file_loader_se" {
-  event_source_arn = aws_sqs_queue.filing_se.arn
+  event_source_arn = data.aws_cloudformation_stack.prerequisites.outputs["FilingSEQueueArn"]
   function_name    = module.lambda_fec_file_loader_se.lambda_function_arn
   batch_size       = 1
 }
 
 resource "aws_lambda_event_source_mapping" "fec_file_loader_supp" {
-  event_source_arn = aws_sqs_queue.filing_f1s.arn
+  event_source_arn = data.aws_cloudformation_stack.prerequisites.outputs["FilingF1SQueueArn"]
   function_name    = module.lambda_fec_file_loader_supp.lambda_function_arn
   batch_size       = 1
 }
@@ -1324,87 +1107,87 @@ resource "aws_lambda_event_source_mapping" "fec_file_loader_supp" {
 
 output "deployment_bucket_name" {
   description = "Name of the deployment bucket"
-  value       = aws_s3_bucket.deployment.id
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]
 }
 
 output "deployment_bucket_arn" {
   description = "ARN of the deployment bucket"
-  value       = aws_s3_bucket.deployment.arn
+  value       = "arn:aws:s3:::${data.aws_cloudformation_stack.prerequisites.outputs["DeploymentBucketName"]}"
 }
 
 output "copy_from_bucket_name" {
   description = "Name of the copy-from bucket"
-  value       = aws_s3_bucket.copy_from.id
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["CopyFromBucketName"]
 }
 
 output "copy_from_bucket_arn" {
   description = "ARN of the copy-from bucket"
-  value       = aws_s3_bucket.copy_from.arn
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["CopyFromBucketArn"]
 }
 
 output "candidate_sync_queue_name" {
   description = "Name of the candidate sync queue"
-  value       = aws_sqs_queue.candidate_sync.name
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["CandidateSyncQueueName"]
 }
 
 output "candidate_sync_queue_arn" {
   description = "ARN of the candidate sync queue"
-  value       = aws_sqs_queue.candidate_sync.arn
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["CandidateSyncQueueArn"]
 }
 
 output "committee_sync_queue_name" {
   description = "Name of the committee sync queue"
-  value       = aws_sqs_queue.committee_sync.name
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["CommitteeSyncQueueName"]
 }
 
 output "committee_sync_queue_arn" {
   description = "ARN of the committee sync queue"
-  value       = aws_sqs_queue.committee_sync.arn
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["CommitteeSyncQueueArn"]
 }
 
 output "financial_summary_queue_name" {
   description = "Name of the financial summary queue"
-  value       = aws_sqs_queue.financial_summary.name
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["FinancialSummaryQueueName"]
 }
 
 output "financial_summary_queue_arn" {
   description = "ARN of the financial summary queue"
-  value       = aws_sqs_queue.financial_summary.arn
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["FinancialSummaryQueueArn"]
 }
 
 output "filing_se_queue_name" {
   description = "Name of the filing SE queue"
-  value       = aws_sqs_queue.filing_se.name
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["FilingSEQueueName"]
 }
 
 output "filing_se_queue_arn" {
   description = "ARN of the filing SE queue"
-  value       = aws_sqs_queue.filing_se.arn
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["FilingSEQueueArn"]
 }
 
 output "filing_sb_queue_name" {
   description = "Name of the filing SB queue"
-  value       = aws_sqs_queue.filing_sb.name
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["FilingSBQueueName"]
 }
 
 output "filing_sb_queue_arn" {
   description = "ARN of the filing SB queue"
-  value       = aws_sqs_queue.filing_sb.arn
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["FilingSBQueueArn"]
 }
 
 output "filing_f1s_queue_name" {
   description = "Name of the filing F1S queue"
-  value       = aws_sqs_queue.filing_f1s.name
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["FilingF1SQueueName"]
 }
 
 output "filing_f1s_queue_arn" {
   description = "ARN of the filing F1S queue"
-  value       = aws_sqs_queue.filing_f1s.arn
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["FilingF1SQueueArn"]
 }
 
 output "rss_feed_topic_arn" {
   description = "ARN of the RSS feed SNS topic"
-  value       = aws_sns_topic.rss_feed.arn
+  value       = data.aws_cloudformation_stack.prerequisites.outputs["RSSFeedTopicArn"]
 }
 
 output "lambda_function_arns" {

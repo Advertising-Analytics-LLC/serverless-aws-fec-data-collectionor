@@ -17,50 +17,74 @@ help:
 	cat Makefile
 
 
-##########################################
-# cloudformation
-##########################################
-
-deploy-cfn:
-	aws cloudformation deploy \
-	    --no-fail-on-empty-changeset \
-	    --stack-name "$(CFN_STACK_NAME)" \
-	    --template-file cloudformation/prerequisite-cloudformation-resources.yml
-
-create-change-set:
-	$(eval cs_name := change-set-$(GIT_HASH_SHORT))
-	aws cloudformation create-change-set \
-		--change-set-name $(cs_name) \
-	    --stack-name "$(CFN_STACK_NAME)" \
-		--template-body file://cloudformation/prerequisite-cloudformation-resources.yml \
-	> $(cs_name).json
-
-diff-cfn: create-change-set
-	$(eval cs_name := change-set-$(GIT_HASH_SHORT))
-	$(eval cs_id := $(shell cat $(cs_name).json | jq '.Id'))
-	rm $(cs_name).json
-
-	aws cloudformation wait change-set-create-complete \
-		--change-set-name $(cs_id)
-
-	aws cloudformation describe-change-set \
-		--change-set-name $(cs_id)
-
-apply-cfn: diff-cfn
-	aws cloudformation execute-change-set \
-		--change-set-name $(cs_id)
+FOLDER_NAME := $(shell pwd | xargs basename)
+GIT_BRANCH=$(shell git branch --show-current)
+NEW= := $(NEW)
+OUTFILE_PATH=$(GIT_BRANCH)-$(TF_WORKSPACE).out
+SHELL := /bin/bash
+TF_WORKSPACE := $(shell terraform workspace show)
+WORKSPACE ?= $(TF_WORKSPACE)
+VAR_FILES := -var-file $(WORKSPACE).tfvars
 
 
-##########################################
-# serverless
-##########################################
+clean:
+	@echo WARNING - removing local terraform dirs
+	rm -rf .terraform
 
-diff-sls:
-	sls package && sls diff
+init:
+	terraform init
+	$(shell [ ! -z $(WORKSPACE) ] && terraform workspace select $(WORKSPACE);)
 
-.phony: deploy-sls
-deploy-sls:
-	serverless deploy
+list: init
+	@echo listing terraform workspaces:
+	terraform workspace list
+
+refresh: init
+	terraform refresh $(VAR_FILES)
+
+plan: init
+	@echo planning changes to the $(TF_WORKSPACE) workspace
+	terraform plan $(VAR_FILES)
+
+fplan:
+	@echo planning changes to the $(TF_WORKSPACE) workspace
+	terraform plan $(VAR_FILES)
+
+out: init
+	@echo planning changes to the $(TF_WORKSPACE) workspace
+	terraform plan $(VAR_FILES) -out $(OUTFILE_PATH) -no-color | tee $(OUTFILE_PATH).txt
+
+outapply:
+	terraform apply $(OUTFILE_PATH)
+
+output:
+	@terraform output
+
+apply: init
+	@echo applying changes to the $(WORKSPACE) workspace
+	terraform apply $(VAR_FILES)
+
+fapply:
+	@echo applying changes to the $(WORKSPACE) workspace
+	terraform apply $(VAR_FILES)
+
+autoapply: init
+	@echo applying changes to the $(WORKSPACE) workspace
+	terraform apply $(VAR_FILES) -auto-approve
+
+destroy: init
+	@echo applying changes to the $(WORKSPACE) workspace
+	terraform destroy $(VAR_FILES)
+
+autodestroy: init
+	@echo applying changes to the $(WORKSPACE) workspace
+	terraform apply -destroy -auto-approve $(VAR_FILES)
+
+new: init
+	@echo "create a new terraform workspace by running 'make NEW=my-new-name new'"
+	$(shell [ -z $(NEW) ] && echo 'please define the NEW env var'; exit 1;)
+	terraform workspace new $(NEW)
+	echo "env = \"$(NEW)\"" >> $(NEW).tfvars
 
 deploy-dashboard:
 	aws cloudwatch put-dashboard \

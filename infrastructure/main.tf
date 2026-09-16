@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 1.0"
 
-    backend "s3" {
+  backend "s3" {
     bucket         = "767398000173-us-east-1-tfstate-product"
     key            = "serverless-aws-fec-data-collectionor.tfstate"
     dynamodb_table = "tf-locktable-product"
@@ -116,7 +116,7 @@ locals {
   # Using lambdas/ (not lambdas/src) so the src/ directory structure is preserved
   lambda_source_path = [
     {
-      path            = "${path.module}/../lambdas"
+      path             = "${path.module}/../lambdas"
       pip_requirements = "${path.module}/../requirements.txt"
     }
   ]
@@ -127,24 +127,24 @@ locals {
 ########################################
 
 resource "aws_cloudformation_stack" "prerequisites" {
-  name         = "fec-datasync-resources"
+  name          = "fec-datasync-resources"
   template_body = file("${path.module}/prerequisite-cloudformation-resources.yml")
 
   parameters = {
-    MessageRetentionPeriod      = var.message_retention_period
-    CopyFromBucketName          = var.copy_from_bucket_name
-    DeploymentBucketName        = var.deployment_bucket_name
-    CandidateSyncQueueName      = "candidate-sync-queue"
-    CommitteeSyncQueueName      = "committee-sync-queue"
-    FinancialSummaryQueueName   = "fec-financialsummary-queue"
-    FilingSEQueueName           = "fec-se-queue"
-    FilingSBQueueName           = "fec-sb-queue"
-    FilingF1SQueueName          = "fec-f1s-queue"
-    RSSFeedTopicName            = "fec-new-filing-rss-fanout"
+    MessageRetentionPeriod       = var.message_retention_period
+    CopyFromBucketName           = var.copy_from_bucket_name
+    DeploymentBucketName         = var.deployment_bucket_name
+    CandidateSyncQueueName       = "candidate-sync-queue"
+    CommitteeSyncQueueName       = "committee-sync-queue"
+    FinancialSummaryQueueName    = "fec-financialsummary-queue"
+    FilingSEQueueName            = "fec-se-queue"
+    FilingSBQueueName            = "fec-sb-queue"
+    FilingF1SQueueName           = "fec-f1s-queue"
+    RSSFeedTopicName             = "fec-new-filing-rss-fanout"
     CandidateDeadLetterQueueName = "candidate-dead-letter-queue"
     CommitteeDeadLetterQueueName = "committee-dead-letter-queue"
     FilingDeadLetterQueueName    = "filing-dead-letter-queue"
-    RedriveCount                = var.redrive_count
+    RedriveCount                 = var.redrive_count
   }
 
   tags = local.common_tags
@@ -356,6 +356,9 @@ module "lambda_get_db_stats" {
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
 
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
+
   tags = local.common_tags
 }
 
@@ -397,6 +400,9 @@ module "lambda_candidate_sync" {
 
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
+
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
 
   tags = local.common_tags
 }
@@ -440,6 +446,9 @@ module "lambda_candidate_backfill" {
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
 
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
+
   tags = local.common_tags
 }
 
@@ -481,6 +490,9 @@ module "lambda_candidate_loader" {
 
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
+
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
 
   tags = local.common_tags
 }
@@ -524,6 +536,9 @@ module "lambda_committee_sync" {
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
 
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
+
   tags = local.common_tags
 }
 
@@ -565,6 +580,9 @@ module "lambda_committee_backfill" {
 
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
+
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
 
   tags = local.common_tags
 }
@@ -608,6 +626,9 @@ module "lambda_committee_loader" {
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
 
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
+
   tags = local.common_tags
 }
 
@@ -649,6 +670,9 @@ module "lambda_filing_sync" {
 
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
+
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
 
   tags = local.common_tags
 }
@@ -692,6 +716,9 @@ module "lambda_filing_backfill" {
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
 
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
+
   tags = local.common_tags
 }
 
@@ -733,6 +760,9 @@ module "lambda_financial_summary_loader" {
 
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
+
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
 
   tags = local.common_tags
 }
@@ -780,6 +810,9 @@ module "lambda_fec_file_loader_sb" {
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
 
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
+
   tags = local.common_tags
 }
 
@@ -826,6 +859,9 @@ module "lambda_fec_file_loader_se" {
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
 
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
+
   tags = local.common_tags
 }
 
@@ -871,6 +907,9 @@ module "lambda_fec_file_loader_supp" {
 
   create_role = false
   lambda_role = aws_iam_role.lambda.arn
+
+  vpc_subnet_ids         = local.lambda_vpc_subnet_ids
+  vpc_security_group_ids = local.lambda_vpc_security_group_ids
 
   tags = local.common_tags
 }

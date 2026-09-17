@@ -13,7 +13,7 @@ import uuid
 from copy import deepcopy
 from collections import OrderedDict
 from psycopg2.sql import SQL, Literal
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 from src import condense_dimension, get_current_cycle_year, JSONType, logger
 from src.database import Database, get_insert_query
 from src.OpenFec import OpenFec, NotFound404Exception
@@ -67,15 +67,18 @@ def insert_fec_filing(filing: JSONType) -> SQL:
     return query
 
 
-def amendment_chain_exists(fec_file_id: str, amendment_id: str) -> SQL:
-    query = SQL('SELECT * FROM fec.filing_amendment_chain WHERE fec_file_id={} AND amendment_id={}')\
-        .format(Literal(int(fec_file_id)), Literal(int(amendment_id)))
+def amendment_chain_ids(fec_file_id: str) -> SQL:
+    query = SQL('SELECT amendment_id FROM fec.filing_amendment_chain WHERE fec_file_id={}')\
+        .format(Literal(int(fec_file_id)))
     return query
 
 
-def insert_amendment_chain(fec_file_id: str, amendment_id: str, amendment_number: int) -> SQL:
-    query = SQL('INSERT INTO fec.filing_amendment_chain(filing_amendment_chain_id, fec_file_id, amendment_id, amendment_number) VALUES ({}, {}, {}, {})')\
-        .format(Literal(str(uuid.uuid4())), Literal(fec_file_id), Literal(int(amendment_id)), Literal(int(amendment_number)))
+def insert_amendment_chain(fec_file_id: str, links: List[Tuple[int, int]]) -> SQL:
+    """multi-row insert of (amendment_id, amendment_number) links for one filing"""
+    row = SQL('({}, {}, {}, {})')
+    rows = [row.format(Literal(str(uuid.uuid4())), Literal(int(fec_file_id)), Literal(int(amendment_id)), Literal(int(amendment_number)))
+            for amendment_id, amendment_number in links]
+    query = SQL('INSERT INTO fec.filing_amendment_chain(filing_amendment_chain_id, fec_file_id, amendment_id, amendment_number) VALUES ') + SQL(', ').join(rows)
     return query
 
 
@@ -108,16 +111,19 @@ def get_totals(committee_id: str, filters: Dict[str, Any]) -> Dict[str, Any]:
 
     return totals
 
-def upsert_amendment_chain(filing_id: str, amendment_chain: List[str]):
-    """upserts amendment chain linker table"""
+def upsert_amendment_chain(db: Database, filing_id: str, amendment_chain: List[str]) -> bool:
+    """upserts amendment chain linker table: one SELECT for what exists, one INSERT for what is missing"""
 
-    amendment_number = 0
-    for amendment in amendment_chain:
-        with Database() as db:
-            if not db.record_exists(amendment_chain_exists(filing_id, amendment)):
-                query = insert_amendment_chain(filing_id, amendment, amendment_number)
-                db.try_query(query)
-            amendment_number += 1
+    existing = {row[0] for row in (db.query(amendment_chain_ids(filing_id)) or [])}
+    links = [(int(amendment_id), amendment_number)
+             for amendment_number, amendment_id in enumerate(amendment_chain)
+             if int(amendment_id) not in existing]
+
+    if not links:
+        return True
+
+    logger.debug(f'adding {len(links)} amendment links to filing {filing_id}')
+    return db.try_query(insert_amendment_chain(filing_id, links))
 
 
 def upsert_filing(filing: JSONType) -> bool:
@@ -125,7 +131,7 @@ def upsert_filing(filing: JSONType) -> bool:
 
     fec_file_id = filing['fec_file_id']
 
-    if not fec_file_id or fec_file_id is 'None':
+    if not fec_file_id or fec_file_id == 'None':
         logger.warning(f'fec_file_id missing, filing: {filing}')
         return False
 
@@ -134,10 +140,11 @@ def upsert_filing(filing: JSONType) -> bool:
     filing = condense_dimension(filing, 'additional_bank_names')
 
     amendment_chain = filing.pop('amendment_chain')
-    if amendment_chain:
-        upsert_amendment_chain(fec_file_id, amendment_chain)
 
     with Database() as db:
+        if amendment_chain:
+            upsert_amendment_chain(db, fec_file_id, amendment_chain)
+
         if db.record_exists(fec_file_exists(fec_file_id)):
             logger.warning(f'Financial Summary with fec_file_id {fec_file_id} already exists')
             return True

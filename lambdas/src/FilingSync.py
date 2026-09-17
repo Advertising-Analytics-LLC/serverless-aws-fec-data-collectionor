@@ -76,7 +76,7 @@ class EFilingRSSFeed:
         for desc in items:
             filing_id = parse_for_x('(FilingId: )([0-9]*)', desc)
 
-            if not filing_id or filing_id is 'None':
+            if not filing_id or filing_id == 'None':
                 logger.warning(f'No fec file ID for record {desc}')
                 continue
 

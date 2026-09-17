@@ -31,6 +31,8 @@ Terraform state is stored remotely in S3:
 3. Apply changes: `cd infrastructure && make apply`
 4. Monitor in CloudWatch for any issues
 
+**Code changes redeploy all 13 functions** — they share one package built from `lambdas/`. On a cold `infrastructure/builds/` the 13 modules race to write the same `<hash>.zip`; the first finisher renames it and the others fail with `FileNotFoundError: ... .zip.tmp`. Either apply with `terraform apply -parallelism=1 <plan>`, or just re-plan and apply again: the zip now exists and every module logs `Reused:`. A failed first apply leaves a harmless mixed state (some functions on new code) that the second apply completes.
+
 ## Troubleshooting
 
 - **State lock errors**: Another Terraform operation may be in progress. Wait or check the DynamoDB lock table.

@@ -35,3 +35,8 @@ builds/
 *.out.txt
 
 .venv/
+
+# Python
+__pycache__/
+.pytest_cache/
+.venv/

@@ -59,6 +59,13 @@ Edit `terraform.tfvars` to set your desired values (see `docs/TERRAFORM.md` for 
 
 Edit the code in `lambdas/src/` and test locally. You can test Lambda functions locally using tools like [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html) or by running the Python code directly.
 
+### 5b. Test
+
+Offline unit tests (no AWS, no Redshift; `psycopg2.connect` and the SSM/SQS modules are stubbed in `lambdas/tests/conftest.py`):
+```sh
+cd lambdas && python -m pytest
+```
+
 ### 6. Deploy
 
 Review changes:

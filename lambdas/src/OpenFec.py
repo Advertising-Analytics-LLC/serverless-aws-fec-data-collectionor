@@ -153,7 +153,7 @@ class OpenFec:
         callback_function(first_response)
         estimated_num_pages = first_response['pagination']['pages']
 
-        for page in range(2, estimated_num_pages + 2):
+        for page in range(2, estimated_num_pages + 1):
             print(f'page {page}')
             payload['page'] = page
             next_page = self.get_route(route, payload)

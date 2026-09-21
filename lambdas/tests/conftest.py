@@ -35,7 +35,13 @@ def render(query) -> str:
         return query.string
     if isinstance(query, pgsql.Literal):
         value = query.wrapped
-        return str(value) if isinstance(value, (int, float)) else "'" + str(value).replace("'", "''") + "'"
+        if value is None:
+            return 'NULL'
+        if isinstance(value, bool):
+            return 'true' if value else 'false'
+        if isinstance(value, (int, float)):
+            return str(value)
+        return "'" + str(value).replace("'", "''") + "'"
     if isinstance(query, pgsql.Identifier):
         return '.'.join(f'"{s}"' for s in query.strings)
     return str(query)

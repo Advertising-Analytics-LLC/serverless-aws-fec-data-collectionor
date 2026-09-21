@@ -11,11 +11,10 @@ import json
 import os
 import uuid
 from copy import deepcopy
-from collections import OrderedDict
 from psycopg2.sql import SQL, Literal
 from typing import Any, Dict, List, Tuple
 from src import condense_dimension, get_current_cycle_year, JSONType, logger
-from src.database import Database, get_insert_query
+from src.database import Database
 from src.OpenFec import OpenFec, NotFound404Exception
 from src.secrets import get_param_value_by_name
 from src.sqs import parse_message
@@ -30,40 +29,12 @@ def committee_total_exists(committee_id: str, cycle: int) -> SQL:
     return query
 
 
-def insert_committee_total(committee_total: JSONType) -> SQL:
-    table = 'fec.committee_totals'
-    query = get_insert_query(table, committee_total)
-    return query
-
-
-def update_committee_total(committee_total: JSONType) -> SQL:
-
-    committee_id = committee_total.pop('committee_id')
-    cycle = committee_total.pop('cycle')
-
-    values = OrderedDict(sorted(committee_total.items()))
-    query_string = 'UPDATE fec.committee_totals SET ' \
-        + ', '.join([f' {key}={{}}' for key, val in values.items()])\
-        + ' WHERE committee_id={}'\
-        + ' AND cycle={}'
-
-    query = SQL(query_string)\
-        .format(*[Literal(val) for key, val in values.items()], Literal(committee_id), Literal(cycle))
-
-    return query
-
 #
 # fec file
 
 def fec_file_exists(fec_file_id: str) -> SQL:
     query = SQL('SELECT * FROM fec.filings WHERE fec_file_id={fec_file_id}')\
         .format(fec_file_id=Literal(fec_file_id))
-    return query
-
-
-def insert_fec_filing(filing: JSONType) -> SQL:
-    table = 'fec.filings'
-    query = get_insert_query(table, filing)
     return query
 
 
@@ -149,10 +120,7 @@ def upsert_filing(filing: JSONType) -> bool:
             logger.warning(f'Financial Summary with fec_file_id {fec_file_id} already exists')
             return True
 
-        else:
-            query = insert_fec_filing(filing)
-
-        return db.try_query(query)
+        return db.sql_insert('filings', filing)
 
 
 def upsert_committee_total(commitee_total: JSONType) -> bool:
@@ -163,12 +131,9 @@ def upsert_committee_total(commitee_total: JSONType) -> bool:
 
     with Database() as db:
         if db.record_exists(committee_total_exists(pk1, pk2)):
-            query = update_committee_total(commitee_total)
-        else:
-            query = insert_committee_total(commitee_total)
+            return db.sql_update('committee_totals', commitee_total, ['committee_id', 'cycle'])
 
-        success = db.try_query(query)
-        return success
+        return db.sql_insert('committee_totals', commitee_total)
 
 
 def lambdaHandler(event:dict, context: object) -> bool:
@@ -204,11 +169,15 @@ def lambdaHandler(event:dict, context: object) -> bool:
         # handle fec.filings
         # filing is list of lists, flatten it
         filings_flat = [item for sublist in filings for item in sublist]
-        for filing in filings_flat:
-            upsert_filing(filing)
+        failed = [f for f in filings_flat if not upsert_filing(f)]
+        if failed:
+            logger.error(f'UPSERT_FAILED fec.filings {len(failed)}/{len(filings_flat)} '
+                         f'committee_id={committee_id}')
 
         # handle fec.committee_totals
         # totals is list of lists, flatten it
         totals_flat = [item for sublist in totals for item in sublist]
-        for committee_total in totals_flat:
-            upsert_committee_total(committee_total)
+        failed = [t for t in totals_flat if not upsert_committee_total(t)]
+        if failed:
+            logger.error(f'UPSERT_FAILED fec.committee_totals {len(failed)}/{len(totals_flat)} '
+                         f'committee_id={committee_id}')

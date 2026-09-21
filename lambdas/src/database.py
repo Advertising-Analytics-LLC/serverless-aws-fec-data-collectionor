@@ -8,7 +8,6 @@ import psycopg2
 import sys
 from psycopg2 import extensions
 from time import monotonic
-from collections import OrderedDict
 from psycopg2 import sql, ProgrammingError
 from psycopg2.sql import Literal
 from src import logger
@@ -37,9 +36,27 @@ def parse_value(value: Union[str, int]) -> Union[str, int]:
     return str(value)
 
 
-def filter_dict_by_keys(unfiltered_dict: Dict[str, str], keys: List[str]):
+def truncate(val):
+    """clips strings to what the VARCHAR(256) columns hold; non-strings pass through untouched.
+
+    The non-string branch matters: fec.committee_totals is ~100 NUMERIC columns, and
+    returning None for them would write NULL for every dollar figure."""
+
+    if isinstance(val, str) and len(val) >= 255:
+        logger.warning(f'value longer than limit:\n{val}')
+        return val[:255]
+
+    return val
+
+
+def filter_dict_by_keys(unfiltered_dict: Dict[str, str], keys: List[str], table: str = ''):
     """takes a dictionary and a list of sets containing keys (because that is how redshift returns them)
-    and returns a dictionary with only the keys given by the list"""
+    and returns a dictionary with only the keys given by the list.
+
+    Payload keys the table does not have are dropped rather than passed through to
+    the query builder: openFEC adds fields to its responses without warning, and an
+    unknown column name fails the whole statement. Dropping is logged at warning
+    because it means the table is now missing data the API is publishing."""
 
     keys_list = [ key[0] for key in keys ]
     filtered_dict = {}
@@ -47,22 +64,13 @@ def filter_dict_by_keys(unfiltered_dict: Dict[str, str], keys: List[str]):
         if key in unfiltered_dict.keys():
             filtered_dict[key] = unfiltered_dict[str(key)]
         else:
-            logger.warning(f'key {key} not found in {unfiltered_dict}')
+            logger.debug(f'column {key} has no value in this payload')
+
+    unknown = sorted(set(unfiltered_dict) - set(keys_list))
+    if unknown:
+        logger.warning(f'dropping keys absent from {table or "table"}: {unknown}')
 
     return filtered_dict
-
-def get_insert_query(database_table: str, values_dict: dict) -> psycopg2.sql:
-    """ returns an insert query given a DB table and a dictionary of col:vals """
-    values = OrderedDict(sorted(values_dict.items()))
-
-    query_string = f'INSERT INTO {database_table} ('\
-        + ', '.join([f'{key}' for key, val in values.items()]) + ') '\
-        + 'VALUES (' + ', '.join(['{}' for key, val in values.items()]) + ')'
-
-    query = sql.SQL(query_string)\
-               .format(*[Literal(val) for key, val in values.items()])
-
-    return query
 
 ##########################################
 # connection reuse
@@ -198,7 +206,7 @@ class Database:
             self.commit()
             return True
         except Exception as e:
-            logger.error(sys.exc_info()[0])
+            logger.error(f'QUERY_FAILED {sys.exc_info()[0]}')
             logger.error(e)
             self.rollback()
             return False
@@ -234,7 +242,8 @@ class Database:
         '''takes the name of a table in fmw and returns a query for all the columns'''
 
         query_string = 'select column_name from information_schema.columns ' + \
-                      f'where table_name = \'{table}\' order by ordinal_position;'
+                      f'where table_schema = \'fec\' and table_name = \'{table}\' ' + \
+                       'order by ordinal_position;'
 
         query = sql.SQL(query_string)
 
@@ -267,19 +276,25 @@ class Database:
 
 
     def get_sql_update_query(self, table, values: Dict[str, str], pk_col_name):
-        """returns a generic update statement"""
+        """returns a generic update statement.
+
+        pk_col_name is a column name or a list of them, for tables keyed on more
+        than one column (fec.committee_totals is keyed on committee_id + cycle)."""
+
+        pk_col_names = [pk_col_name] if isinstance(pk_col_name, str) else list(pk_col_name)
 
         ordered_columns = self.get_ordered_column_names(table)
-        values = filter_dict_by_keys(values, ordered_columns)
+        values = filter_dict_by_keys(values, ordered_columns, table)
 
-        primary_key = values.pop(pk_col_name)
+        primary_keys = [values.pop(name) for name in pk_col_names]
 
         query_string = f'UPDATE fec.{table} SET ' \
             + ', '.join([f' {key}={{}}' for key, val in values.items()])\
-            + f' WHERE {pk_col_name}={{}}'
+            + ' WHERE ' + ' AND '.join([f'{name}={{}}' for name in pk_col_names])
 
         query = sql.SQL(query_string)\
-            .format(*[Literal(val) for key, val in values.items()], Literal(primary_key))
+            .format(*[Literal(truncate(val)) for key, val in values.items()],
+                    *[Literal(key) for key in primary_keys])
 
         return query
 
@@ -297,7 +312,7 @@ class Database:
         '''returns a generic insert statement'''
 
         ordered_columns = self.get_ordered_column_names(table)
-        values = filter_dict_by_keys(values, ordered_columns)
+        values = filter_dict_by_keys(values, ordered_columns, table)
 
         query_string = f'INSERT INTO fec.{table} ('\
             + ', '.join([f'{key}' for key, val in values.items()])\
@@ -305,13 +320,6 @@ class Database:
             + 'VALUES ('\
             + ', '.join(['{}' for key, val in values.items()])\
             + ')'
-
-        def truncate(val):
-            if isinstance(val, str):
-                if len(val) >= 255:
-                    logger.warning(f'value longer than limit:\n{val}')
-                    return val[:255]
-                return val
 
         query = sql.SQL(query_string)\
             .format(*[Literal(truncate(val)) for key, val in values.items()])

@@ -112,7 +112,14 @@ CREATE TABLE IF NOT EXISTS fec.committee_totals
 	,treasurer_name VARCHAR(256)   ENCODE lzo
 	,contributions_ie_and_party_expenditures_made_percent VARCHAR(256)   ENCODE lzo
 	,organization_type VARCHAR(256)   ENCODE lzo
+	-- columns below were added to the live table by hand (ALTER TABLE ADD COLUMN);
+	-- see sql/migrations/. openFEC adds response fields without notice; the loader
+	-- drops payload keys the table lacks and logs them as "dropping keys absent from".
+	,organization_type_full VARCHAR(256)   ENCODE lzo
+	,individual_contributions_percent VARCHAR(256)   ENCODE lzo
 	,first_f1_date VARCHAR(256)   ENCODE lzo
+	,operating_expenditures_percent VARCHAR(256)   ENCODE lzo
+	,party_and_other_committee_contributions_percent VARCHAR(256)   ENCODE lzo
 	,PRIMARY KEY (committee_id, "cycle")
 )
 DISTSTYLE AUTO
